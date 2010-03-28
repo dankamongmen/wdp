@@ -7,8 +7,9 @@ VPDF:=evince
 CFLAGS:=-Wall -W -Werror -O2
 
 PRO:=cs8803ssProject
-PDF:=$(PRO).pdf
-TEX:=$(PRO).tex
+PROP:=cs8803ssProposal
+PDF:=$(PRO).pdf $(PROP).pdf
+TEX:=$(PRO).tex $(PROP).tex
 TEXOBJS:=$(wildcard texobjs/*)
 
 all: $(PDF)
