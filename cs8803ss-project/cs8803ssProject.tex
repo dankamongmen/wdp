@@ -76,7 +76,7 @@ isolation or authentication schemes are known to be present in NVIDIA's driver
 or hardware. It ought be noted that failure to set a device file descriptor
 close-on-\texttt{exec(2)} via \texttt{O\_CLOEXEC} or \texttt{FD\_CLOEXEC} will
 result in a usable device descriptor being duplicated into child processes,
-and that these file descriptors can (by design or oversight) be passed via
+and that these file descriptors can (by design or error) be passed via
 \texttt{SCM\_RIGHTS} messages on \texttt{PF\_UNIX} sockets.
 
 CUDA devices are either integrated or standalone; integrated hardware typically
@@ -84,7 +84,7 @@ claims a chunk of system RAM, and promptly marks it unprotected. No memory
 protection hardware exists for onboard GDDR. All accesses to video memory go
 through the card, unless page-locked memory is comutually mapped. In the
 absence of shared mappings, data must be explicitly copied from video to system
-memory (and vice versa) to be shared among computation devices.
+memory (and vice versa) to be shared among computation devices\cite{cudaguide}.
 
 CUDA kernels are typically distributed as JIT-friendly PTX binaries\cite{kerr},
 an intermediate representation suitable for all NVIDIA hardware. Upon being
@@ -156,7 +156,7 @@ SIMD order. The former is obviously easier with small, in-order, SISD cores,
 such as the unified shaders of a modern GPU; duplicating a Nehalem core is a
 much more daunting process. As for the latter, note that Intel's ``Sandy
 Bridge'' microarchitecture is expected to add the AVX instruction scheme and
-its 256-bit \texttt{YMM} registers. The data-based decomposition of CUDA's
+its 256-bit \texttt{YMM} vector registers. The data-based decomposition of CUDA's
 ``SIMT'' model can immediately take advantage of these new cores (given
 sufficiently large problem sets, of course), whereas x86 binaries\footnote{Most of them, anyway.} would
 require dynamic translation or recompilation to take advantage of the new SIMD
