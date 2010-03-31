@@ -14,7 +14,7 @@ TEXOBJS:=$(wildcard texobjs/*)
 
 all: $(PDF)
 
-$(PDF): $(TEX) $(TEXOBJS)
+%.pdf: %.tex $(TEXOBJS)
 	pdflatex $<
 	pdflatex $<
 
