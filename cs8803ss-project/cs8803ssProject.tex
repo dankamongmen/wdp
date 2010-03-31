@@ -7,6 +7,7 @@
 \usepackage{moreverb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{multicol}
 
 \newcommand{\squishlist}{\begin{list}{$\bullet$}
   {\setlength{\itemsep}{0pt}
@@ -28,11 +29,35 @@ CS8803SS Project, Spring 2010}
 \begin{document}
 \maketitle
 
-\section{Abstract}
-Graphics processing units (GPUs) have advanced to a point where they are now capable of extremely complex generalized tasks in addition to their normal use for graphics processing.  The accessibility of GPUs to more generalized applications carries the side-effect of introducing a new avenue of security vulnerabilities.  While some research exists into the use of GPUs for general purpose and security techniques, our work breaks new ground by proposing techniques for attacking the GPU itself.
+\begin{abstract}
+The programmable, massively parallel graphics cards of modern laptops, desktops
+and high-performance workstations are sources of tremendous computing power.
+The hundreds of simple in-order cores found on recent NVIDIA and ATI graphics
+hardware provide many more theoretical FLOPS than the x86 processor packages
+with which they're commonly coupled.
+Devices such as NVIDIA's Tesla\texttrademark{} have already traded video outputs for onboard memory, giving rise to ``desktop
+supercomputing.'' Those who would fully utilize their machines can
+no more ignore heterogeneous processors than multiple cores or SIMD. Leaving
+large matrix multiplications on general-purpose, out-of-order CPUs is about as
+efficient as eschewing hardware multipliers in favor of iterated addition.
 
-Blah blah here's some of the cool stuff we're doing.
+It is, however, almost certainly safer. GPUs have traditionally been used to
+accelerate games and CAD (single-instance, interactive tasks) and batch
+rendering (decomposable, compute-bound tasks, for which a deinterleaved
+schedule is optimal). Facilities supporting multiple threads or processes are
+thus primitive, especially at the hardware level. When the GPU was limited to
+blitting, fogging and aliasing framebuffers, its minimal isolation and
+assurance capabilities were likely tolerable. Compromises of scientific data,
+cryptographic materials and SCADA systems are rather more serious, yet these
+are the precise applications driving GPGPU. We provide a system-centric threat
+model analysis of NVIDIA's CUDA system, and attack it. Our results suggest that,
+unless GPGPU systems add complexity related to security state (and thus devote
+less transistor budget to performance), they cannot provide a trusted computing
+base. We close with software-level defenses against our attacks.
 
+\end{abstract}
+
+\begin{multicols}{2}
 \section{Introduction}
 Heterogeneous computing has definitely arrived, and graphics processing units (GPUs) in the millions are employed worldwide. Tradition has shown newly programmable domains to be rapidly subjected (and often found vulnerable) to attacks of the past; indeed, wherever processing goes, so does the possibility of automated attacks. With high powered GPU's moving from the gamer's desktop to the laboratory's cluster, it's essential that the security issues surrounding their use be fleshed out earlier rather than later. Unfortunately, this is not the case; graphics card manufacturers have not publicized any of their own internal security studies (if any exist), and popular manufacturers are infamous for their
 hostility to open source and academia\footnote{See for instance Wikipedia's page on
@@ -113,4 +138,5 @@ sciences, medical imaging, defense, and more
   \url{http://portal.acm.org/citation.cfm?id=1395492}.
 
 
+\end{multicols}{2}
 \end{document}
