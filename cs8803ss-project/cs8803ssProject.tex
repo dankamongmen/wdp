@@ -66,8 +66,8 @@ hostility to open source and academia\footnote{See for instance Wikipedia's page
 We have identified a variety of attack paths on existing GPU platforms from NVIDIA and ATI in addition to methods for countering these attacks.
 
 \section{An overview of CUDA}
-CUDA is accessed via \texttt{open(2)}ing the device node and invoking \texttt{ioctl(2)}
-upon the resulting file descriptor. All accesses to the card and its memory
+CUDA is accessed via \texttt{open(2)}ing an appropriate device node and
+invoking \texttt{ioctl(2)} upon the resulting file descriptor. All accesses to the card and its memory
 originate from the (ring 0) driver; only the \texttt{ioctl(2)} calls themselves
 are executed in userspace. The device node is set 0660 by default;
 ability to make use of the GPU therefore depends upon membership in the
