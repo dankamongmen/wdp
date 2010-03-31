@@ -110,12 +110,53 @@ are necessary to compute on the device, and thus a safe assumption. Escalation
 to device access is an attack on the operating system's access control, and
 outside the scope of this paper.
 
+We seek to answer the following questions, for machines with one or more CUDA-capable
+cards:
 \subsection{Spoofing}
+\begin{itemize}
+\item Is it possible for one CUDA kernel to pre\"empt data copies requested
+from another?
+\end{itemize}
 \subsection{Tampering}
+\begin{itemize}
+\item Can one CUDA kernel manipulate another's data set?
+\item Is it possible to manipulate the system's video channel from an arbitrary
+CUDA kernel? If so, how might this be further leveraged (for instance, replacing
+a browser padlock icon or disabling system notifications)? What about textures?
+\item Is it possible to construct a debugging environment around other CUDA kernels?
+\end{itemize}
 \subsection{Repudiation}
+\begin{itemize}
+\item Can a CUDA kernel disassociate itself from the system process which spawned it?
+\item Can a CUDA kernel spawn new CUDA kernels?
+\item What forensic data, if any, is created as a result of CUDA computing?
+\end{itemize}
 \subsection{Information disclosure}
+\begin{itemize}
+\item Can a CUDA kernel read another kernel's data set? Need they be simultaneously
+scheduled for this to occur?
+\item Is it possible to read another CUDA kernel's code, even if it cannot be
+controlled?
+\item Is it possible to reconstruct the system's video channel from an arbitrary
+CUDA kernel? What about textures?
+\end{itemize}
 \subsection{Denial of service}
+\begin{itemize}
+\item Can a CUDA kernel monopolize resources in the face of competitors?
+\item Can a CUDA kernel prevent another from being controlled, or executing
+data transfers to or from the system?
+\item Can a CUDA kernel deny resources beyond the GPU?
+\end{itemize}
 \subsection{Escalation of privilege}
+\begin{itemize}
+\item Might the driver be exploited, allowing arbitrary ring 0 code to run?
+\item If it is possible to return doppelg\"anger data, might it be leveraged
+to attack (and hopefully exploit) system-side processes?
+\item Is it possible to arbitrarily (i.e., without exploitation) manipulate
+another CUDA kernel's code? Is it possible to construct a CUDA virus?
+\item Is it possible to arbitrarily (i.e., without exploitation) manipulate a
+system process's code maps from a CUDA kernel?
+\end{itemize}
 
 \section{Attacking CUDA}
 
