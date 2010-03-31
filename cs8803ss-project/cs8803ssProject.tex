@@ -93,6 +93,12 @@ loaded onto the card, dynamic compilation\footnote{Likely performed in the
 driver, not the hardware, though we have not yet verified this.} is performed,
 resulting in a locally-optimized CUBIN blob. These blobs are dispatched to
 Streaming Multiprocessors across the card, all of which share a common memory.
+A given system thread can use only one device at a time, but a device may be
+used by more than one system thread.
+
+CUDA maintains forward compatibility, but augments the instruction set
+between various ``Compute Capabilities''.  CUDA through the current (2.0)
+Capability uses 32-bit physical addressing exclusively.
 
 \section{Threat model}
 Well-known threat taxonomies include the ``CIA Triad'' (extended by the
