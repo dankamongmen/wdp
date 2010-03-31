@@ -91,7 +91,8 @@ CUDA kernels are typically distributed as JIT-friendly PTX binaries\cite{kerr},
 an intermediate representation suitable for all NVIDIA hardware. Upon being
 loaded onto the card, dynamic compilation\footnote{Likely performed in the
 driver, not the hardware, though we have not yet verified this.} is performed,
-resulting in a locally-optimized CUBIN blob.
+resulting in a locally-optimized CUBIN blob. These blobs are dispatched to
+Streaming Multiprocessors across the card, all of which share a common memory.
 
 \section{Threat model}
 Well-known threat taxonomies include the ``CIA Triad'' (extended by the
@@ -102,8 +103,6 @@ to the NVIDIA device node(s) (by default, \texttt{/dev/nvidiaX}); such privilege
 are necessary to compute on the device, and thus a safe assumption. Escalation
 to device access is an attack on the operating system's access control, and
 outside the scope of this paper.
-
-
 
 \subsection{Spoofing}
 \subsection{Tampering}
