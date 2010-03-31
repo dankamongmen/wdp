@@ -1,0 +1,29 @@
+CUDA Device Query (Driver API) statically linked version 
+There is 1 device supporting CUDA
+
+Device 0: "GeForce GTS 360M"
+  CUDA Driver Version:                           3.0
+  CUDA Capability Major revision number:         1
+  CUDA Capability Minor revision number:         2
+  Total amount of global memory:                 1073020928 bytes
+  Number of multiprocessors:                     12
+  Number of cores:                               96
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       16384 bytes
+  Total number of registers available per block: 16384
+  Warp size:                                     32
+  Maximum number of threads per block:           512
+  Maximum sizes of each dimension of a block:    512 x 512 x 64
+  Maximum sizes of each dimension of a grid:     65535 x 65535 x 1
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             256 bytes
+  Clock rate:                                    1.32 GHz
+  Concurrent copy and execution:                 Yes
+  Run time limit on kernels:                     Yes
+  Integrated:                                    No
+  Support host page-locked memory mapping:       Yes
+  Compute mode:                                  Default (multiple host threads can use this device simultaneously)
+
+PASSED
+
+Press ENTER to exit...
