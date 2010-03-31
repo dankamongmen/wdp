@@ -66,18 +66,24 @@ hostility to open source and academia\footnote{See for instance Wikipedia's page
 We have identified a variety of attack paths on existing GPU platforms from NVIDIA and ATI in addition to methods for countering these attacks.
 
 \section{Threat Model}
-Well-known threat models include the ``CIA Triad'' (extended by the
+Well-known threat taxonomies include the ``CIA Triad'' (extended by the
 ``Parkerian Hexad'') and Microsoft's STRIDE. The latter, developed as part of
 Microsoft's Secure Product Lifecycle, is designed for system-centric threat
-modeling
+modeling and suitable for our purposes.
+\subsection{Spoofing}
+\subsection{Tampering}
+\subsection{Repudiation}
+\subsection{Information disclosure}
+\subsection{Denial of service}
+\subsection{Escalation of privilege}
 
 \section{Attacking CUDA}
 
 \section{Defending CUDA}
 
 \section{Conclusions} 
-The Saltzer-Schroeder Practices, recommendations of the Orange Book, and
-requirements of the Common Criteria have long provided general principles for
+The recommendations of the Orange Book, requirements of the Common Criteria,
+and Saltzer-Schroeder Practices have long provided general principles for
 security-conscious design. Any number of these principles have been ignored
 (or poorly effected) along the way to NVIDIA's and ATI's current GPUs. These
 manufacturers focused nigh-exclusively on performance relative to cost and
@@ -102,13 +108,13 @@ That peak itself is a function of architecture, not of programs or their
 access patterns.
 \item Investments in OOO apparatus (reorder buffers,
 frontend reservation stations, register renaming) yield diminishing returns due
-to the profound limitations of instruction level parallelism. Like improvements
+to the profound limitations of instruction level parallelism\cite{phenn}. Like improvements
 to cache, OOO can only hide delays, not find new FLOPS.
 \item Denser chip-multithreading similarly exists only to hide latency.
 \item Larger chips require either pipelined wires or high voltages to operate
 reliably, and place strict requirements on clock-signaling circuity. Efficient
 power management requires complex and expensive partial power gating\footnote{For
-instance, feeding uops from Nehalem's Loop Stream Detector results in power-down
+instance, feeding $\mu$ops from Nehalem's Loop Stream Detector results in power-down
 of the leading three pipeline stages.}
 \end{itemize}
 We see that FLOPS --- at any price --- can be had only by adding cores or extending
@@ -197,6 +203,7 @@ sciences, medical imaging, defense, and more
   allow for significant decreases in computation time
   \url{http://portal.acm.org/citation.cfm?id=1395492}.
 
-
+\bibliographystyle{acm}
+\bibliography{cs8803ssProject}
 \end{multicols}{2}
 \end{document}
