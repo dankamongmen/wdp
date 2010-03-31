@@ -33,27 +33,27 @@ CS8803SS Project, Spring 2010}
 The programmable, massively parallel graphics cards of modern laptops, desktops
 and high-performance workstations are sources of tremendous computing power.
 The hundreds of simple in-order cores found on recent NVIDIA and ATI graphics
-hardware provide many more theoretical FLOPS than the x86 processor packages
-with which they're commonly coupled.
+hardware provide many more peak FLOPS than the x86 processor packages with
+which they're commonly coupled.
 Devices such as NVIDIA's Tesla\texttrademark{} have already traded video outputs for onboard memory, giving rise to ``desktop
 supercomputing.'' Those who would fully utilize their machines can
 no more ignore heterogeneous processors than multiple cores or SIMD. Leaving
 large matrix multiplications on general-purpose, out-of-order CPUs is about as
 efficient as eschewing hardware multipliers in favor of iterated addition.
 
-It is, however, almost certainly safer. GPUs have traditionally been used to
-accelerate games and CAD (single-instance, interactive tasks) and batch
-rendering (decomposable, compute-bound tasks, for which a deinterleaved
-schedule is optimal). Facilities supporting multiple threads or processes are
-thus primitive, especially at the hardware level. When the GPU was limited to
+It is, however, almost certainly safer. GPUs have traditionally accelerated
+single-instance, interactive tasks (such as video games and CAD) and
+decomposable, compute-bound tasks (such as batch rendering) for which a
+deinterleaved schedule is optimal. Hardware facilities for the support of
+multiple threads or processes are primitive at best. When the GPU was limited to
 blitting, fogging and aliasing framebuffers, its minimal isolation and
 assurance capabilities were likely tolerable. Compromises of scientific data,
 cryptographic materials and SCADA systems are rather more serious, yet these
-are the precise applications driving GPGPU. We provide a system-centric threat
+are the precise applications driving the adoption of GPGPU. We provide a system-centric threat
 model analysis of NVIDIA's CUDA system, and attack it. Our results suggest that,
 unless GPGPU systems add complexity related to security state (and thus devote
 less transistor budget to performance), they cannot provide a trusted computing
-base. We close with software-level defenses against our attacks.
+base. We close with software-level defenses against our attacks, and their limitations.
 
 \end{abstract}
 
@@ -65,15 +65,75 @@ hostility to open source and academia\footnote{See for instance Wikipedia's page
 % This needs to be revised a bit and needs to have more added to it...
 We have identified a variety of attack paths on existing GPU platforms from NVIDIA and ATI in addition to methods for countering these attacks.
 
-\section{Our Work}
-Blah Blah blah here's what we've done...
+\section{Threat Model}
+Well-known threat models include the ``CIA Triad'' (extended by the
+``Parkerian Hexad'') and Microsoft's STRIDE. The latter, developed as part of
+Microsoft's Secure Product Lifecycle, is designed for system-centric threat
+modeling
 
-\section{Conclusion}
-Let's restate everything we've already said in our abstract, introduction, and results...
+\section{Attacking CUDA}
 
-\section{Related work}
+\section{Defending CUDA}
+
+\section{Conclusions} 
+The Saltzer-Schroeder Practices, recommendations of the Orange Book, and
+requirements of the Common Criteria have long provided general principles for
+security-conscious design. Any number of these principles have been ignored
+(or poorly effected) along the way to NVIDIA's and ATI's current GPUs. These
+manufacturers focused nigh-exclusively on performance relative to cost and
+power, resulting in some of the world's most powerful devices. Harnessing these
+mighty processing units is necessary to even approach full machine utilization.
+This will become only more true:
+\begin{itemize}
+\item Increasing the clock frequency exacerbates cooling and power problems
+(dynamic power consumption is proportional to frequency). Furthermore,
+clock frequency increases frequently require decomposition of pipeline
+stages, thus exacerbating branch misprediction delays and pressuring any OOO
+system.
+\item Increasing the issue width, or duplicating functional units, either
+requires ISA changes (for VLIW) or massive frontend resources for lookahead,
+disambiguation, and hazard tracking. Assuming these expenses acceptable,
+diminishing returns result from limitations of instruction-level parallelism.
+Furthermore, very wide issues lead to sparse code flows, taxing the instruction
+store subsystem. 
+\item Further investments in cache --- and thus, hopefully, fewer memory
+delays --- serves only to approach more closely a device's theoretical peak.
+That peak itself is a function of architecture, not of programs or their
+access patterns.
+\item Investments in OOO apparatus (reorder buffers,
+frontend reservation stations, register renaming) yield diminishing returns due
+to the profound limitations of instruction level parallelism. Like improvements
+to cache, OOO can only hide delays, not find new FLOPS.
+\item Denser chip-multithreading similarly exists only to hide latency.
+\item Larger chips require either pipelined wires or high voltages to operate
+reliably, and place strict requirements on clock-signaling circuity. Efficient
+power management requires complex and expensive partial power gating\footnote{For
+instance, feeding uops from Nehalem's Loop Stream Detector results in power-down
+of the leading three pipeline stages.}
+\end{itemize}
+We see that FLOPS --- at any price --- can be had only by adding cores or extending
+SIMD order. The former is obviously easier with small, in-order, SISD cores,
+such as the unified shaders of a modern GPU; duplicating a Nehalem core is a
+much more daunting process. As for the latter, note that Intel's ``Sandy
+Bridge'' microarchitecture is expected to add the AVX instruction scheme and
+its 256-bit \texttt{YMM} registers. The data-based decomposition of CUDA's
+``SIMT'' model can immediately take advantage of these new cores (given
+sufficiently large problem sets, of course), whereas x86 binaries\footnote{Most of them, anyway.} would
+require dynamic translation or recompilation to take advantage of the new SIMD
+order.
+
+Extensive manycoring and huge memory bandwidths are certainly the key to FLOPS,
+but the current state of programmable GPUs are damningly insecure. Without the
+addition of infrastructure and policy, they must not be trusted in a
+multiprocessing context. Even in the absence of calculated attack, one's own
+mistakes or accidents can wreck undetected havoc. It ought be noted that memory
+protection could be implemented without the added complexity of
+hardware-supported virtual memory (provided some assistance from the OS); this
+would immediately address most issues.
+
+\section{Related Work}
 Our research in this area is focused on the possibility of security
-vulnerabilities against the GPU itself, an area which we were unable to find
+vulnerabilities agaiynst the GPU itself, aan area which we were unable to find
 prior research for. However, our research is motivated in part by an increase
 in applications being developed for GPUs and also by GPUs being used as the
 processing unit for security related tasks.
