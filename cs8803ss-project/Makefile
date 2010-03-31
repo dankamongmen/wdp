@@ -23,4 +23,4 @@ test: all
 	$(VPDF) $(PDF)
 
 clean:
-	rm -f $(wildcard *.aux) $(wildcard *.log) $(wildcard *.out) $(wildcard *.pdf)
+	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.out) $(wildcard *.pdf)
