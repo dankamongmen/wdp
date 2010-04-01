@@ -1,5 +1,5 @@
 .DELETE_ON_ERROR:
-.PHONY: all test clean
+.PHONY: all preview test clean
 .DEFAULT_GOAL:=test
 
 VPDF:=evince
@@ -30,9 +30,11 @@ cudamemdump: src/cudamemdump.cu $(MAKEFILES)
 	pdflatex $<
 	pdflatex $<
 
+preview: test
+	$(VPDF) $(PDF)
+
 test: all
 	./$(BIN)
-	$(VPDF) $(PDF)
 
 clean:
 	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.out)
