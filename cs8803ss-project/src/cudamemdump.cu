@@ -93,18 +93,20 @@ init_cuda(void){
 	return CUDA_SUCCESS;
 }
 
-__global__ void memkernel(int *sum){
+__global__ void memkernel(unsigned long *sum,unsigned long *words){
+	const unsigned *mem;
 	int i;
 
-	*sum = 100;
-	for(i = 0 ; i < 100 ; ++i){
-		*sum += i;
+	mem = (unsigned *)sum;
+	for(i = 0 ; i < 0x10000 ; ++i){
+		*sum += *mem++;
+		++*words;
 	}
 }
 
 int main(void){
+	unsigned long sum = 0,words = 0;
 	void *ptr;
-	int sum;
 
 	if(init_cuda()){
 		cudaError_t err;
@@ -114,7 +116,7 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	if(cudaMalloc(&ptr,sizeof(sum))){
+	if(cudaMalloc(&ptr,sizeof(sum) * 2)){
 		cudaError_t err;
 
 		err = cudaGetLastError();
@@ -122,9 +124,18 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	memkernel<<<1,1>>>((int *)ptr);
+	cudaMemset(ptr,0,sizeof(sum) * 2);
+	memkernel<<<1,1>>>((typeof(&sum))ptr,(typeof(&sum))ptr + 1);
 	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
-	printf("sum: %d\n",sum);
-	cudaFree(ptr);
+	cudaMemcpy(&words,(typeof(&sum))ptr + 1,sizeof(sum),cudaMemcpyDeviceToHost);
+	printf("sum: %u 0x%x\nwords: %u 0x%x\n",sum,sum,words,words);
+	if(cudaFree(ptr) || words == 0){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"Error dumping CUDA memory (%s?)\n",
+				cudaGetErrorString(err));
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }
