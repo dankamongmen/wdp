@@ -91,19 +91,17 @@ init_cuda(unsigned *mem){
 	return CUDA_SUCCESS;
 }
 
-__global__ void memkernel(unsigned long *sum,unsigned long *words,unsigned b){
+__global__ void memkernel(unsigned long *sum,unsigned b){
 	unsigned bp;
 
 	*sum = 0;
-	*words = 0;
 	for(bp = 0 ; bp < b ; ++bp){
-		sum[0] += sum[bp - 1];
-		++*words;
+		sum[0] += sum[bp];
 	}
 }
 
 int main(void){
-	unsigned long sum,words;
+	unsigned long sum;
 	unsigned mem;
 	void *ptr;
 
@@ -124,8 +122,7 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	memkernel<<<1,1>>>((typeof(&sum))ptr + 1,(typeof(&sum))ptr,
-			(mem & MASK) / sizeof(sum));
+	memkernel<<<1,1>>>((typeof(&sum))ptr,(mem & MASK) / sizeof(sum));
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
@@ -134,13 +131,9 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	cudaMemcpy(&sum,(typeof(&sum))ptr + 1,sizeof(sum),cudaMemcpyDeviceToHost);
-	cudaMemcpy(&words,(typeof(&sum))ptr,sizeof(sum),cudaMemcpyDeviceToHost);
-	printf(" sum: %u 0x%x\n words: %u 0x%x (%u 0x%x bytes)\n",
-			sum,sum,words,words,
-			words * sizeof(sum),
-			words * sizeof(sum));
-	if(cudaFree(ptr) || (words != (mem & MASK) / sizeof(sum))){
+	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
+	printf(" sum: %u 0x%x\n",sum,sum);
+	if(cudaFree(ptr) || cudaThreadSynchronize()){
 		cudaError_t err;
 
 		err = cudaGetLastError();
