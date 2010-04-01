@@ -1,6 +1,7 @@
 #include <cuda.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/time.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
@@ -91,21 +92,24 @@ init_cuda(unsigned *mem){
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 
-__global__ void memkernel(unsigned long *sum,unsigned b){
+#define BLOCK_SIZE 16 // FIXME bigger would likely be better
+
+__global__ void memkernel(uintmax_t *sum,unsigned b){
 	__shared__ typeof(*sum) psum;
 	unsigned bp;
 
 	psum = 0;
-	for(bp = 0 ; bp < b ; ++bp){
-		psum += *(unsigned long *)
-			((unsigned long)(sum + bp) % (1lu << ADDRESS_BITS));
+	for(bp = 0 ; bp < b ; bp += BLOCK_SIZE){
+		psum += *(uintmax_t *)
+			((uintmax_t)(sum + bp + threadIdx.x) % (1lu << ADDRESS_BITS));
 	}
-	*sum = psum;
+	sum[threadIdx.x] = psum;
 }
 
 int main(void){
+	uintmax_t sums[BLOCK_SIZE],sum = 0;
 	struct timeval time0,time1,timer;
-	unsigned long sum;
+	dim3 dblock(BLOCK_SIZE,1,1);
 	unsigned mem;
 	void *ptr;
 
@@ -128,7 +132,7 @@ int main(void){
 		return EXIT_FAILURE;
 	}
 	gettimeofday(&time0,NULL);
-	memkernel<<<1,1>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(sum));
+	memkernel<<<1,dblock>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
@@ -139,8 +143,11 @@ int main(void){
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
-	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
-	printf(" sum: %u 0x%x\n",sum,sum);
+	cudaMemcpy(sums,ptr,sizeof(sums),cudaMemcpyDeviceToHost);
+	for(int i = 0 ; i < BLOCK_SIZE ; ++i){
+		sum += sums[i];
+	}
+	printf(" sum: %ju 0x%jx\n",sum,sum);
 	printf(" elapsed time: %luus (%.3f Mb/s)\n",
 			timer.tv_sec * 1000000 + timer.tv_usec,
 			(float)(mem - CHUNK) / (timer.tv_sec * 1000000 + timer.tv_usec));
