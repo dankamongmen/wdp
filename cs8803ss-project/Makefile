@@ -10,8 +10,17 @@ PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
+BIN:=cudamemdump
 
-all: $(PDF)
+CUDA?=$(HOME)/local/cuda/
+CUDAINC:=$(CUDA)/include
+
+CFLAGS:=-Wall -W -O2 -march=native -mtune=native -Werror -Wextra -I$(CUDAINC)
+
+all: $(BIN) $(PDF)
+
+cudamemdump: src/cudamemdump.c
+	$(CC) $(CFLAGS) -o $@ $<
 
 %.pdf: %.tex %.bib $(TEXOBJS)
 	pdflatex $<
@@ -23,4 +32,5 @@ test: all
 	$(VPDF) $(PDF)
 
 clean:
-	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.out) $(wildcard *.pdf)
+	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.out)
+	rm -f $(BIN) $(PDF)
