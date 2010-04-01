@@ -148,7 +148,7 @@ int main(void){
 		sum += sums[i];
 	}
 	printf(" sum: %ju 0x%jx\n",sum,sum);
-	printf(" elapsed time: %luus (%.3f Mb/s)\n",
+	printf(" elapsed time: %luus (%.3f MB/s)\n",
 			timer.tv_sec * 1000000 + timer.tv_usec,
 			(float)(mem - CHUNK) / (timer.tv_sec * 1000000 + timer.tv_usec));
 	if(cudaFree(ptr) || cudaThreadSynchronize()){
