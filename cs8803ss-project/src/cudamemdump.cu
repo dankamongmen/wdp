@@ -139,7 +139,9 @@ int main(void){
 	timersub(&time1,&time0,&timer);
 	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
 	printf(" sum: %u 0x%x\n",sum,sum);
-	printf(" elapsed time: %luus\n",timer.tv_sec * 1000000 + timer.tv_usec);
+	printf(" elapsed time: %luus (%fMb/s)\n",
+			timer.tv_sec * 1000000 + timer.tv_usec,
+			(float)(mem - CHUNK) / (timer.tv_sec * 1000000 + timer.tv_usec));
 	if(cudaFree(ptr) || cudaThreadSynchronize()){
 		cudaError_t err;
 
