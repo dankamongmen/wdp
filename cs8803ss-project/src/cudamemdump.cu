@@ -98,7 +98,8 @@ __global__ void memkernel(unsigned *sum,unsigned b){
 	}
 	for(bp = 0 ; bp < b ; bp += BLOCK_SIZE){
 		psum += *(typeof(sum))
-			((uintmax_t)(sum + bp + threadIdx.x) % (1lu << ADDRESS_BITS));
+			((uintmax_t)(sum + bp + threadIdx.x)
+			 % (1lu << ADDRESS_BITS));
 	}
 	sum[threadIdx.x] = psum;
 }
