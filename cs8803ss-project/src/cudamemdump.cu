@@ -1,6 +1,7 @@
 #include <cuda.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
 
@@ -101,6 +102,7 @@ __global__ void memkernel(unsigned long *sum,unsigned b){
 }
 
 int main(void){
+	struct timeval time0,time1,timer;
 	unsigned long sum;
 	unsigned mem;
 	void *ptr;
@@ -123,6 +125,7 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
+	gettimeofday(&time0,NULL);
 	memkernel<<<1,1>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(sum));
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
@@ -132,8 +135,11 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
+	gettimeofday(&time1,NULL);
+	timersub(&time1,&time0,&timer);
 	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
 	printf(" sum: %u 0x%x\n",sum,sum);
+	printf(" elapsed time: %luus\n",timer.tv_sec * 1000000 + timer.tv_usec);
 	if(cudaFree(ptr) || cudaThreadSynchronize()){
 		cudaError_t err;
 

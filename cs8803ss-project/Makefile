@@ -34,7 +34,7 @@ preview: test
 	$(VPDF) $(PDF)
 
 test: all
-	time ./$(BIN)
+	./$(BIN)
 
 clean:
 	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.out)
