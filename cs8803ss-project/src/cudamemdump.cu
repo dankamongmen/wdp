@@ -142,12 +142,12 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	gettimeofday(&time1,NULL);
-	timersub(&time1,&time0,&timer);
 	cudaMemcpy(sums,ptr,sizeof(sums),cudaMemcpyDeviceToHost);
 	for(int i = 0 ; i < BLOCK_SIZE ; ++i){
 		sum += sums[i];
 	}
+	gettimeofday(&time1,NULL);
+	timersub(&time1,&time0,&timer);
 	printf(" sum: %ju 0x%jx\n",sum,sum);
 	printf(" elapsed time: %luus (%.3f MB/s)\n",
 			timer.tv_sec * 1000000 + timer.tv_usec,
