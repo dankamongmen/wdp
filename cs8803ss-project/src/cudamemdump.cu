@@ -87,13 +87,17 @@ init_cuda(int *count){
 #define CHUNK (mem >> 2u) // FIXME kill
 #define BLOCK_SIZE 64 // FIXME bigger would likely be better
 
-__global__ void memkernel(uintmax_t *sum,unsigned b){
+__global__ void memkernel(unsigned *sum,unsigned b){
 	__shared__ typeof(*sum) psum;
+	typeof(sum) ptr;
 	unsigned bp;
 
 	psum = 0;
+	for(ptr = (unsigned *)0x10000u ; ptr < sum ; ptr += BLOCK_SIZE){
+		psum += ptr[threadIdx.x];
+	}
 	for(bp = 0 ; bp < b ; bp += BLOCK_SIZE){
-		psum += *(uintmax_t *)
+		psum += *(typeof(sum))
 			((uintmax_t)(sum + bp + threadIdx.x) % (1lu << ADDRESS_BITS));
 	}
 	sum[threadIdx.x] = psum;
@@ -101,7 +105,7 @@ __global__ void memkernel(uintmax_t *sum,unsigned b){
 
 static int
 dump_cuda(unsigned mem){
-	uintmax_t sums[BLOCK_SIZE],sum = 0;
+	unsigned sums[BLOCK_SIZE],sum = 0;
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	void *ptr;
@@ -132,7 +136,7 @@ dump_cuda(unsigned mem){
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
-	printf(" sum: %ju 0x%jx\n",sum,sum);
+	printf(" sum: %u\n",sum);
 	printf(" elapsed time: %luus (%.3f MB/s)\n",
 			timer.tv_sec * 1000000 + timer.tv_usec,
 			(float)(mem - CHUNK) / (timer.tv_sec * 1000000 + timer.tv_usec));
