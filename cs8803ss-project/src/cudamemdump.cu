@@ -91,12 +91,15 @@ init_cuda(unsigned *mem){
 	return CUDA_SUCCESS;
 }
 
+#define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
+
 __global__ void memkernel(unsigned long *sum,unsigned b){
 	unsigned bp;
 
 	*sum = 0;
 	for(bp = 0 ; bp < b ; ++bp){
-		sum[0] += sum[bp];
+		sum[0] += *(unsigned long *)
+			((unsigned long)(sum + bp) % (1lu << ADDRESS_BITS));
 	}
 }
 
@@ -113,7 +116,7 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-#define MASK 0x00fffffflu
+#define MASK 0x0ffffffflu
 	if(cudaMalloc(&ptr,mem & MASK)){
 		cudaError_t err;
 
