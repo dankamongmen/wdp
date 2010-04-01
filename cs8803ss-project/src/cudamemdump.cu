@@ -92,7 +92,7 @@ init_cuda(unsigned *mem){
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 
-#define BLOCK_SIZE 16 // FIXME bigger would likely be better
+#define BLOCK_SIZE 64 // FIXME bigger would likely be better
 
 __global__ void memkernel(uintmax_t *sum,unsigned b){
 	__shared__ typeof(*sum) psum;
