@@ -4,8 +4,6 @@
 
 VPDF:=evince
 
-CFLAGS:=-Wall -W -Werror -O2
-
 PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
@@ -16,10 +14,11 @@ CUDA?=$(HOME)/local/cuda/
 CUDAINC:=$(CUDA)/include
 CUDALIB:=$(CUDA)/lib64
 
-CFLAGS:=-Wall -W -O2 -march=native -mtune=native -Werror -Wextra -I$(CUDAINC)
-LFLAGS:=-Wl,-R$(CUDALIB) -L$(CUDALIB) -lcuda -lcudart
+CC:=$(CUDA)/bin/nvcc
+CFLAGS:=-O2 --compiler-options -Wall,-W,-march=native,-mtune=native,-Werror,-Wextra -I$(CUDAINC)
+LFLAGS:=--linker-options -R$(CUDALIB) -L$(CUDALIB) -lcuda -lcudart
 
-all: $(BIN) $(PDF)
+all: $(PDF) $(BIN)
 
 cudamemdump: src/cudamemdump.c $(MAKEFILES)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
