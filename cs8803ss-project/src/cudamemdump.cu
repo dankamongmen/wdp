@@ -60,9 +60,6 @@ init_cuda(unsigned *mem){
 	int cerr;
 
 	if((cerr = cuInit(0)) != CUDA_SUCCESS){
-		/*if(cerr == CUDA_ERROR_NO_DEVICE){
-			return 0;
-		}*/
 		return cerr;
 	}
 	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
@@ -116,8 +113,9 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-#define MASK 0x0ffffffflu
-	if(cudaMalloc(&ptr,mem & MASK)){
+#define CHUNK (mem >> 2u)
+	printf(" Want %ub (0x%x) of %ub (0x%x)\n",mem - CHUNK,mem - CHUNK,mem,mem);
+	if(cudaMalloc(&ptr,mem - CHUNK)){
 		cudaError_t err;
 
 		err = cudaGetLastError();
@@ -125,7 +123,7 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	memkernel<<<1,1>>>((typeof(&sum))ptr,(mem & MASK) / sizeof(sum));
+	memkernel<<<1,1>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(sum));
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
