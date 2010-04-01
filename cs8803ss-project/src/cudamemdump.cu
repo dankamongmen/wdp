@@ -57,9 +57,8 @@ id_cuda(int dev,unsigned *mem){
 #define CUDAMAJMIN(v) v / 1000, v % 1000
 
 static int
-init_cuda(unsigned *mem){
-	int attr,count,z;
-	int cerr;
+init_cuda(int *count){
+	int attr,cerr;
 
 	if((cerr = cuInit(0)) != CUDA_SUCCESS){
 		return cerr;
@@ -73,25 +72,19 @@ init_cuda(unsigned *mem){
 		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
 		return -1;
 	}
-	if((cerr = cuDeviceGetCount(&count)) != CUDA_SUCCESS){
+	if((cerr = cuDeviceGetCount(count)) != CUDA_SUCCESS){
 		return cerr;
 	}
-	if(count == 0){
+	if(*count <= 0){
 		fprintf(stderr,"No CUDA devices found, exiting.\n");
 		return -1;
 	}
-	printf("CUDA device count: %d\n",count);
-	for(z = 0 ; z < count ; ++z){
-		printf(" %03d ",z);
-		if( (cerr = id_cuda(z,mem)) ){
-			return cerr;
-		}
-	}
+	printf("CUDA device count: %d\n",*count);
 	return CUDA_SUCCESS;
 }
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
-
+#define CHUNK ((mem >> 2u) - ((mem >> 3u) - (mem >> 4u))) // FIXME kill
 #define BLOCK_SIZE 64 // FIXME bigger would likely be better
 
 __global__ void memkernel(uintmax_t *sum,unsigned b){
@@ -106,22 +99,13 @@ __global__ void memkernel(uintmax_t *sum,unsigned b){
 	sum[threadIdx.x] = psum;
 }
 
-int main(void){
+static int
+dump_cuda(unsigned mem){
 	uintmax_t sums[BLOCK_SIZE],sum = 0;
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
-	unsigned mem;
 	void *ptr;
 
-	if(init_cuda(&mem)){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"Error initializing CUDA (%s?)\n",
-				cudaGetErrorString(err));
-		return EXIT_FAILURE;
-	}
-#define CHUNK ((mem >> 2u) - ((mem >> 3u) - (mem >> 4u)))
 	printf(" Want %ub (0x%x) of %ub (0x%x)\n",mem - CHUNK,mem - CHUNK,mem,mem);
 	if(cudaMalloc(&ptr,mem - CHUNK)){
 		cudaError_t err;
@@ -158,7 +142,37 @@ int main(void){
 		err = cudaGetLastError();
 		fprintf(stderr,"Error dumping CUDA memory (%s?)\n",
 				cudaGetErrorString(err));
+		return -1;
+	}
+	return 0;
+}
+
+int main(void){
+	int z,count;
+
+	if(init_cuda(&count)){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"Error initializing CUDA (%s?)\n",
+				cudaGetErrorString(err));
 		return EXIT_FAILURE;
+	}
+	for(z = 0 ; z < count ; ++z){
+		unsigned mem;
+
+		printf(" %03d ",z);
+		if(id_cuda(z,&mem)){
+			cudaError_t err;
+
+			err = cudaGetLastError();
+			fprintf(stderr,"\nError probing CUDA device %d (%s?)\n",
+					z,cudaGetErrorString(err));
+			return EXIT_FAILURE;
+		}
+		if(dump_cuda(mem)){
+			return EXIT_FAILURE;
+		}
 	}
 	return EXIT_SUCCESS;
 }
