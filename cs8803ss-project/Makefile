@@ -31,6 +31,7 @@ cudamemdump: src/cudamemdump.c $(MAKEFILES)
 	pdflatex $<
 
 test: all
+	./$(BIN)
 	$(VPDF) $(PDF)
 
 clean:
