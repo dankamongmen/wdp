@@ -9,48 +9,49 @@
 static int
 id_cuda(int dev){
 	struct cudaDeviceProp dprop;
-	int major,minor,attr,cerr;
+	int major,minor,attr;
+	int cerr;
 	unsigned mem;
 	CUdevice c;
-	char *str;
+	void *str;
 
 	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
-		return -1;
+		return cerr;
 	}
 	if((cerr = cudaGetDeviceProperties(&dprop,dev)) != CUDA_SUCCESS){
-		return -1;
+		return cerr;
 	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
 	if(cerr != CUDA_SUCCESS || attr <= 0){
-		return -1;
+		return cerr;
 	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,c);
 	if(cerr != CUDA_SUCCESS || attr <= 0){
-		return -1;
+		return cerr;
 	}
 	if((cerr = cuDeviceTotalMem(&mem,c)) != CUDA_SUCCESS){
-		return -1;
+		return cerr;
 	}
 	if((cerr = cuDeviceComputeCapability(&major,&minor,c)) != CUDA_SUCCESS){
-		return -1;
+		return cerr;
 	}
 	if((str = malloc(CUDASTRLEN)) == NULL){
 		return -1;
 	}
-	if((cerr = cuDeviceGetName(str,CUDASTRLEN,c)) != CUDA_SUCCESS){
+	if((cerr = cuDeviceGetName((char *)str,CUDASTRLEN,c)) != CUDA_SUCCESS){
 		free(str);
-		return -1;
+		return cerr;
 	}
 	printf("%d.%d %s %s %uMB %s\n",
 		major,minor,
 		dprop.integrated ? "Integrated" : "Standalone",
-		str,mem / (1024 * 1024),
+		(char *)str,mem / (1024 * 1024),
 		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
 		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "" :
 		"(unknown compute mode)");
 	free(str);
-	return 0;
+	return CUDA_SUCCESS;
 }
 
 #define CUDAMAJMIN(v) v / 1000, v % 1000
@@ -58,7 +59,7 @@ id_cuda(int dev){
 static int
 init_cuda(void){
 	int attr,count,z;
-	CUresult cerr;
+	int cerr;
 
 	if((cerr = cuInit(0)) != CUDA_SUCCESS){
 		/*if(cerr == CUDA_ERROR_NO_DEVICE){
@@ -89,18 +90,21 @@ init_cuda(void){
 			return cerr;
 		}
 	}
-	return 0;
+	return CUDA_SUCCESS;
+}
+
+__global__ void memkernel(void){
 }
 
 int main(void){
-	int err;
+	if(init_cuda()){
+		cudaError_t err;
 
-	if( (err = init_cuda()) ){
-		if(err > 0){
-			fprintf(stderr,"Error initializing CUDA (%s?)\n",
-					cudaGetErrorString(err));
-		}
+		err = cudaGetLastError();
+		fprintf(stderr,"Error initializing CUDA (%s?)\n",
+				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
+	memkernel<<<1,1>>>();
 	return EXIT_SUCCESS;
 }

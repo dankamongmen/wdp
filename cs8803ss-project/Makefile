@@ -15,12 +15,13 @@ CUDAINC:=$(CUDA)/include
 CUDALIB:=$(CUDA)/lib64
 
 CC:=$(CUDA)/bin/nvcc
-CFLAGS:=-O2 --compiler-options -Wall,-W,-march=native,-mtune=native,-Werror,-Wextra -I$(CUDAINC)
+CFLAGS:=-O2 --compiler-options -W,-Werror,-march=native,-mtune=native -I$(CUDAINC)
+CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3
 LFLAGS:=--linker-options -R$(CUDALIB) -L$(CUDALIB) -lcuda -lcudart
 
 all: $(PDF) $(BIN)
 
-cudamemdump: src/cudamemdump.c $(MAKEFILES)
+cudamemdump: src/cudamemdump.cu $(MAKEFILES)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
 
 %.pdf: %.tex %.bib $(TEXOBJS) $(MAKEFILES)
