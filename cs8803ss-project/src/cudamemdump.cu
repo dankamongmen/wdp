@@ -94,6 +94,13 @@ init_cuda(void){
 }
 
 __global__ void memkernel(void){
+	int sum = 0;
+	int i;
+
+	for(i = 0 ; i < 100000000 ; ++i){
+		sum += i;
+		__syncthreads();
+	}
 }
 
 int main(void){
