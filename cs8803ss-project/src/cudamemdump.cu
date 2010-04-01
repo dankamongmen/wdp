@@ -7,10 +7,9 @@
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80
 static int
-id_cuda(int dev){
+id_cuda(int dev,unsigned *mem){
 	struct cudaDeviceProp dprop;
 	int major,minor,attr,cerr;
-	unsigned mem;
 	CUdevice c;
 	void *str;
 
@@ -38,13 +37,13 @@ id_cuda(int dev){
 		free(str);
 		return cerr;
 	}
-	if((cerr = cuDeviceTotalMem(&mem,c)) != CUDA_SUCCESS){
+	if((cerr = cuDeviceTotalMem(mem,c)) != CUDA_SUCCESS){
 		return cerr;
 	}
 	printf("%d.%d %s %s %uMB free %s\n",
 		major,minor,
 		dprop.integrated ? "Integrated" : "Standalone",(char *)str,
-		mem / (1024 * 1024),
+		*mem / (1024 * 1024),
 		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
 		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "" :
@@ -56,7 +55,7 @@ id_cuda(int dev){
 #define CUDAMAJMIN(v) v / 1000, v % 1000
 
 static int
-init_cuda(void){
+init_cuda(unsigned *mem){
 	int attr,count,z;
 	int cerr;
 
@@ -85,29 +84,30 @@ init_cuda(void){
 	printf("CUDA device count: %d\n",count);
 	for(z = 0 ; z < count ; ++z){
 		printf(" %03d ",z);
-		if( (cerr = id_cuda(z)) ){
+		if( (cerr = id_cuda(z,mem)) ){
 			return cerr;
 		}
 	}
 	return CUDA_SUCCESS;
 }
 
-__global__ void memkernel(unsigned long *sum,unsigned long *words){
-	const unsigned long *mem;
-	int i;
+__global__ void memkernel(unsigned long *sum,unsigned long *words,unsigned b){
+	unsigned bp;
 
-	mem = sum;
-	for(i = 0 ; i < 0x20000 ; ++i){
-		*sum += *mem++;
+	*sum = 0;
+	*words = 0;
+	for(bp = 0 ; bp < b ; ++bp){
+		sum[0] += sum[bp - 1];
 		++*words;
 	}
 }
 
 int main(void){
-	unsigned long sum = 0,words = 0;
+	unsigned long sum,words;
+	unsigned mem;
 	void *ptr;
 
-	if(init_cuda()){
+	if(init_cuda(&mem)){
 		cudaError_t err;
 
 		err = cudaGetLastError();
@@ -115,7 +115,8 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	if(cudaMalloc(&ptr,sizeof(sum) * 2)){
+#define MASK 0x00fffffflu
+	if(cudaMalloc(&ptr,mem & MASK)){
 		cudaError_t err;
 
 		err = cudaGetLastError();
@@ -123,15 +124,23 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	cudaMemset(ptr,0,sizeof(sum) * 2);
-	memkernel<<<1,1>>>((typeof(&sum))ptr,(typeof(&sum))ptr + 1);
-	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
-	cudaMemcpy(&words,(typeof(&sum))ptr + 1,sizeof(sum),cudaMemcpyDeviceToHost);
-	printf("sum: %u 0x%x\nwords: %u 0x%x (%u 0x%x bytes)\n",
+	memkernel<<<1,1>>>((typeof(&sum))ptr + 1,(typeof(&sum))ptr,
+			(mem & MASK) / sizeof(sum));
+	if(cudaThreadSynchronize()){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"Error running kernel (%s?)\n",
+				cudaGetErrorString(err));
+		return EXIT_FAILURE;
+	}
+	cudaMemcpy(&sum,(typeof(&sum))ptr + 1,sizeof(sum),cudaMemcpyDeviceToHost);
+	cudaMemcpy(&words,(typeof(&sum))ptr,sizeof(sum),cudaMemcpyDeviceToHost);
+	printf(" sum: %u 0x%x\n words: %u 0x%x (%u 0x%x bytes)\n",
 			sum,sum,words,words,
 			words * sizeof(sum),
 			words * sizeof(sum));
-	if(cudaFree(ptr) || words == 0){
+	if(cudaFree(ptr) || (words != (mem & MASK) / sizeof(sum))){
 		cudaError_t err;
 
 		err = cudaGetLastError();
