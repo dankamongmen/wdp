@@ -92,13 +92,15 @@ init_cuda(unsigned *mem){
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 
 __global__ void memkernel(unsigned long *sum,unsigned b){
+	__shared__ typeof(*sum) psum;
 	unsigned bp;
 
-	*sum = 0;
+	psum = 0;
 	for(bp = 0 ; bp < b ; ++bp){
-		sum[0] += *(unsigned long *)
+		psum += *(unsigned long *)
 			((unsigned long)(sum + bp) % (1lu << ADDRESS_BITS));
 	}
+	*sum = psum;
 }
 
 int main(void){
