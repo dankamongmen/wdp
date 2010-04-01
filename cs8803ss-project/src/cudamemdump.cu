@@ -9,8 +9,7 @@
 static int
 id_cuda(int dev){
 	struct cudaDeviceProp dprop;
-	int major,minor,attr;
-	int cerr;
+	int major,minor,attr,cerr;
 	unsigned mem;
 	CUdevice c;
 	void *str;
@@ -29,9 +28,6 @@ id_cuda(int dev){
 	if(cerr != CUDA_SUCCESS || attr <= 0){
 		return cerr;
 	}
-	if((cerr = cuDeviceTotalMem(&mem,c)) != CUDA_SUCCESS){
-		return cerr;
-	}
 	if((cerr = cuDeviceComputeCapability(&major,&minor,c)) != CUDA_SUCCESS){
 		return cerr;
 	}
@@ -42,10 +38,13 @@ id_cuda(int dev){
 		free(str);
 		return cerr;
 	}
-	printf("%d.%d %s %s %uMB %s\n",
+	if((cerr = cuDeviceTotalMem(&mem,c)) != CUDA_SUCCESS){
+		return cerr;
+	}
+	printf("%d.%d %s %s %uMB free %s\n",
 		major,minor,
-		dprop.integrated ? "Integrated" : "Standalone",
-		(char *)str,mem / (1024 * 1024),
+		dprop.integrated ? "Integrated" : "Standalone",(char *)str,
+		mem / (1024 * 1024),
 		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
 		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "" :
@@ -94,11 +93,11 @@ init_cuda(void){
 }
 
 __global__ void memkernel(unsigned long *sum,unsigned long *words){
-	const unsigned *mem;
+	const unsigned long *mem;
 	int i;
 
-	mem = (unsigned *)sum;
-	for(i = 0 ; i < 0x10000 ; ++i){
+	mem = sum;
+	for(i = 0 ; i < 0x20000 ; ++i){
 		*sum += *mem++;
 		++*words;
 	}
@@ -128,7 +127,10 @@ int main(void){
 	memkernel<<<1,1>>>((typeof(&sum))ptr,(typeof(&sum))ptr + 1);
 	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
 	cudaMemcpy(&words,(typeof(&sum))ptr + 1,sizeof(sum),cudaMemcpyDeviceToHost);
-	printf("sum: %u 0x%x\nwords: %u 0x%x\n",sum,sum,words,words);
+	printf("sum: %u 0x%x\nwords: %u 0x%x (%u 0x%x bytes)\n",
+			sum,sum,words,words,
+			words * sizeof(sum),
+			words * sizeof(sum));
 	if(cudaFree(ptr) || words == 0){
 		cudaError_t err;
 
