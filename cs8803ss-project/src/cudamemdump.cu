@@ -93,17 +93,19 @@ init_cuda(void){
 	return CUDA_SUCCESS;
 }
 
-__global__ void memkernel(void){
-	int sum = 0;
+__global__ void memkernel(int *sum){
 	int i;
 
-	for(i = 0 ; i < 100000000 ; ++i){
-		sum += i;
-		__syncthreads();
+	*sum = 100;
+	for(i = 0 ; i < 100 ; ++i){
+		*sum += i;
 	}
 }
 
 int main(void){
+	void *ptr;
+	int sum;
+
 	if(init_cuda()){
 		cudaError_t err;
 
@@ -112,6 +114,17 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	memkernel<<<1,1>>>();
+	if(cudaMalloc(&ptr,sizeof(sum))){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"Error initializing CUDA (%s?)\n",
+				cudaGetErrorString(err));
+		return EXIT_FAILURE;
+	}
+	memkernel<<<1,1>>>((int *)ptr);
+	cudaMemcpy(&sum,ptr,sizeof(sum),cudaMemcpyDeviceToHost);
+	printf("sum: %d\n",sum);
+	cudaFree(ptr);
 	return EXIT_SUCCESS;
 }
