@@ -121,7 +121,7 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-#define CHUNK (mem >> 2u)
+#define CHUNK ((mem >> 2u) - ((mem >> 3u) - (mem >> 4u)))
 	printf(" Want %ub (0x%x) of %ub (0x%x)\n",mem - CHUNK,mem - CHUNK,mem,mem);
 	if(cudaMalloc(&ptr,mem - CHUNK)){
 		cudaError_t err;
@@ -131,6 +131,7 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
+	printf(" Allocated %u MB at %p\n",(mem - CHUNK) / (1024 * 1024),ptr);
 	gettimeofday(&time0,NULL);
 	memkernel<<<1,dblock>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
 	if(cudaThreadSynchronize()){
