@@ -16,7 +16,8 @@
     \setlength{\partopsep}{0pt}
     \setlength{\leftmargin}{1.5em}
     \setlength{\labelwidth}{1em}
-    \setlength{\labelsep}{0.5em}}}
+    \setlength{\labelsep}{0.5em}
+  } }
 
 \newcommand{\squishend}{\end{list}}
 
@@ -36,7 +37,7 @@ The hundreds of simple in-order cores found on recent NVIDIA and ATI hardware pr
 which they're commonly coupled.
 Devices such as NVIDIA's Tesla\texttrademark{} have already traded video outputs for onboard memory, giving rise to ``desktop
 supercomputing.'' Those who would fully utilize their machines can
-no more ignore heterogeneous processors than multiple cores or SIMD. Leaving
+no more ignore heterogeneous processors than multiple cores or SIMD\@. Leaving
 large matrix multiplications on general-purpose, out-of-order CPUs is about as
 efficient as eschewing hardware multipliers in favor of iterated addition.
 
@@ -67,7 +68,7 @@ We have identified a variety of attack paths on existing GPU platforms from NVID
 
 \section{An overview of CUDA}
 CUDA is accessed via \texttt{open(2)}ing an appropriate device node and
-invoking \texttt{ioctl(2)}\footnote{See Appendix \ref{strace} for sample \texttt{strace(2)}
+invoking \texttt{ioctl(2)}\footnote{See Appendix~\ref{strace} for sample \texttt{strace(2)}
 output.} upon the resulting file descriptor. All accesses to the card and its memory
 originate from the (ring 0) driver; only the \texttt{ioctl(2)} calls themselves
 are executed in userspace. The device node is set 0660 by default;
@@ -82,7 +83,7 @@ and that these file descriptors can (by design or error) be passed via
 
 CUDA devices are either integrated or standalone; integrated hardware typically
 claims a chunk of system RAM, and promptly marks it unprotected. No memory
-protection hardware exists for onboard GDDR. All accesses to video memory go
+protection hardware exists for onboard GDDR\@. All accesses to video memory go
 through the card, unless page-locked memory is comutually mapped. In the
 absence of shared mappings, data must be explicitly copied from video to system
 memory (and vice versa) to be shared among computation devices\cite{cudaguide}.
@@ -102,7 +103,7 @@ between various ``Compute Capabilities''.  CUDA through Capability 1.3 uses
 
 \section{Threat model}
 Well-known threat taxonomies include the ``CIA Triad'' (extended by the
-``Parkerian Hexad\cite{sechandbook}'') and Microsoft's STRIDE. The latter, developed as part of
+``Parkerian Hexad\cite{sechandbook}'') and Microsoft's STRIDE\@. The latter, developed as part of
 Microsoft's Secure Product Lifecycle, is designed for system-centric threat
 modeling and suitable for our purposes. We assume that an attacker has access
 to the NVIDIA device node(s) (by default, \texttt{/dev/nvidiaX}); such privileges
@@ -147,16 +148,16 @@ CUDA kernel? What about textures?
 \item Can a CUDA kernel monopolize resources in the face of competitors?
 \item Can a CUDA kernel prevent another from being controlled, or executing
 data transfers to or from the system?
-\item Can a CUDA kernel deny resources beyond the GPU?
+\item Can a CUDA kernel deny resources beyond the GPU\@?
 \end{itemize}
 \subsection{Escalation of privilege}
 \begin{itemize}
 \item Might the driver be exploited, allowing arbitrary ring 0 code to run?
 \item If it is possible to return doppelg\"anger data, might it be leveraged
 to attack (and hopefully exploit) system-side processes?
-\item Is it possible to arbitrarily (i.e., without exploitation) manipulate
+\item Is it possible to arbitrarily (i.e.\ without exploitation) manipulate
 another CUDA kernel's code? Is it possible to construct a CUDA virus?
-\item Is it possible to arbitrarily (i.e., without exploitation) manipulate a
+\item Is it possible to arbitrarily (i.e.\ without exploitation) manipulate a
 system process's code maps from a CUDA kernel?
 \end{itemize}
 
@@ -198,7 +199,7 @@ access patterns.
 \item Investments in OOO apparatus (reorder buffers,
 frontend reservation stations, register renaming) yield diminishing returns due
 to the profound limitations of instruction level parallelism\cite{phenn}. Like improvements
-to cache, OOO can only hide delays, not find new FLOPS.
+to cache, OOO can only hide delays, not find new FLOPS\@.
 \item Denser chip-multithreading similarly serves only to hide latency.
 \item Larger chips require either pipelined wires or high voltages to operate
 reliably, and place strict requirements on clock-signaling circuity. Efficient
@@ -208,7 +209,7 @@ of the leading three pipeline stages.}.
 \end{itemize}
 We see that FLOPS --- at any price --- can be had only by adding cores or extending
 SIMD order. The former is obviously easier with small, in-order, SISD cores,
-such as the unified shaders of a modern GPU; duplicating a Nehalem core is a
+such as the unified shaders of a modern GPU\@; duplicating a Nehalem core is a
 much more daunting process. As for the latter, note that Intel's ``Sandy
 Bridge'' microarchitecture is expected to add the AVX instruction scheme and
 its 256-bit \texttt{YMM} vector registers\cite{avx}. The data-based decomposition of CUDA's
