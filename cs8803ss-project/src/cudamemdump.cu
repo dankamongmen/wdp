@@ -139,7 +139,9 @@ dump_cuda(unsigned mem){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	dim3 dgrid(1,1,1);
+	int unit = 'M';
 	void *ptr;
+	float bw;
 
 	printf("  Want %ub (0x%x) of %ub (0x%x)\n",mem - CHUNK,mem - CHUNK,mem,mem);
 	if(cudaMalloc(&ptr,mem - CHUNK)){
@@ -170,9 +172,13 @@ dump_cuda(unsigned mem){
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
-	printf("  sum: %u elapsed time: %luus (%.3f MB/s)\n",sum,
-			timer.tv_sec * 1000000 + timer.tv_usec,
-			(float)(mem - CHUNK) / (timer.tv_sec * 1000000 + timer.tv_usec));
+	bw = (float)(mem - CHUNK) / (timer.tv_sec * 1000000 + timer.tv_usec);
+	if(bw > 1000.0f){
+		bw /= 1000.0f;
+		unit = 'G';
+	}
+	printf("  sum: %u elapsed time: %luus (%.3f %cB/s)\n",sum,
+			timer.tv_sec * 1000000 + timer.tv_usec,bw,unit);
 	if(cudaFree(ptr) || cudaThreadSynchronize()){
 		cudaError_t err;
 
