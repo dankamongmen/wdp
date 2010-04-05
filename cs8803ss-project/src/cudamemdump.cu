@@ -101,7 +101,7 @@ init_cuda(int *count){
 }
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
-#define CHUNK (mem >> 2u) // FIXME kill
+#define CHUNK (mem >> 5u) // FIXME kill
 #define BLOCK_SIZE 64 // FIXME bigger would likely be better
 
 __global__ void memkernel(unsigned *sum,unsigned b){
@@ -140,6 +140,9 @@ dump_cuda(unsigned mem){
 	}
 	printf(" Allocated %u MB at %p\n",(mem - CHUNK) / (1024 * 1024),ptr);
 	gettimeofday(&time0,NULL);
+	printf(" memkernel {%u x %u} x {%u x %u x %u} (%p, %zu)\n",
+			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,
+			(typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
 	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
