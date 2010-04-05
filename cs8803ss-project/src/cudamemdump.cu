@@ -104,12 +104,17 @@ init_cuda(int *count){
 #define CHUNK (mem >> 4u) // FIXME kill
 #define BLOCK_SIZE 64 // FIXME bigger would likely be better
 
+__device__ __constant__ unsigned constptr[1];
+
 __global__ void memkernel(unsigned *sum,unsigned b){
 	__shared__ typeof(*sum) psum[BLOCK_SIZE];
 	typeof(sum) ptr;
 	unsigned bp;
 
 	psum[threadIdx.x] = 0;
+	for(ptr = constptr ; ptr < (unsigned *)0x10000u ; ptr += BLOCK_SIZE){
+		psum[threadIdx.x] += ptr[threadIdx.x];
+	}
 	// Accesses below 64k result in immediate termination. I believe this
 	// the result of constant memory (.const state space; see 5.1.3 of the
 	// PTX 2.0 Reference) being mapped there, but global references
