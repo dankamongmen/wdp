@@ -109,6 +109,7 @@ dump_cuda(unsigned mem){
 	unsigned sums[BLOCK_SIZE],sum = 0;
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
+	dim3 dgrid(1,1,1);
 	void *ptr;
 
 	printf(" Want %ub (0x%x) of %ub (0x%x)\n",mem - CHUNK,mem - CHUNK,mem,mem);
@@ -122,7 +123,7 @@ dump_cuda(unsigned mem){
 	}
 	printf(" Allocated %u MB at %p\n",(mem - CHUNK) / (1024 * 1024),ptr);
 	gettimeofday(&time0,NULL);
-	memkernel<<<1,dblock>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
+	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
