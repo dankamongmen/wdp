@@ -8,7 +8,8 @@ PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
-BIN:=cudamemdump
+BIN:=$(addprefix out/,cudamemdump)
+PTX:=$(addsuffix .ptx,$(BIN))
 
 CUDA?=$(HOME)/local/cuda/
 CUDAINC:=$(CUDA)/include
@@ -18,11 +19,18 @@ CC:=$(CUDA)/bin/nvcc
 CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(CUDAINC)
 CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=--linker-options -R$(CUDALIB) -L$(CUDALIB) -lcuda -lcudart
+PTXFLAGS:=--ptx
 
-all: $(PDF) $(BIN)
+all: $(PDF) $(PTX) $(BIN)
 
-cudamemdump: src/cudamemdump.cu $(MAKEFILES)
+out/cudamemdump: src/cudamemdump.cu $(MAKEFILES)
+	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
+
+out/cudamemdump.ptx: src/cudamemdump.cu $(MAKEFILES)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
 
 %.pdf: %.tex %.bib $(TEXOBJS) $(MAKEFILES)
 	pdflatex $<
@@ -37,5 +45,6 @@ test: all
 	./$(BIN)
 
 clean:
-	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.out)
-	rm -f $(BIN) $(PDF)
+	rm -rf out
+	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg)
+	rm -f $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
