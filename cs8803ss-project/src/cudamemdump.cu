@@ -158,11 +158,8 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 	gettimeofday(&time0,NULL);
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %zu (%zub))\n",
 			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,
-			(typeof(&sum))ptr,
-			(s - (uintmax_t)ptr) / sizeof(*sums),
-			(s - (uintmax_t)ptr));
-	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,
-			(s - (uintmax_t)ptr) / sizeof(*sums));
+			(typeof(&sum))ptr,s / sizeof(*sums),s);
+	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,s / sizeof(*sums));
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
