@@ -75,7 +75,7 @@ ability to make use of the GPU therefore depends upon membership in the
 associated ``\texttt{video}'' group. Aside from this filesystem-level access check, no
 isolation or authentication schemes are known to be present in NVIDIA's driver
 or hardware. It ought be noted that failure to set a device file descriptor
-close-on-\texttt{exec(2)} via \texttt{O\_CLOEXEC} or \texttt{FD\_CLOEXEC} will
+close-on-exec via \texttt{O\_CLOEXEC} or \texttt{FD\_CLOEXEC} will
 result in a usable device descriptor being duplicated into child processes,
 and that these file descriptors can (by design or error) be passed via
 \texttt{SCM\_RIGHTS} messages on \texttt{PF\_UNIX} sockets.
@@ -161,6 +161,12 @@ system process's code maps from a CUDA kernel?
 \end{itemize}
 
 \section{Attacking CUDA}
+\subsection{Tools}
+\texttt{strace}\cite{stracecode} was used to track system calls of various CUDA
+binaries. \texttt{nvtrace}, a Valgrind plugin from the Nouveau
+Project\cite{nvtrace}, was used to assist in deciphering the \texttt{ioctl(2)}s
+issued to the NVIDIA proprietary driver. The Linux kernel's MMIOTrace\cite{mmiotrace}
+infrastructure tracked memory-mapped I/O operations at a deep level.
 
 \section{Defending CUDA}
 
