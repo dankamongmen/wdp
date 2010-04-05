@@ -12,8 +12,10 @@ static int
 id_cuda(int dev,unsigned *mem){
 	struct cudaDeviceProp dprop;
 	int major,minor,attr,cerr;
+	void *str = NULL;
+	unsigned tmem;
+	CUcontext ctx;
 	CUdevice c;
-	void *str;
 
 	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
 		return cerr;
@@ -36,22 +38,37 @@ id_cuda(int dev,unsigned *mem){
 		return -1;
 	}
 	if((cerr = cuDeviceGetName((char *)str,CUDASTRLEN,c)) != CUDA_SUCCESS){
-		free(str);
-		return cerr;
+		goto err;
 	}
-	if((cerr = cuDeviceTotalMem(mem,c)) != CUDA_SUCCESS){
-		return cerr;
+	if((cerr = cuCtxCreate(&ctx,0,c)) != CUDA_SUCCESS){
+		goto err;
 	}
-	printf("%d.%d %s %s %uMB free %s\n",
+	if((cerr = cuMemGetInfo(mem,&tmem)) != CUDA_SUCCESS){
+		cuCtxDetach(ctx);
+		goto err;
+	}
+	if(printf("%d.%d %s %s %u/%uMB free %s\n",
 		major,minor,
 		dprop.integrated ? "Integrated" : "Standalone",(char *)str,
-		*mem / (1024 * 1024),
+		*mem / (1024 * 1024) + !!(*mem / (1024 * 1024)),
+		tmem / (1024 * 1024) + !!(tmem / (1024 * 1024)),
 		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
 		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "" :
-		"(unknown compute mode)");
+		"(unknown compute mode)") < 0){
+		cuCtxDetach(ctx);
+		cerr = -1;
+		goto err;
+	}
+	if((cerr = cuCtxDetach(ctx)) != CUDA_SUCCESS){
+		goto err;
+	}
 	free(str);
 	return CUDA_SUCCESS;
+
+err:	// cerr ought already be set!
+	free(str);
+	return cerr;
 }
 
 #define CUDAMAJMIN(v) v / 1000, v % 1000
