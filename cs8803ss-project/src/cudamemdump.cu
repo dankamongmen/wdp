@@ -102,7 +102,7 @@ init_cuda(int *count){
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 #define CHUNK (mem >> 3u) // FIXME kill
-#define BLOCK_SIZE 64 // FIXME bigger would likely be better
+#define BLOCK_SIZE 512 // FIXME bigger would likely be better
 
 __device__ __constant__ unsigned constptr[1];
 
