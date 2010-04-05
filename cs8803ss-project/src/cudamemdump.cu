@@ -143,7 +143,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 	void *ptr;
 	float bw;
 
-	s = mem - 0x1000000;
+	s = mem - 0x4000000;
 	if(cudaMalloc(&ptr,s)){
 		cudaError_t err;
 
@@ -152,12 +152,15 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	printf("  Allocated %u MB at %p\n",s / (1024 * 1024),ptr);
+	printf("  Allocated %u of %u MB at %p\n",
+			s / (1024 * 1024) + !!(s % (1024 * 1024)),
+			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),ptr);
 	gettimeofday(&time0,NULL);
-	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %zu)\n",
+	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %zu (%zub))\n",
 			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,
 			(typeof(&sum))ptr,
-			(s - (uintmax_t)ptr) / sizeof(*sums));
+			(s - (uintmax_t)ptr) / sizeof(*sums),
+			(s - (uintmax_t)ptr));
 	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,
 			(s - (uintmax_t)ptr) / sizeof(*sums));
 	if(cudaThreadSynchronize()){
