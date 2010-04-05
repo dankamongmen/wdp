@@ -1,5 +1,5 @@
 .DELETE_ON_ERROR:
-.PHONY: all preview test clean
+.PHONY: all preview profile test clean
 .DEFAULT_GOAL:=test
 
 VPDF:=evince
@@ -10,6 +10,7 @@ TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
 BIN:=$(addprefix out/,cudamemdump)
 PTX:=$(addsuffix .ptx,$(BIN))
+PROFDATA:=$(addsuffix .prof,$(BIN))
 
 CUDA?=$(HOME)/local/cuda/
 CUDAINC:=$(CUDA)/include
@@ -33,10 +34,19 @@ out/cudamemdump.ptx: src/cudamemdump.cu $(MAKEFILES)
 
 
 %.pdf: %.tex %.bib $(TEXOBJS) $(MAKEFILES)
+	@[ -d $(@D) ] || mkdir -p $(@D)
 	pdflatex $<
 	bibtex $(basename $<)
 	pdflatex $<
 	pdflatex $<
+
+profile: $(PROFDATA)
+
+PROF:=CUDA_PROFILE_LOG=$(shell pwd)/$(PROFDATA) CUDA_PROFILE=1
+$(PROFDATA): test
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	env $(PROF) out/cudamemdump
+	cat $@
 
 preview: test
 	$(VPDF) $(PDF)
