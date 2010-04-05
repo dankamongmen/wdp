@@ -129,7 +129,7 @@ dump_cuda(unsigned mem){
 	dim3 dgrid(1,1,1);
 	void *ptr;
 
-	printf(" Want %ub (0x%x) of %ub (0x%x)\n",mem - CHUNK,mem - CHUNK,mem,mem);
+	printf("  Want %ub (0x%x) of %ub (0x%x)\n",mem - CHUNK,mem - CHUNK,mem,mem);
 	if(cudaMalloc(&ptr,mem - CHUNK)){
 		cudaError_t err;
 
@@ -138,9 +138,9 @@ dump_cuda(unsigned mem){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	printf(" Allocated %u MB at %p\n",(mem - CHUNK) / (1024 * 1024),ptr);
+	printf("  Allocated %u MB at %p\n",(mem - CHUNK) / (1024 * 1024),ptr);
 	gettimeofday(&time0,NULL);
-	printf(" memkernel {%u x %u} x {%u x %u x %u} (%p, %zu)\n",
+	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %zu)\n",
 			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,
 			(typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
 	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,(mem - CHUNK) / sizeof(*sums));
@@ -158,8 +158,7 @@ dump_cuda(unsigned mem){
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
-	printf(" sum: %u\n",sum);
-	printf(" elapsed time: %luus (%.3f MB/s)\n",
+	printf("  sum: %u elapsed time: %luus (%.3f MB/s)\n",sum,
 			timer.tv_sec * 1000000 + timer.tv_usec,
 			(float)(mem - CHUNK) / (timer.tv_sec * 1000000 + timer.tv_usec));
 	if(cudaFree(ptr) || cudaThreadSynchronize()){
