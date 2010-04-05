@@ -205,7 +205,7 @@ SIMD order. The former is obviously easier with small, in-order, SISD cores,
 such as the unified shaders of a modern GPU; duplicating a Nehalem core is a
 much more daunting process. As for the latter, note that Intel's ``Sandy
 Bridge'' microarchitecture is expected to add the AVX instruction scheme and
-its 256-bit \texttt{YMM} vector registers. The data-based decomposition of CUDA's
+its 256-bit \texttt{YMM} vector registers\cite{avx}. The data-based decomposition of CUDA's
 ``SIMT'' model can immediately take advantage of these new cores (given
 sufficiently large problem sets, of course), whereas x86 binaries\footnote{Most of them, anyway.} would
 require dynamic translation or recompilation to take advantage of the new SIMD
