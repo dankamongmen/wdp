@@ -114,26 +114,26 @@ outside the scope of this paper.
 We seek to answer the following questions, for machines with one or more CUDA-capable
 cards:
 \subsection{Spoofing}
-\begin{itemize}
+\squishlist
 \item Is it possible for one CUDA kernel to pre\"empt data copies requested
 from another?
-\end{itemize}
+\squishend
 \subsection{Tampering}
-\begin{itemize}
+\squishlist
 \item Can one CUDA kernel manipulate another's data set?
 \item Is it possible to manipulate the system's video channel from an arbitrary
 CUDA kernel? If so, how might this be further leveraged (for instance, replacing
 a browser padlock icon or disabling system notifications)? What about textures?
 \item Is it possible to construct a debugging environment around other CUDA kernels?
-\end{itemize}
+\squishend
 \subsection{Repudiation}
-\begin{itemize}
+\squishlist
 \item Can a CUDA kernel disassociate itself from the system process which spawned it?
 \item Can a CUDA kernel spawn new CUDA kernels?
 \item What forensic data, if any, is created as a result of CUDA computing?
-\end{itemize}
+\squishend
 \subsection{Information disclosure}
-\begin{itemize}
+\squishlist
 \item Can a CUDA kernel read another kernel's data set? Need they be simultaneously
 scheduled for this to occur?
 \item Is it possible to read another CUDA kernel's code, even if it cannot be
@@ -142,16 +142,16 @@ controlled?
 calls through the CUDA intermediary?
 \item Is it possible to reconstruct the system's video channel from an arbitrary
 CUDA kernel? What about textures?
-\end{itemize}
+\squishend
 \subsection{Denial of service}
-\begin{itemize}
+\squishlist
 \item Can a CUDA kernel monopolize resources in the face of competitors?
 \item Can a CUDA kernel prevent another from being controlled, or executing
 data transfers to or from the system?
 \item Can a CUDA kernel deny resources beyond the GPU\@?
-\end{itemize}
+\squishend
 \subsection{Escalation of privilege}
-\begin{itemize}
+\squishlist
 \item Might the driver be exploited, allowing arbitrary ring 0 code to run?
 \item If it is possible to return doppelg\"anger data, might it be leveraged
 to attack (and hopefully exploit) system-side processes?
@@ -159,15 +159,51 @@ to attack (and hopefully exploit) system-side processes?
 another CUDA kernel's code? Is it possible to construct a CUDA virus?
 \item Is it possible to arbitrarily (i.e.\ without exploitation) manipulate a
 system process's code maps from a CUDA kernel?
-\end{itemize}
+\squishend
 
 \section{Attacking CUDA}
+\subsection{Methodology}
+It is first necessary to develop a model of memory protection, multiple user
+contexts, and memory layout in CUDA. Few details have been made public
+regarding these topics; what public knowledge exists takes the form of
+scattered fora posts, Wikis, and mailing lists. Foremost among these is memory
+protection; a trusted multiprocess computing base cannot be constructed in its
+absence. Memory protection for host accesses of the GPU could be implemented at
+three levels, each more effective than the last:
+\squishlist
+\item the proprietary CUDA and OpenGL libaries,
+\item the proprietary \texttt{nvidia.ko} kernel driver, and
+\item on the hardware itself.
+\squishend
+Userspace protection can likely be thwarted by userspace code, whereas
+protection implemented within the kernel module ought be secure against
+all but ring 0 operations (recall that our threat model does not assume access
+to ring 0). It is unlikely that protection on the card itself can be generally
+circumvented. Furthermore, this is the only place to protect memory from CUDA
+kernels.
+
+We implemented the \texttt{cudadump} and
+\texttt{cudascorch} tools (see below)%fixme use ref%
+to explore memory protection.
+
 \subsection{Tools}
-\texttt{strace}\cite{stracecode} was used to track system calls of various CUDA
-binaries. \texttt{nvtrace}, a Valgrind plugin from the Nouveau
-Project\cite{nvtrace}, was used to assist in deciphering the \texttt{ioctl(2)}s
-issued to the NVIDIA proprietary driver. The Linux kernel's MMIOTrace\cite{mmiotrace}
-infrastructure tracked memory-mapped I/O operations at a deep level.
+We developed
+\squishlist
+\item \texttt{cudadump} to read raw address ranges, generating as output a
+bitmap of valid and invalid accesses, and an optional disk image.
+\item \texttt{cudascorch} to write raw address ranges, generating as output a
+bitmap of valid and invalid accesses.
+\squishend
+We made use of
+\squishlist
+\item \texttt{strace}\cite{stracecode} to track system calls,
+\item \texttt{nv50dis}\cite{nv50dis} to disassemble nv50 binaries.
+\item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl(2)}s
+issued to the NVIDIA proprietary driver, and
+\item The Linux kernel's MMIOTrace\cite{mmiotrace}
+infrastructure to track memory-mapped I/O operations.
+\squishend
+
 
 \section{Defending CUDA}
 
