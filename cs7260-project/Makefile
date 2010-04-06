@@ -1,10 +1,11 @@
 .DELETE_ON_ERROR:
 .PHONY: all preview profile test clean
-.DEFAULT_GOAL:=test
+# FIXME switch to test once we have binaries
+.DEFAULT_GOAL:=preview
 
 VPDF:=evince
 
-PRO:=cs7260project
+PRO:=cs7260final
 TEX:=$(PRO).tex
 PDF:=$(PRO).pdf
 TEXOBJS:=$(wildcard texobjs/*)
@@ -25,7 +26,7 @@ preview: test
 	$(VPDF) $(PDF)
 
 test: all
-	./$(BIN)
+	# FIXME no binaries yet
 
 clean:
 	rm -rf out
