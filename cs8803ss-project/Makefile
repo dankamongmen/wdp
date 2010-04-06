@@ -8,7 +8,7 @@ PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
-BIN:=$(addprefix out/,cudamemdump)
+BIN:=$(addprefix out/,cudadump)
 PTX:=$(addsuffix .ptx,$(BIN))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
@@ -24,11 +24,11 @@ PTXFLAGS:=--ptx
 
 all: $(PDF) $(PTX) $(BIN)
 
-out/cudamemdump: src/cudamemdump.cu $(MAKEFILES)
+out/cudadump: src/cudadump.cu $(MAKEFILES)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudamemdump.ptx: src/cudamemdump.cu $(MAKEFILES)
+out/cudadump.ptx: src/cudadump.cu $(MAKEFILES)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
@@ -45,7 +45,7 @@ profile: $(PROFDATA)
 PROF:=CUDA_PROFILE_LOG=$(shell pwd)/$(PROFDATA) CUDA_PROFILE=1
 $(PROFDATA): test
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	env $(PROF) out/cudamemdump
+	env $(PROF) out/cudadump
 	cat $@
 
 preview: all
