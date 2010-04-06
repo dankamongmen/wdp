@@ -161,10 +161,9 @@ another CUDA kernel's code? Is it possible to construct a CUDA virus?
 system process's code maps from a CUDA kernel?
 \squishend
 
-\section{Attacking CUDA}
-\subsection{Methodology}
+\section{Methodology}
 It is first necessary to develop a model of memory protection, multiple user
-contexts, and memory layout in CUDA\cite{ptxguide}. Few details have been made public
+contexts, and memory layout in CUDA. Few details have been made public
 regarding these topics; what public knowledge exists takes the form of
 scattered fora posts, Wikis\cite{nouveaucuda}, and mailing lists. Foremost among these is memory
 protection; a trusted multiprocess computing base cannot be constructed in its
@@ -204,7 +203,24 @@ issued to the NVIDIA proprietary driver, and
 infrastructure to track memory-mapped I/O operations.
 \squishend
 
+\section{Attacking CUDA}
+Some addressing details are definitively declared in the PTX Reference\cite{ptxguide}.
+Through Compute Capability 1.3, load and store instructions require a "state space"
+modifier in addition to an address. General-purpose registers (\texttt{r0}--\texttt{r127}) are
+indexed via a 7-bit immediate. Global memory, accessed via one of 16 linear ranges
+of up to 4GB each (\texttt{g0}--\texttt{g15}), is addressed via the
+contents of a 32-bit general purpose register. Other state spaces are addressed
+via the sum of an address register (\texttt{a0}--\texttt{a7}) and an immediate
+offset. Constant memory is referenced through one of 16 linear ranges of up to
+64KB each (\texttt{c0}--\texttt{c15}), as is a block-shared region of up to 16KB
+(\texttt{s}). The per-thread local memory (\texttt{l}), an abstraction atop the
+global memory, performs address translation based on the block and thread indices.
+Platforms such as the Tesla\textsuperscript{\texttrademark} provide the full 
+4GB of memory accessible via these 32 bits.
 
+Compute Capability 2.0 unifies addressing, but provides backwards-compatibility.
+Virtual addresses are extended to 64 bits, with 40 physical bits currently
+supported for up to 1TB of RAM.
 \section{Defending CUDA}
 
 \section{Conclusions} 
