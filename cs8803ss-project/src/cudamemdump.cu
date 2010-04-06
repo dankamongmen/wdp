@@ -148,8 +148,8 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"Error initializing CUDA (%s?)\n",
-				cudaGetErrorString(err));
+		fprintf(stderr,"  Error allocating %zub (%s?)\n",
+				s,cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
 	printf("  Allocated %u of %u MB at %p\n",
@@ -164,7 +164,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"Error running kernel (%s?)\n",
+		fprintf(stderr,"  Error running kernel (%s?)\n",
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
@@ -185,7 +185,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"Error dumping CUDA memory (%s?)\n",
+		fprintf(stderr,"  Error dumping CUDA memory (%s?)\n",
 				cudaGetErrorString(err));
 		return -1;
 	}
