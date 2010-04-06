@@ -48,7 +48,7 @@ $(PROFDATA): test
 	env $(PROF) out/cudamemdump
 	cat $@
 
-preview: test
+preview: all
 	$(VPDF) $(PDF)
 
 test: all
