@@ -166,6 +166,38 @@ create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
 #undef UNIT
 }
 
+static uintmax_t
+cuda_alloc_max(uintmax_t tmax,void **ptr){
+	uintmax_t min = 0,s;
+
+	while( (s = tmax - (((tmax - min) / 2) & (~(uintmax_t)0u << 2u))) ){
+		if(cudaMalloc(ptr,s)){
+			cudaError_t err;
+
+			err = cudaGetLastError();
+			printf("  Allocation limit %jub (%s?)\n",
+					s,cudaGetErrorString(err));
+			if((tmax = s) <= min + 4){
+				tmax = min;
+			}
+		}else if(s != tmax){
+			if(cudaFree(*ptr)){
+				cudaError_t err;
+
+				err = cudaGetLastError();
+				fprintf(stderr,"  Couldn't free %jub (%s?)\n",
+						s,cudaGetErrorString(err));
+				return 0;
+			}
+			min = s;
+		}else{
+			return s;
+		}
+	}
+	fprintf(stderr,"  All allocations failed.\n");
+	return 0;
+}
+
 static int
 dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	struct timeval time0,time1,timer;
@@ -177,13 +209,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	uintmax_t s;
 	float bw;
 
-	s = mem - 0x8000000;
-	if(cudaMalloc(&ptr,s)){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"  Error allocating %jub (%s?)\n",
-				s,cudaGetErrorString(err));
+	if((s = cuda_alloc_max(tmem,&ptr)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p\n",
