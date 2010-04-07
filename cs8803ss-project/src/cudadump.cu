@@ -170,17 +170,15 @@ static uintmax_t
 cuda_alloc_max(uintmax_t tmax,void **ptr){
 	uintmax_t min = 0,s;
 
-	while( (s = tmax - (((tmax - min) / 2) & (~(uintmax_t)0u << 2u))) ){
+	printf("  Determining max allocation...");
+	while( (s = ((tmax + min) / 2) & (~(uintmax_t)0u << 2u)) ){
+		fflush(stdout);
 		if(cudaMalloc(ptr,s)){
-			cudaError_t err;
-
-			err = cudaGetLastError();
-			printf("  Allocation limit %jub (%s?)\n",
-					s,cudaGetErrorString(err));
+			printf("%jub...",s);
 			if((tmax = s) <= min + 4){
 				tmax = min;
 			}
-		}else if(s != tmax){
+		}else if(s != tmax && s != min){
 			if(cudaFree(*ptr)){
 				cudaError_t err;
 
@@ -191,6 +189,7 @@ cuda_alloc_max(uintmax_t tmax,void **ptr){
 			}
 			min = s;
 		}else{
+			printf("%jub!\n",s);
 			return s;
 		}
 	}
