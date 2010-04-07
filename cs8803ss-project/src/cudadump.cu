@@ -131,17 +131,16 @@ __global__ void memkernel(uintptr_t aptr,unsigned b){
 }
 
 // Takes in start and end of memory area to be scanned, and fd. Returns the
-// number of 32-bit words in this region, or 0 on error. mstart and mend must
-// be 4-byte aligned, and mstart must be less than mend. Requires sufficient
-// virtual memory to allocate the bitmap, and sufficient disk space for the
-// backing file (FIXME actually, we currently use a hole, so not quite...).
+// number of |unit|-byte words in this region, or 0 on error. mstart and mend
+// must be |unit|-byte aligned, and mstart must be less than mend. Requires
+// sufficient virtual memory to allocate the bitmap, and sufficient disk space
+// for the backing file (FIXME we currently use a hole, so not quite...).
 static uintmax_t
-create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
-#define UNIT 4
+create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap,unsigned unit){
 	int mflags;
 	size_t s;
 
-	if(mstart % UNIT || mend % UNIT || mstart >= mend || fd < 0){
+	if(!unit || mstart % unit || mend % unit || mstart >= mend || fd < 0){
 		errno = EINVAL;
 		return 0;
 	}
@@ -149,7 +148,7 @@ create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
 #ifdef MAP_HUGETLB
 	mflags |= MAP_HUGETLB;
 #endif
-	s = (mend - mstart) / UNIT / CHAR_BIT;
+	s = (mend - mstart) / unit / CHAR_BIT;
 	*bmap = mmap(NULL,s,PROT_READ|PROT_WRITE,mflags,fd,0);
 	if(*bmap == MAP_FAILED){
 		return 0;
@@ -159,11 +158,10 @@ create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
 		return 0;
 	}
 	return s * CHAR_BIT;
-#undef UNIT
 }
 
 static uintmax_t
-cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr){
+cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 	uintmax_t min = 0,s;
 
 	printf("  Determining max allocation...");
@@ -171,12 +169,13 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr){
 		fflush(stdout);
 
 		if(cuMemAlloc(ptr,s)){
-			if((tmax = s) <= min + 4){
+			if((tmax = s) <= min + unit){
 				tmax = min;
 			}
 		}else if(s != tmax && s != min){
 			printf("%jub...",s);
-			cuMemsetD32(*ptr,0x42069420,s / 4);
+			// Arbitrary canary constant
+			cuMemsetD32(*ptr,0x42069420,s / unit);
 			if(cuMemFree(*ptr)){
 				cudaError_t err;
 
@@ -196,25 +195,25 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr){
 }
 
 static int
-dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
+dump_cuda(uintmax_t mem,uintmax_t tmem,int fd,unsigned unit){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	uintmax_t words,usec;
 	dim3 dgrid(1,1,1);
 	CUdeviceptr ptr;
-	int unit = 'M';
+	int punit = 'M';
 	uintmax_t s;
 	void *map;
 	float bw;
 
-	if((s = cuda_alloc_max(tmem,&ptr)) == 0){
+	if((s = cuda_alloc_max(tmem,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),ptr);
 	// FIXME need to set fd, free up bitmap (especially on error paths!)
-	if((words = create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map)) == 0){
+	if((words = create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit)) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
 				strerror(errno));
 		return -1;
@@ -222,7 +221,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %ju (%jub))\n",
 			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,ptr,words,s);
 	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>((uintptr_t)ptr,words - (uintptr_t)ptr / 4);
+	memkernel<<<dgrid,dblock>>>((uintptr_t)ptr,words - (uintptr_t)ptr / unit);
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
@@ -237,10 +236,10 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	bw = (float)s / usec;
 	if(bw > 1000.0f){
 		bw /= 1000.0f;
-		unit = 'G';
+		punit = 'G';
 	}
 	printf("  elapsed time: %ju.%jus (%.3f %cB/s)\n",
-			usec / 1000000,usec % 1000000,bw,unit);
+			usec / 1000000,usec % 1000000,bw,punit);
 	if(cuMemFree(ptr) || cuCtxSynchronize()){
 		cudaError_t err;
 
@@ -253,6 +252,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 }
 
 int main(void){
+	unsigned unit = 4;
 	int z,count;
 
 	if(init_cuda(&count)){
@@ -283,7 +283,7 @@ int main(void){
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
 		}
-		if(dump_cuda(mem,tmem,fd)){
+		if(dump_cuda(mem,tmem,fd,unit)){
 			close(fd);
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
