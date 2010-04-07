@@ -22,13 +22,19 @@ CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=--linker-options -R$(CUDALIB) -L$(CUDALIB) -lcuda -lcudart
 PTXFLAGS:=--ptx
 
+TAGS:=.tags
+
 all: $(PDF) $(PTX) $(BIN)
 
-out/cudadump: src/cudadump.cu $(MAKEFILES)
+$(TAGS): src/cudadump.cu
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	ctags --langmap=c:.c.cu -f $@ $^
+
+out/cudadump: src/cudadump.cu $(MAKEFILES) $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudadump.ptx: src/cudadump.cu $(MAKEFILES)
+out/cudadump.ptx: src/cudadump.cu $(MAKEFILES) $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
@@ -55,6 +61,6 @@ test: all
 	./$(BIN)
 
 clean:
-	rm -rf out
+	rm -rf out $(TAGS)
 	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg)
 	rm -f $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
