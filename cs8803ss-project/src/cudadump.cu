@@ -197,7 +197,7 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 }
 
 static int
-divide_address_space(uintmax_t off,uintmax_t s,unsigned unit){
+divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	dim3 dgrid(1,1,1);
@@ -205,24 +205,24 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit){
 	int punit = 'M';
 	float bw;
 
-	if(s < unit){
-		fprintf(stderr,"  Granularity violation: %ju < %u\n",s,unit);
-		return -1;
+	if(s < gran){
+		// fprintf(stderr,"  Granularity violation: %ju < %u\n",s,unit);
+		return 0;
 	}
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (%jx, %jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
-	if(cudaThreadSynchronize()){
+	if(cuCtxSynchronize()){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"  Error running kernel (%s?)\n",
-				cudaGetErrorString(err));
-		if(divide_address_space(off,s / 2,unit)){
+		/*fprintf(stderr,"  Error running kernel (%s?)\n",
+				cudaGetErrorString(err));*/
+		if(divide_address_space(off,s / 2,unit,gran)){
 			return -1;
 		}
-		if(divide_address_space(off + s / 2,s / 2,unit)){
+		if(divide_address_space(off + s / 2,s / 2,unit,gran)){
 			return -1;
 		}
 		return 0;
@@ -262,7 +262,6 @@ check_const_ram(const unsigned *max){
 
 static int
 dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
-	uintmax_t words;
 	CUdeviceptr ptr;
 	uintmax_t s;
 	void *map;
@@ -277,12 +276,12 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 		return -1;
 	}
 	// FIXME need to set fd, free up bitmap (especially on error paths!)
-	if((words = create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit)) == 0){
+	if(create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
 				strerror(errno));
 		return -1;
 	}
-	if(divide_address_space((uintmax_t)ptr,s,unit)){
+	if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
 		return -1;
 	}
 	if(cuMemFree(ptr) || cuCtxSynchronize()){
