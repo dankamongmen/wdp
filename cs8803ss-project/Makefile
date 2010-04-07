@@ -12,7 +12,7 @@ BIN:=$(addprefix out/,cudamemdump)
 PTX:=$(addsuffix .ptx,$(BIN))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
-CUDA?=$(HOME)/local/cuda/
+CUDA?=/usr/local/cuda
 CUDAINC:=$(CUDA)/include
 CUDALIB:=$(CUDA)/lib64
 
