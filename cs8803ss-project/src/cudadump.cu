@@ -110,31 +110,25 @@ __global__ void constkernel(const unsigned *constmax){
 	unsigned *ptr;
 
 	psum[threadIdx.x] = 0;
+	// Accesses below 64k result in immediate termination, due to use of
+	// the .global state space (2.0 provides unified addressing, which can
+	// overcome this). That area's reserved for constant memory (.const
+	// state space; see 5.1.3 of the PTX 2.0 Reference), from what I see.
 	for(ptr = constptr ; ptr < constmax ; ptr += BLOCK_SIZE){
 		psum[threadIdx.x] += ptr[threadIdx.x];
 	}
 }
 
-__global__ void memkernel(uintptr_t aptr,unsigned b){
+__global__ void
+memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	__shared__ unsigned psum[BLOCK_SIZE];
-	unsigned *ptr;
-	unsigned bp;
 
 	psum[threadIdx.x] = 0;
-	// Accesses below 64k result in immediate termination, due to use of
-	// the .global state space (2.0 provides unified addressing, which can
-	// overcome this). That area's reserved for constant memory (.const
-	// state space; see 5.1.3 of the PTX 2.0 Reference), from what I see.
-	for(ptr = (unsigned *)CONSTWIN ; ptr < (unsigned *)aptr ; ptr += BLOCK_SIZE){
-		psum[threadIdx.x] += ptr[threadIdx.x];
-	}
-	// We've checksummed from 64k through the provided pointer. Now,
-	// checksum the allocated area -- |b| words, rounded up to the nearest
-	// multiple of the block size.
-	for(bp = 0 ; bp < b ; bp += BLOCK_SIZE){
+	while(aptr + threadIdx.x * unit < bptr){
 		psum[threadIdx.x] += *(unsigned *)
-			((uintmax_t)(aptr + 4 * bp + threadIdx.x)
-			 % (1lu << ADDRESS_BITS));
+			((uintmax_t)(aptr + unit * threadIdx.x)
+				% (1lu << ADDRESS_BITS));
+		aptr += BLOCK_SIZE * unit;
 	}
 }
 
@@ -203,7 +197,7 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 }
 
 static int
-divide_address_space(uintmax_t words,uintmax_t off,uintmax_t s,unsigned unit){
+divide_address_space(uintmax_t off,uintmax_t s,unsigned unit){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	dim3 dgrid(1,1,1);
@@ -211,10 +205,10 @@ divide_address_space(uintmax_t words,uintmax_t off,uintmax_t s,unsigned unit){
 	int punit = 'M';
 	float bw;
 
-	printf("  memkernel {%u x %u} x {%u x %u x %u} (%jx, %ju (%jub))\n",
-		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,words,s);
+	printf("  memkernel {%u x %u} x {%u x %u x %u} (%jx, %jx (%jub), %u)\n",
+		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
 	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>(off,words - off / unit);
+	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
@@ -263,22 +257,22 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	uintmax_t s;
 	void *map;
 
-	if(check_const_ram(CONSTWIN)){
-		return -1;
-	}
 	if((s = cuda_alloc_max(tmem,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),ptr);
+	if(check_const_ram(CONSTWIN)){
+		return -1;
+	}
 	// FIXME need to set fd, free up bitmap (especially on error paths!)
 	if((words = create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit)) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
 				strerror(errno));
 		return -1;
 	}
-	if(divide_address_space(words,(uintmax_t)ptr,s,unit)){
+	if(divide_address_space((uintmax_t)ptr,s,unit)){
 		return -1;
 	}
 	if(cuMemFree(ptr) || cuCtxSynchronize()){
