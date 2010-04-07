@@ -171,11 +171,11 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr){
 		fflush(stdout);
 
 		if(cuMemAlloc(ptr,s)){
-			printf("%jub...",s);
 			if((tmax = s) <= min + 4){
 				tmax = min;
 			}
 		}else if(s != tmax && s != min){
+			printf("%jub...",s);
 			if(cuMemFree(*ptr)){
 				cudaError_t err;
 
