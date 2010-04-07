@@ -176,6 +176,7 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr){
 			}
 		}else if(s != tmax && s != min){
 			printf("%jub...",s);
+			cuMemsetD32(*ptr,0x42069420,s / 4);
 			if(cuMemFree(*ptr)){
 				cudaError_t err;
 

@@ -19,7 +19,7 @@ CUDALIB:=$(CUDA)/lib64
 CC:=$(CUDA)/bin/nvcc
 CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(CUDAINC)
 CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
-LFLAGS:=--linker-options -R$(CUDALIB) -L$(CUDALIB) -lcuda
+LFLAGS:=-lcuda --linker-options -R$(CUDALIB)
 PTXFLAGS:=--ptx
 
 TAGS:=.tags
