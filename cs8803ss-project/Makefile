@@ -61,6 +61,6 @@ test: all
 	./$(BIN)
 
 clean:
-	rm -rf out $(TAGS)
+	rm -rf out $(TAGS) $(wildcard *.dump)
 	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg)
 	rm -f $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
