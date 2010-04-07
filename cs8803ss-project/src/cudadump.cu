@@ -205,6 +205,10 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit){
 	int punit = 'M';
 	float bw;
 
+	if(s < unit){
+		fprintf(stderr,"  Granularity violation: %ju < %u\n",s,unit);
+		return -1;
+	}
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (%jx, %jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
 	gettimeofday(&time0,NULL);
@@ -215,7 +219,13 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit){
 		err = cudaGetLastError();
 		fprintf(stderr,"  Error running kernel (%s?)\n",
 				cudaGetErrorString(err));
-		return -1;
+		if(divide_address_space(off,s / 2,unit)){
+			return -1;
+		}
+		if(divide_address_space(off + s / 2,s / 2,unit)){
+			return -1;
+		}
+		return 0;
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
