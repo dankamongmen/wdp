@@ -240,7 +240,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	}
 	printf("  elapsed time: %ju.%jus (%.3f %cB/s)\n",
 			usec / 1000000,usec % 1000000,bw,unit);
-	if(cuMemFree(ptr) || cudaThreadSynchronize()){
+	if(cuMemFree(ptr) || cuCtxSynchronize()){
 		cudaError_t err;
 
 		err = cudaGetLastError();
