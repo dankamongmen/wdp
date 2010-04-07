@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/time.h>
+#include <sys/mman.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
 
@@ -130,6 +131,28 @@ __global__ void memkernel(unsigned *sum,unsigned b){
 			 % (1lu << ADDRESS_BITS));
 	}
 	sum[threadIdx.x] = psum[threadIdx.x];
+}
+
+// Takes in start and end of memory area to be scanned, and fd. Returns the
+// number of 32-bit words in this region, or 0 on error. mstart and mend must
+// be 4-byte aligned, and mstart must be less than mend. Requires sufficient
+// virtual memory to allocate the bitmap, and sufficient disk space for the
+// backing file (FIXME actually, we currently use a hole, so not quite...).
+static uintmax_t
+create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
+#define UNIT 4
+	int mflags;
+
+	if(mstart % UNIT || mend % UNIT || mstart >= mend || fd < 0){
+		return 0;
+	}
+	mflags = MAP_SHARED;
+#ifdef MAP_HUGETLB
+	mflags |= MAP_HUGETLB;
+#endif
+	*bmap = mmap(NULL,mend - mstart / UNIT / CHAR_BIT,
+			PROT_READ|PROT_WRITE,mflags,fd,0);
+#undef UNIT
 }
 
 static int
