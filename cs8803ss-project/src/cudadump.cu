@@ -252,7 +252,7 @@ int main(void){
 					z,cudaGetErrorString(err));
 			return EXIT_FAILURE;
 		}
-		if((fd = open("cudamemory",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
+		if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
 			fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}

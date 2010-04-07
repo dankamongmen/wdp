@@ -1,7 +1,9 @@
 *.aux
 *.bbl
 *.blg
+*.dump
 *.log
 *.out
 *.pdf
-cudamemdump
+.tags
+out
