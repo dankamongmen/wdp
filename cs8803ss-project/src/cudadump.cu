@@ -195,7 +195,7 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 }
 
 static int
-dump_cuda(uintmax_t mem,uintmax_t tmem,int fd,unsigned unit){
+dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	uintmax_t words,usec;
@@ -252,7 +252,8 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd,unsigned unit){
 }
 
 int main(void){
-	unsigned unit = 4;
+	unsigned gran = 64 * 1024;	// Granularity of report / verification
+	unsigned unit = 4;		// Minimum alignment of references
 	int z,count;
 
 	if(init_cuda(&count)){
@@ -283,7 +284,7 @@ int main(void){
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
 		}
-		if(dump_cuda(mem,tmem,fd,unit)){
+		if(dump_cuda(tmem,fd,unit,gran)){
 			close(fd);
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
