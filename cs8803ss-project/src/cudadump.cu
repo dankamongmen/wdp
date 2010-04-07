@@ -13,11 +13,10 @@
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80
 static int
-id_cuda(int dev,unsigned *mem,unsigned *tmem){
+id_cuda(int dev,unsigned *mem,unsigned *tmem,CUcontext *ctx){
 	struct cudaDeviceProp dprop;
 	int major,minor,attr,cerr;
 	void *str = NULL;
-	CUcontext ctx;
 	CUdevice c;
 
 	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
@@ -43,11 +42,11 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem){
 	if((cerr = cuDeviceGetName((char *)str,CUDASTRLEN,c)) != CUDA_SUCCESS){
 		goto err;
 	}
-	if((cerr = cuCtxCreate(&ctx,0,c)) != CUDA_SUCCESS){
+	if((cerr = cuCtxCreate(ctx,0,c)) != CUDA_SUCCESS){
 		goto err;
 	}
 	if((cerr = cuMemGetInfo(mem,tmem)) != CUDA_SUCCESS){
-		cuCtxDetach(ctx);
+		cuCtxDetach(*ctx);
 		goto err;
 	}
 	if(printf("%d.%d %s %s %u/%uMB free %s\n",
@@ -59,11 +58,8 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem){
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
 		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "" :
 		"(unknown compute mode)") < 0){
-		cuCtxDetach(ctx);
+		cuCtxDetach(*ctx);
 		cerr = -1;
-		goto err;
-	}
-	if((cerr = cuCtxDetach(ctx)) != CUDA_SUCCESS){
 		goto err;
 	}
 	free(str);
@@ -167,19 +163,20 @@ create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
 }
 
 static uintmax_t
-cuda_alloc_max(uintmax_t tmax,void **ptr){
+cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr){
 	uintmax_t min = 0,s;
 
 	printf("  Determining max allocation...");
 	while( (s = ((tmax + min) / 2) & (~(uintmax_t)0u << 2u)) ){
 		fflush(stdout);
-		if(cudaMalloc(ptr,s)){
+
+		if(cuMemAlloc(ptr,s)){
 			printf("%jub...",s);
 			if((tmax = s) <= min + 4){
 				tmax = min;
 			}
 		}else if(s != tmax && s != min){
-			if(cudaFree(*ptr)){
+			if(cuMemFree(*ptr)){
 				cudaError_t err;
 
 				err = cudaGetLastError();
@@ -203,9 +200,10 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	dim3 dblock(BLOCK_SIZE,1,1);
 	uintmax_t words,usec;
 	dim3 dgrid(1,1,1);
-	void *ptr,*map;
+	CUdeviceptr ptr;
 	int unit = 'M';
 	uintmax_t s;
+	void *map;
 	float bw;
 
 	if((s = cuda_alloc_max(tmem,&ptr)) == 0){
@@ -242,7 +240,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	}
 	printf("  elapsed time: %ju.%jus (%.3f %cB/s)\n",
 			usec / 1000000,usec % 1000000,bw,unit);
-	if(cudaFree(ptr) || cudaThreadSynchronize()){
+	if(cuMemFree(ptr) || cudaThreadSynchronize()){
 		cudaError_t err;
 
 		err = cudaGetLastError();
@@ -266,10 +264,12 @@ int main(void){
 	}
 	for(z = 0 ; z < count ; ++z){
 		unsigned mem,tmem;
+		CUresult cerr;
+		CUcontext ctx;
 		int fd;
 
 		printf(" %03d ",z);
-		if(id_cuda(z,&mem,&tmem)){
+		if(id_cuda(z,&mem,&tmem,&ctx)){
 			cudaError_t err;
 
 			err = cudaGetLastError();
@@ -279,14 +279,21 @@ int main(void){
 		}
 		if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
 			fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
+			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
 		}
 		if(dump_cuda(mem,tmem,fd)){
 			close(fd);
+			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
 		}
 		if(close(fd)){
 			fprintf(stderr,"\nError closing bitmap (%s?)\n",strerror(errno));
+			cuCtxDetach(ctx);
+			return EXIT_FAILURE;
+		}
+		if((cerr = cuCtxDetach(ctx)) != CUDA_SUCCESS){
+			fprintf(stderr,"\nError detaching context (%d?)\n",cerr);
 			return EXIT_FAILURE;
 		}
 	}
