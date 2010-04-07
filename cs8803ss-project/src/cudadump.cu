@@ -1,4 +1,5 @@
 #include <cuda.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -168,14 +169,14 @@ create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
 }
 
 static int
-dump_cuda(uintmax_t mem,uintmax_t tmem){
+dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	unsigned sums[BLOCK_SIZE],sum = 0;
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
-	int unit = 'M',fd = -1;
+	uintmax_t words,usec;
 	dim3 dgrid(1,1,1);
-	uintmax_t words;
 	void *ptr,*map;
+	int unit = 'M';
 	uintmax_t s;
 	float bw;
 
@@ -218,13 +219,14 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
-	bw = (float)s / (timer.tv_sec * 1000000 + timer.tv_usec);
+	usec = (timer.tv_sec * 1000000 + timer.tv_usec);
+	bw = (float)s / usec;
 	if(bw > 1000.0f){
 		bw /= 1000.0f;
 		unit = 'G';
 	}
-	printf("  sum: %u elapsed time: %luus (%.3f %cB/s)\n",sum,
-			timer.tv_sec * 1000000 + timer.tv_usec,bw,unit);
+	printf("  sum: %u elapsed time: %ju.%jus (%.3f %cB/s)\n",sum,
+			usec / 1000000,usec % 1000000,bw,unit);
 	if(cudaFree(ptr) || cudaThreadSynchronize()){
 		cudaError_t err;
 
@@ -249,6 +251,7 @@ int main(void){
 	}
 	for(z = 0 ; z < count ; ++z){
 		unsigned mem,tmem;
+		int fd;
 
 		printf(" %03d ",z);
 		if(id_cuda(z,&mem,&tmem)){
@@ -259,7 +262,16 @@ int main(void){
 					z,cudaGetErrorString(err));
 			return EXIT_FAILURE;
 		}
-		if(dump_cuda(mem,tmem)){
+		if((fd = open("cudamemory",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
+			fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
+			return EXIT_FAILURE;
+		}
+		if(dump_cuda(mem,tmem,fd)){
+			close(fd);
+			return EXIT_FAILURE;
+		}
+		if(close(fd)){
+			fprintf(stderr,"\nError closing bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}
 	}
