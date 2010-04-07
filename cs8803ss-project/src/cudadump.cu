@@ -195,7 +195,7 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 }
 
 static int
-divide_address_space(uintmax_t words,CUdeviceptr ptr,uintmax_t s,unsigned unit){
+divide_address_space(uintmax_t words,uintmax_t off,uintmax_t s,unsigned unit){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	dim3 dgrid(1,1,1);
@@ -203,10 +203,10 @@ divide_address_space(uintmax_t words,CUdeviceptr ptr,uintmax_t s,unsigned unit){
 	int punit = 'M';
 	float bw;
 
-	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %ju (%jub))\n",
-			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,ptr,words,s);
+	printf("  memkernel {%u x %u} x {%u x %u x %u} (%jx, %ju (%jub))\n",
+		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,words,s);
 	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>((uintptr_t)ptr,words - (uintptr_t)ptr / unit);
+	memkernel<<<dgrid,dblock>>>(off,words - off / unit);
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
@@ -247,7 +247,7 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 				strerror(errno));
 		return -1;
 	}
-	if(divide_address_space(words,ptr,s,unit)){
+	if(divide_address_space(words,(uintmax_t)ptr,s,unit)){
 		return -1;
 	}
 	if(cuMemFree(ptr) || cuCtxSynchronize()){
