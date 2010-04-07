@@ -1,7 +1,9 @@
 #include <cuda.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <driver_types.h>
@@ -142,16 +144,26 @@ static uintmax_t
 create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap){
 #define UNIT 4
 	int mflags;
+	size_t s;
 
 	if(mstart % UNIT || mend % UNIT || mstart >= mend || fd < 0){
+		errno = EINVAL;
 		return 0;
 	}
 	mflags = MAP_SHARED;
 #ifdef MAP_HUGETLB
 	mflags |= MAP_HUGETLB;
 #endif
-	*bmap = mmap(NULL,mend - mstart / UNIT / CHAR_BIT,
-			PROT_READ|PROT_WRITE,mflags,fd,0);
+	s = (mend - mstart) / UNIT / CHAR_BIT;
+	*bmap = mmap(NULL,s,PROT_READ|PROT_WRITE,mflags,fd,0);
+	if(*bmap == MAP_FAILED){
+		return 0;
+	}
+	if(ftruncate(fd,s)){
+		munmap(*bmap,s);
+		return 0;
+	}
+	return s * CHAR_BIT;
 #undef UNIT
 }
 
@@ -160,10 +172,11 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 	unsigned sums[BLOCK_SIZE],sum = 0;
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
+	int unit = 'M',fd = -1;
 	dim3 dgrid(1,1,1);
-	int unit = 'M';
+	uintmax_t words;
+	void *ptr,*map;
 	uintmax_t s;
-	void *ptr;
 	float bw;
 
 	s = mem - 0x8000000;
@@ -173,7 +186,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 		err = cudaGetLastError();
 		fprintf(stderr,"  Error allocating %jub (%s?)\n",
 				s,cudaGetErrorString(err));
-		return EXIT_FAILURE;
+		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
@@ -182,14 +195,22 @@ dump_cuda(uintmax_t mem,uintmax_t tmem){
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %ju (%jub))\n",
 			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,
 			(typeof(&sum))ptr,s / sizeof(*sums),s);
-	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,s / sizeof(*sums));
+
+	// FIXME need to set fd, free up bitmap (especially on error paths!)
+	if((words = create_bitmap((uintptr_t)ptr,(uintptr_t)
+			((char *)ptr + s / sizeof(*sums)),fd,&map)) == 0){
+		fprintf(stderr,"  Error creating bitmap (%s?)\n",
+				strerror(errno));
+		return -1;
+	}
+	memkernel<<<dgrid,dblock>>>((typeof(&sum))ptr,words);
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
 		err = cudaGetLastError();
 		fprintf(stderr,"  Error running kernel (%s?)\n",
 				cudaGetErrorString(err));
-		return EXIT_FAILURE;
+		return -1;
 	}
 	cudaMemcpy(sums,ptr,sizeof(sums),cudaMemcpyDeviceToHost);
 	for(int i = 0 ; i < BLOCK_SIZE ; ++i){

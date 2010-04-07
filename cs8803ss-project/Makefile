@@ -30,16 +30,16 @@ $(TAGS): src/cudadump.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu -f $@ $^
 
-out/cudadump: src/cudadump.cu $(MAKEFILES) $(TAGS)
+out/cudadump: src/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudadump.ptx: src/cudadump.cu $(MAKEFILES) $(TAGS)
+out/cudadump.ptx: src/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
 
-%.pdf: %.tex %.bib $(TEXOBJS) $(MAKEFILES)
+%.pdf: %.tex %.bib $(TEXOBJS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	pdflatex $<
 	bibtex $(basename $<)
