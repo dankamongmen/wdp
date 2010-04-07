@@ -190,8 +190,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),ptr);
 	// FIXME need to set fd, free up bitmap (especially on error paths!)
-	if((words = create_bitmap((uintptr_t)ptr,
-			(uintptr_t)((char *)ptr + s),fd,&map)) == 0){
+	if((words = create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map)) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
 				strerror(errno));
 		return -1;
@@ -199,7 +198,7 @@ dump_cuda(uintmax_t mem,uintmax_t tmem,int fd){
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %ju (%jub))\n",
 			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,ptr,words,s);
 	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>((uintptr_t)ptr,words);
+	memkernel<<<dgrid,dblock>>>((uintptr_t)ptr,words - (uintptr_t)ptr / 4);
 	if(cudaThreadSynchronize()){
 		cudaError_t err;
 
