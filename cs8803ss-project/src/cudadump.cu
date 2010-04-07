@@ -195,29 +195,14 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 }
 
 static int
-dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
+divide_address_space(uintmax_t words,CUdeviceptr ptr,uintmax_t s,unsigned unit){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
-	uintmax_t words,usec;
 	dim3 dgrid(1,1,1);
-	CUdeviceptr ptr;
+	uintmax_t usec;
 	int punit = 'M';
-	uintmax_t s;
-	void *map;
 	float bw;
 
-	if((s = cuda_alloc_max(tmem,&ptr,unit)) == 0){
-		return -1;
-	}
-	printf("  Allocated %ju of %ju MB at %p\n",
-			s / (1024 * 1024) + !!(s % (1024 * 1024)),
-			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),ptr);
-	// FIXME need to set fd, free up bitmap (especially on error paths!)
-	if((words = create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit)) == 0){
-		fprintf(stderr,"  Error creating bitmap (%s?)\n",
-				strerror(errno));
-		return -1;
-	}
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (%p, %ju (%jub))\n",
 			dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,ptr,words,s);
 	gettimeofday(&time0,NULL);
@@ -240,6 +225,31 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	}
 	printf("  elapsed time: %ju.%jus (%.3f %cB/s)\n",
 			usec / 1000000,usec % 1000000,bw,punit);
+	return 0;
+}
+
+static int
+dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
+	uintmax_t words;
+	CUdeviceptr ptr;
+	uintmax_t s;
+	void *map;
+
+	if((s = cuda_alloc_max(tmem,&ptr,unit)) == 0){
+		return -1;
+	}
+	printf("  Allocated %ju of %ju MB at %p\n",
+			s / (1024 * 1024) + !!(s % (1024 * 1024)),
+			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),ptr);
+	// FIXME need to set fd, free up bitmap (especially on error paths!)
+	if((words = create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit)) == 0){
+		fprintf(stderr,"  Error creating bitmap (%s?)\n",
+				strerror(errno));
+		return -1;
+	}
+	if(divide_address_space(words,ptr,s,unit)){
+		return -1;
+	}
 	if(cuMemFree(ptr) || cuCtxSynchronize()){
 		cudaError_t err;
 
