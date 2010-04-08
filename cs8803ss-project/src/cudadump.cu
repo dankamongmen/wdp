@@ -124,14 +124,10 @@ memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	__shared__ unsigned psum[BLOCK_SIZE];
 
 	psum[threadIdx.x] = 0;
-	/*
 	while(aptr + threadIdx.x * unit < bptr){
-		psum[threadIdx.x] += *(unsigned *)
-			((uintmax_t)(aptr + unit * threadIdx.x)
-				% (1lu << ADDRESS_BITS));
+		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
 		aptr += BLOCK_SIZE * unit;
 	}
-	*/
 }
 
 // Takes in start and end of memory area to be scanned, and fd. Returns the
