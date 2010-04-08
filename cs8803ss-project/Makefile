@@ -8,7 +8,7 @@ PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
-BIN:=$(addprefix out/,cudamemdump)
+BIN:=$(addprefix out/,cudadump)
 PTX:=$(addsuffix .ptx,$(BIN))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
@@ -19,21 +19,27 @@ CUDALIB:=$(CUDA)/lib64
 CC:=$(CUDA)/bin/nvcc
 CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(CUDAINC)
 CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
-LFLAGS:=--linker-options -R$(CUDALIB) -L$(CUDALIB) -lcuda -lcudart
+LFLAGS:=-lcuda --linker-options -R$(CUDALIB)
 PTXFLAGS:=--ptx
+
+TAGS:=.tags
 
 all: $(PDF) $(PTX) $(BIN)
 
-out/cudamemdump: src/cudamemdump.cu $(MAKEFILES)
+$(TAGS): src/cudadump.cu
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	ctags --langmap=c:.c.cu -f $@ $^
+
+out/cudadump: src/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudamemdump.ptx: src/cudamemdump.cu $(MAKEFILES)
+out/cudadump.ptx: src/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
 
-%.pdf: %.tex %.bib $(TEXOBJS) $(MAKEFILES)
+%.pdf: %.tex %.bib $(TEXOBJS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	pdflatex $<
 	bibtex $(basename $<)
@@ -45,7 +51,7 @@ profile: $(PROFDATA)
 PROF:=CUDA_PROFILE_LOG=$(shell pwd)/$(PROFDATA) CUDA_PROFILE=1
 $(PROFDATA): test
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	env $(PROF) out/cudamemdump
+	env $(PROF) out/cudadump
 	cat $@
 
 preview: all
@@ -55,6 +61,6 @@ test: all
 	./$(BIN)
 
 clean:
-	rm -rf out
+	rm -rf out $(TAGS) $(wildcard *.dump)
 	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg)
 	rm -f $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
