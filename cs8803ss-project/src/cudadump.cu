@@ -124,12 +124,14 @@ memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	__shared__ unsigned psum[BLOCK_SIZE];
 
 	psum[threadIdx.x] = 0;
+	/*
 	while(aptr + threadIdx.x * unit < bptr){
 		psum[threadIdx.x] += *(unsigned *)
 			((uintmax_t)(aptr + unit * threadIdx.x)
 				% (1lu << ADDRESS_BITS));
 		aptr += BLOCK_SIZE * unit;
 	}
+	*/
 }
 
 // Takes in start and end of memory area to be scanned, and fd. Returns the
@@ -209,7 +211,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 		// fprintf(stderr,"  Granularity violation: %ju < %u\n",s,unit);
 		return 0;
 	}
-	printf("  memkernel {%u x %u} x {%u x %u x %u} (%jx, %jx (%jub), %u)\n",
+	printf("  memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
@@ -217,14 +219,15 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		/*fprintf(stderr,"  Error running kernel (%s?)\n",
-				cudaGetErrorString(err));*/
+		fprintf(stderr,"  Error running kernel (%s?)\n",
+				cudaGetErrorString(err));
 		if(divide_address_space(off,s / 2,unit,gran)){
 			return -1;
 		}
 		if(divide_address_space(off + s / 2,s / 2,unit,gran)){
 			return -1;
 		}
+		cuCtxSynchronize();
 		return 0;
 	}
 	gettimeofday(&time1,NULL);
@@ -263,6 +266,7 @@ check_const_ram(const unsigned *max){
 static int
 dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	CUdeviceptr ptr;
+	CUresult cerr;
 	uintmax_t s;
 	void *map;
 
@@ -284,12 +288,20 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
 		return -1;
 	}
-	if(cuMemFree(ptr) || cuCtxSynchronize()){
+	if( (cerr = cuCtxSynchronize()) ){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"  Error dumping CUDA memory (%s?)\n",
-				cudaGetErrorString(err));
+		fprintf(stderr,"  Error dumping CUDA memory (%d: %s?)\n",
+				cerr,cudaGetErrorString(err));
+		return -1;
+	}
+	if( (cerr = cuMemFree(ptr)) ){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"  Error freeing CUDA memory (%d: %s?)\n",
+				cerr,cudaGetErrorString(err));
 		return -1;
 	}
 	return 0;
