@@ -244,15 +244,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	uintmax_t usec;
 	float bw;
 
-	if(s < gran){
-		// fprintf(stderr,"  Granularity violation: %ju < %u\n",s,gran);
-		return 0;
-	}
-	if(s % gran){
-		fprintf(stderr,"  Multiple violation: %ju %% %u\n",s,gran);
-		return -1;
-	}
-	printf("  memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
+	printf("   memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
@@ -260,7 +252,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	if( (cerr = cuCtxSynchronize()) ){
 		uintmax_t mid;
 
-		//fprintf(stderr,"  Error running kernel (%d %s?)\n",cerr);
+		fprintf(stderr,"   Error running kernel (%d?)\n",cerr);
 		mid = carve_range(off,off + s,gran);
 		if(mid != s){
 			if(divide_address_space(off,mid,unit,gran)){
@@ -280,7 +272,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 		bw /= 1000.0f;
 		punit = 'G';
 	}
-	printf("  elapsed time: %ju.%jus (%.3f %cB/s)\n",
+	printf("   elapsed time: %ju.%jus (%.3f %cB/s)\n",
 			usec / 1000000,usec % 1000000,bw,punit);
 	return 0;
 }
@@ -314,24 +306,18 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 		return -1;
 	}
 	if( (cerr = cuCtxSynchronize()) ){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"  Sanity check failed! (%d: %s?)\n",
-				cerr,cudaGetErrorString(err));
+		fprintf(stderr,"  Sanity check failed! (%d?)\n",cerr);
 		return -1;
 	}
 	//if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
-	if(divide_address_space(0,tmem,unit,tmem)){
+	printf("  Dumping full address space...\n");
+	if(divide_address_space((uintptr_t)CONSTWIN,tmem - (uintptr_t)CONSTWIN,unit,
+				tmem - (uintptr_t)CONSTWIN)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
 	if( (cerr = cuMemFree(ptr)) ){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"  Error freeing CUDA memory (%d: %s?)\n",
-				cerr,cudaGetErrorString(err));
+		fprintf(stderr,"  Error freeing CUDA memory (%d?)\n",cerr);
 		return -1;
 	}
 	return 0;

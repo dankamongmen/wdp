@@ -26,15 +26,15 @@ TAGS:=.tags
 
 all: $(PDF) $(BIN) $(PTX)
 
-$(TAGS): src/cudadump.cu
+$(TAGS): src/cudadump/cudadump.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu -f $@ $^
 
-out/cudadump: src/cudadump.cu $(TAGS)
+out/cudadump: src/cudadump/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudadump.ptx: src/cudadump.cu $(TAGS)
+out/cudadump.ptx: src/cudadump/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
@@ -58,8 +58,8 @@ preview: all
 	$(VPDF) $(PDF)
 
 test: all
-	#timelimit -T 1 -t 10 ./$(BIN)
-	./$(BIN)
+	timelimit -T 1 -t 10 ./$(BIN)
+	#./$(BIN)
 
 clean:
 	rm -rf out $(TAGS) $(wildcard *.dump)
