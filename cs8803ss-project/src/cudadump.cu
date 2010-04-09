@@ -46,7 +46,7 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,CUcontext *ctx){
 	if((cerr = cuDeviceGetName((char *)str,CUDASTRLEN,c)) != CUDA_SUCCESS){
 		goto err;
 	}
-	if((cerr = cuCtxCreate(ctx,0,c)) != CUDA_SUCCESS){
+	if((cerr = cuCtxCreate(ctx,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
 		goto err;
 	}
 	if((cerr = cuMemGetInfo(mem,tmem)) != CUDA_SUCCESS){
@@ -254,19 +254,14 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	}
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
-	sleep(1);
-	printf("  running...\n");
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
+	cuCtxSynchronize();
 	if( (cerr = cuCtxSynchronize()) ){
-		cudaError_t err;
 		uintmax_t mid;
 
-		err = cudaGetLastError();
-		fprintf(stderr,"  Error running kernel (%d %s?)\n",
-				cerr,cudaGetErrorString(err));
+		//fprintf(stderr,"  Error running kernel (%d %s?)\n",cerr);
 		mid = carve_range(off,off + s,gran);
-		printf("carve size: 0x%jx\n",mid);
 		if(mid != s){
 			if(divide_address_space(off,mid,unit,gran)){
 				return -1;
@@ -275,7 +270,6 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 				return -1;
 			}
 		}
-		cuCtxSynchronize();
 		return 0;
 	}
 	gettimeofday(&time1,NULL);
@@ -292,7 +286,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 }
 
 static int
-dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
+dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	CUdeviceptr ptr;
 	CUresult cerr;
 	uintmax_t s;
@@ -314,16 +308,22 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 				strerror(errno));
 		return -1;
 	}
+	printf("  Sanity checking allocated region...\n");
 	if(divide_address_space((uintmax_t)ptr,(s / gran) * gran,unit,gran)){
-	//if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
+		fprintf(stderr,"  Sanity check failed!\n");
 		return -1;
 	}
 	if( (cerr = cuCtxSynchronize()) ){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"  Error dumping CUDA memory (%d: %s?)\n",
+		fprintf(stderr,"  Sanity check failed! (%d: %s?)\n",
 				cerr,cudaGetErrorString(err));
+		return -1;
+	}
+	//if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
+	if(divide_address_space(0,tmem,unit,tmem)){
+		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
 	if( (cerr = cuMemFree(ptr)) ){
@@ -338,7 +338,7 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 }
 
 int main(void){
-	unsigned gran = 64 * 1024;	// Granularity of report / verification
+	unsigned gran = 1024 * 1024;	// Granularity of report / verification
 	unsigned unit = 4;		// Minimum alignment of references
 	int z,count;
 
@@ -370,7 +370,7 @@ int main(void){
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
 		}
-		if(dump_cuda(tmem,fd,unit,gran)){
+		if(dump_cuda(&ctx,tmem,fd,unit,gran)){
 			close(fd);
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
