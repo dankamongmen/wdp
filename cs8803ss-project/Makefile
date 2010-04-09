@@ -8,7 +8,9 @@ PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
-BIN:=$(addprefix out/,cudadump)
+CUDADUMP:=out/cudadump
+CUDARANGER:=out/cudaranger
+BIN:=$(CUDADUMP) $(CUDARANGER)
 PTX:=$(addsuffix .ptx,$(BIN))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
@@ -30,6 +32,10 @@ $(TAGS): src/cudadump/cudadump.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu -f $@ $^
 
+out/cudaranger: src/cudaranger/cudaranger.cu $(TAGS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
 out/cudadump: src/cudadump/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
@@ -38,6 +44,9 @@ out/cudadump.ptx: src/cudadump/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
+out/cudaranger.ptx: src/cudaranger/cudaranger.cu $(TAGS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
 %.pdf: %.tex %.bib $(TEXOBJS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -58,8 +67,8 @@ preview: all
 	$(VPDF) $(PDF)
 
 test: all
-	timelimit -T 1 -t 10 ./$(BIN)
-	#./$(BIN)
+	#timelimit -T 1 -t 10 ./$(CUDADUMP)
+	./$(CUDADUMP)
 
 clean:
 	rm -rf out $(TAGS) $(wildcard *.dump)

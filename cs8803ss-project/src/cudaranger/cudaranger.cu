@@ -326,11 +326,24 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	return 0;
 }
 
-int main(void){
+static void
+usage(const char *a0){
+	fprintf(stderr,"usage: %s devno\n",a0);
+}
+
+int main(int argc,char **argv){
 	unsigned gran = 1024 * 1024;	// Granularity of report / verification
 	unsigned unit = 4;		// Minimum alignment of references
-	int z,count;
+	unsigned mem,tmem;
+	int z,count,fd;
+	CUresult cerr;
+	CUcontext ctx;
 
+	if(argc != 2){
+		usage(*argv);
+		return EXIT_FAILURE;
+	}
+	z = atoi(argv[1]);
 	if(init_cuda(&count)){
 		cudaError_t err;
 
@@ -339,40 +352,37 @@ int main(void){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	for(z = 0 ; z < count ; ++z){
-		unsigned mem,tmem;
-		CUresult cerr;
-		CUcontext ctx;
-		int fd;
+	if(z >= count){
+		fprintf(stderr,"devno too large (%d >= %d)\n",z,count);
+		usage(*argv);
+		return EXIT_FAILURE;
+	}
+	if(id_cuda(z,&mem,&tmem,&ctx)){
+		cudaError_t err;
 
-		printf(" %03d ",z);
-		if(id_cuda(z,&mem,&tmem,&ctx)){
-			cudaError_t err;
-
-			err = cudaGetLastError();
-			fprintf(stderr,"\nError probing CUDA device %d (%s?)\n",
-					z,cudaGetErrorString(err));
-			return EXIT_FAILURE;
-		}
-		if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
-			fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
-			cuCtxDetach(ctx);
-			return EXIT_FAILURE;
-		}
-		if(dump_cuda(&ctx,tmem,fd,unit,gran)){
-			close(fd);
-			cuCtxDetach(ctx);
-			return EXIT_FAILURE;
-		}
-		if(close(fd)){
-			fprintf(stderr,"\nError closing bitmap (%s?)\n",strerror(errno));
-			cuCtxDetach(ctx);
-			return EXIT_FAILURE;
-		}
-		if((cerr = cuCtxDetach(ctx)) != CUDA_SUCCESS){
-			fprintf(stderr,"\nError detaching context (%d?)\n",cerr);
-			return EXIT_FAILURE;
-		}
+		err = cudaGetLastError();
+		fprintf(stderr,"\nError probing CUDA device %d (%s?)\n",
+				z,cudaGetErrorString(err));
+		return EXIT_FAILURE;
+	}
+	if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
+		fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
+		cuCtxDetach(ctx);
+		return EXIT_FAILURE;
+	}
+	if(dump_cuda(&ctx,tmem,fd,unit,gran)){
+		close(fd);
+		cuCtxDetach(ctx);
+		return EXIT_FAILURE;
+	}
+	if(close(fd)){
+		fprintf(stderr,"\nError closing bitmap (%s?)\n",strerror(errno));
+		cuCtxDetach(ctx);
+		return EXIT_FAILURE;
+	}
+	if((cerr = cuCtxDetach(ctx)) != CUDA_SUCCESS){
+		fprintf(stderr,"\nError detaching context (%d?)\n",cerr);
+		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
 }
