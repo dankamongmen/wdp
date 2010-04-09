@@ -21,10 +21,10 @@ CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I
 CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda --linker-options -R$(CUDALIB)
 PTXFLAGS:=--ptx
-
+#CUBINFLAGS:=-deviceemu
 TAGS:=.tags
 
-all: $(PDF) $(PTX) $(BIN)
+all: $(PDF) $(BIN) $(PTX)
 
 $(TAGS): src/cudadump.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -32,7 +32,7 @@ $(TAGS): src/cudadump.cu
 
 out/cudadump: src/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
 out/cudadump.ptx: src/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)

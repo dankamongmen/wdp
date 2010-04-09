@@ -10,6 +10,10 @@
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
 
+#define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
+#define CONSTWIN ((unsigned *)0x10000u)
+#define BLOCK_SIZE 512
+
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80
 static int
@@ -99,10 +103,6 @@ init_cuda(int *count){
 	return CUDA_SUCCESS;
 }
 
-#define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
-#define CONSTWIN ((unsigned *)0x10000u)
-#define BLOCK_SIZE 512 // FIXME bigger would likely be better
-
 __device__ __constant__ unsigned constptr[1];
 
 __global__ void constkernel(const unsigned *constmax){
@@ -119,15 +119,24 @@ __global__ void constkernel(const unsigned *constmax){
 	}
 }
 
-__global__ void
-memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
-	__shared__ unsigned psum[BLOCK_SIZE];
+static int
+check_const_ram(const unsigned *max){
+	dim3 dblock(BLOCK_SIZE,1,1);
+	dim3 dgrid(1,1,1);
 
-	psum[threadIdx.x] = 0;
-	while(aptr + threadIdx.x * unit < bptr){
-		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
-		aptr += BLOCK_SIZE * unit;
+	printf("  Verifying %jub constant memory...",(uintmax_t)max);
+	fflush(stdout);
+	constkernel<<<dblock,dgrid>>>(max);
+	if(cuCtxSynchronize()){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+				cudaGetErrorString(err));
+		return -1;
 	}
+	printf("good.\n");
+	return 0;
 }
 
 // Takes in start and end of memory area to be scanned, and fd. Returns the
@@ -194,34 +203,77 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 	return 0;
 }
 
+__global__ void
+memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
+	__shared__ unsigned psum[BLOCK_SIZE];
+
+	psum[threadIdx.x] = 0;
+	while(aptr + threadIdx.x * unit < bptr){
+		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
+		aptr += BLOCK_SIZE * unit;
+	}
+}
+
+// Returns the maxpoint of the first of at most two ranges into which the
+// region will be divided, where a premium is placed on the first range being
+// a multiple of gran.
+static uintmax_t
+carve_range(uintmax_t min,uintmax_t max,unsigned gran){
+	uintmax_t mid;
+
+	if(max < min){
+		return 0;
+	}
+	// This way, we can't overflow given proper arguments. Simply averaging
+	// min and max could overflow, resulting in an incorrect midpoint.
+	mid  = min + (max - min) / 2;
+	if((mid - min) % gran){
+		if((mid += gran - ((mid - min) % gran)) > max){
+			mid = max;
+		}
+	}
+	return mid - min;
+}
+
 static int
 divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
+	int punit = 'M',cerr;
 	dim3 dgrid(1,1,1);
 	uintmax_t usec;
-	int punit = 'M';
 	float bw;
 
 	if(s < gran){
-		// fprintf(stderr,"  Granularity violation: %ju < %u\n",s,unit);
+		// fprintf(stderr,"  Granularity violation: %ju < %u\n",s,gran);
 		return 0;
+	}
+	if(s % gran){
+		fprintf(stderr,"  Multiple violation: %ju %% %u\n",s,gran);
+		return -1;
 	}
 	printf("  memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
+	sleep(1);
+	printf("  running...\n");
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
-	if(cuCtxSynchronize()){
+	if( (cerr = cuCtxSynchronize()) ){
 		cudaError_t err;
+		uintmax_t mid;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"  Error running kernel (%s?)\n",
-				cudaGetErrorString(err));
-		if(divide_address_space(off,s / 2,unit,gran)){
-			return -1;
-		}
-		if(divide_address_space(off + s / 2,s / 2,unit,gran)){
-			return -1;
+		fprintf(stderr,"  Error running kernel (%d %s?)\n",
+				cerr,cudaGetErrorString(err));
+		mid = carve_range(off,off + s,gran);
+		printf("carve size: 0x%jx\n",mid);
+		if(mid != s){
+			if(divide_address_space(off,mid,unit,gran)){
+				return -1;
+			}
+			if(divide_address_space(off + mid,s - mid,unit,gran)){
+				return -1;
+			}
 		}
 		cuCtxSynchronize();
 		return 0;
@@ -240,26 +292,6 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 }
 
 static int
-check_const_ram(const unsigned *max){
-	dim3 dblock(BLOCK_SIZE,1,1);
-	dim3 dgrid(1,1,1);
-
-	printf("  Verifying %jub constant memory...",(uintmax_t)max);
-	fflush(stdout);
-	constkernel<<<dblock,dgrid>>>(max);
-	if(cuCtxSynchronize()){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
-				cudaGetErrorString(err));
-		return -1;
-	}
-	printf("good.\n");
-	return 0;
-}
-
-static int
 dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	CUdeviceptr ptr;
 	CUresult cerr;
@@ -269,9 +301,10 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	if((s = cuda_alloc_max(tmem,&ptr,unit)) == 0){
 		return -1;
 	}
-	printf("  Allocated %ju of %ju MB at %p\n",
+	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
-			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),ptr);
+			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
+			ptr,(uintmax_t)ptr + s);
 	if(check_const_ram(CONSTWIN)){
 		return -1;
 	}
@@ -281,7 +314,8 @@ dump_cuda(uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 				strerror(errno));
 		return -1;
 	}
-	if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
+	if(divide_address_space((uintmax_t)ptr,(s / gran) * gran,unit,gran)){
+	//if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
 		return -1;
 	}
 	if( (cerr = cuCtxSynchronize()) ){
