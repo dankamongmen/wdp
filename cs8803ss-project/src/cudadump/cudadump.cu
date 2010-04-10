@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <driver_types.h>
@@ -203,17 +204,6 @@ cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 	return 0;
 }
 
-__global__ void
-memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
-	__shared__ unsigned psum[BLOCK_SIZE];
-
-	psum[threadIdx.x] = 0;
-	while(aptr + threadIdx.x * unit < bptr){
-		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
-		aptr += BLOCK_SIZE * unit;
-	}
-}
-
 // Returns the maxpoint of the first of at most two ranges into which the
 // region will be divided, where a premium is placed on the first range being
 // a multiple of gran.
@@ -237,43 +227,40 @@ carve_range(uintmax_t min,uintmax_t max,unsigned gran){
 
 static int
 divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
-	struct timeval time0,time1,timer;
-	dim3 dblock(BLOCK_SIZE,1,1);
-	int punit = 'M',cerr;
-	dim3 dgrid(1,1,1);
-	uintmax_t usec;
-	float bw;
+	pid_t pid;
 
-	printf("   memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
-		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
-	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
-	cuCtxSynchronize();
-	if( (cerr = cuCtxSynchronize()) ){
-		uintmax_t mid;
+	if((pid = fork()) < 0){
+		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
+		return -1;
+	}else if(pid == 0){
+		exit(EXIT_FAILURE);
+	}else{
+		int status;
+		pid_t w;
 
-		fprintf(stderr,"   Error running kernel (%d?)\n",cerr);
-		mid = carve_range(off,off + s,gran);
-		if(mid != s){
-			if(divide_address_space(off,mid,unit,gran)){
-				return -1;
-			}
-			if(divide_address_space(off + mid,s - mid,unit,gran)){
+		while((w = wait(&status)) != pid){
+			if(w < 0){
+				fprintf(stderr,"  Error waiting (%s?)!\n",
+						strerror(errno));
 				return -1;
 			}
 		}
-		return 0;
+		if(!WIFEXITED(status) || WEXITSTATUS(status)){
+			uintmax_t mid;
+
+			mid = carve_range(off,off + s,gran);
+			if(mid != s){
+				if(divide_address_space(off,mid,unit,gran)){
+					return -1;
+				}
+				if(divide_address_space(off + mid,s - mid,unit,gran)){
+					return -1;
+				}
+			}
+		}else{
+			// FIXME Success! mark up the map
+		}
 	}
-	gettimeofday(&time1,NULL);
-	timersub(&time1,&time0,&timer);
-	usec = (timer.tv_sec * 1000000 + timer.tv_usec);
-	bw = (float)s / usec;
-	if(bw > 1000.0f){
-		bw /= 1000.0f;
-		punit = 'G';
-	}
-	printf("   elapsed time: %ju.%jus (%.3f %cB/s)\n",
-			usec / 1000000,usec % 1000000,bw,punit);
 	return 0;
 }
 
