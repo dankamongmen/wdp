@@ -225,14 +225,29 @@ carve_range(uintmax_t min,uintmax_t max,unsigned gran){
 	return mid - min;
 }
 
+#define RANGER "out/cudaranger"
+
 static int
-divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
+divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	pid_t pid;
 
 	if((pid = fork()) < 0){
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
+		char min[40],max[40],dev[20];
+		char * const argv[] = { RANGER, dev, min, max, NULL };
+
+		if((size_t)snprintf(min,sizeof(min),"%ju\n",off) >= sizeof(min) ||
+				(size_t)snprintf(max,sizeof(max),"%ju\n",off + s) >= sizeof(max) ||
+				(size_t)snprintf(dev,sizeof(dev),"%d\n",devno) >= sizeof(dev)){
+			fprintf(stderr,"  Invalid arguments: %d %ju %ju\n",devno,min,max);
+			exit(EXIT_FAILURE);
+		}
+		if(execvp(RANGER,argv)){
+			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",
+					RANGER,strerror(errno));
+		}
 		exit(EXIT_FAILURE);
 	}else{
 		int status;
@@ -250,10 +265,10 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 
 			mid = carve_range(off,off + s,gran);
 			if(mid != s){
-				if(divide_address_space(off,mid,unit,gran)){
+				if(divide_address_space(devno,off,mid,unit,gran)){
 					return -1;
 				}
-				if(divide_address_space(off + mid,s - mid,unit,gran)){
+				if(divide_address_space(devno,off + mid,s - mid,unit,gran)){
 					return -1;
 				}
 			}
@@ -265,7 +280,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 }
 
 static int
-dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
+dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	CUdeviceptr ptr;
 	CUresult cerr;
 	uintmax_t s;
@@ -288,7 +303,7 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		return -1;
 	}
 	printf("  Sanity checking allocated region...\n");
-	if(divide_address_space((uintmax_t)ptr,(s / gran) * gran,unit,gran)){
+	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran)){
 		fprintf(stderr,"  Sanity check failed!\n");
 		return -1;
 	}
@@ -302,7 +317,7 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	}
 	gran = tmem - (uintptr_t)CONSTWIN;
 	printf("  Dumping %jub...\n",gran);
-	if(divide_address_space((uintptr_t)CONSTWIN,gran,unit,gran)){
+	if(divide_address_space(devno,(uintptr_t)CONSTWIN,gran,unit,gran)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
@@ -342,7 +357,7 @@ int main(void){
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
 		}
-		if(dump_cuda(&ctx,tmem,fd,unit,gran)){
+		if(dump_cuda(z,tmem,fd,unit,gran)){
 			close(fd);
 			cuCtxDetach(ctx);
 			return EXIT_FAILURE;
