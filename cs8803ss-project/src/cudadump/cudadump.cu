@@ -278,7 +278,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 }
 
 static int
-dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
+dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	CUdeviceptr ptr;
 	CUresult cerr;
 	uintmax_t s;
@@ -309,13 +309,9 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 		fprintf(stderr,"  Sanity check failed! (%d?)\n",cerr);
 		return -1;
 	}
-	printf("  Dumping full address space...\n");
-	/*gran = ((s - (uintptr_t)CONSTWIN + ((uintptr_t)ptr - (uintptr_t)CONSTWIN))
-			/ gran) * gran;
-			*/
 	gran = tmem - (uintptr_t)CONSTWIN;
+	printf("  Dumping %jub...\n",gran);
 	if(divide_address_space((uintptr_t)CONSTWIN,gran,unit,gran)){
-	//if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
@@ -327,7 +323,7 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 }
 
 int main(void){
-	unsigned gran = 1024 * 1024;	// Granularity of report / verification
+	uintmax_t gran = 1024 * 1024;	// Granularity of report / verification
 	unsigned unit = 4;		// Minimum alignment of references
 	int z,count;
 
