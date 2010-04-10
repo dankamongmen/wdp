@@ -77,8 +77,8 @@ err:	// cerr ought already be set!
 #define CUDAMAJMIN(v) v / 1000, v % 1000
 
 static int
-init_cuda(int *count){
-	int attr,cerr;
+init_cuda(unsigned *count){
+	int attr,cerr,c;
 
 	if((cerr = cuInit(0)) != CUDA_SUCCESS){
 		return cerr;
@@ -92,51 +92,16 @@ init_cuda(int *count){
 		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
 		return -1;
 	}
-	if((cerr = cuDeviceGetCount(count)) != CUDA_SUCCESS){
+	if((cerr = cuDeviceGetCount(&c)) != CUDA_SUCCESS){
 		return cerr;
 	}
-	if(*count <= 0){
+	if(c <= 0){
 		fprintf(stderr,"No CUDA devices found, exiting.\n");
 		return -1;
 	}
+	*count = c;
 	printf("CUDA device count: %d\n",*count);
 	return CUDA_SUCCESS;
-}
-
-__device__ __constant__ unsigned constptr[1];
-
-__global__ void constkernel(const unsigned *constmax){
-	__shared__ unsigned psum[BLOCK_SIZE];
-	unsigned *ptr;
-
-	psum[threadIdx.x] = 0;
-	// Accesses below 64k result in immediate termination, due to use of
-	// the .global state space (2.0 provides unified addressing, which can
-	// overcome this). That area's reserved for constant memory (.const
-	// state space; see 5.1.3 of the PTX 2.0 Reference), from what I see.
-	for(ptr = constptr ; ptr < constmax ; ptr += BLOCK_SIZE){
-		psum[threadIdx.x] += ptr[threadIdx.x];
-	}
-}
-
-static int
-check_const_ram(const unsigned *max){
-	dim3 dblock(BLOCK_SIZE,1,1);
-	dim3 dgrid(1,1,1);
-
-	printf("  Verifying %jub constant memory...",(uintmax_t)max);
-	fflush(stdout);
-	constkernel<<<dblock,dgrid>>>(max);
-	if(cuCtxSynchronize()){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
-				cudaGetErrorString(err));
-		return -1;
-	}
-	printf("good.\n");
-	return 0;
 }
 
 // Takes in start and end of memory area to be scanned, and fd. Returns the
@@ -278,7 +243,7 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 }
 
 static int
-dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
+dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	CUdeviceptr ptr;
 	CUresult cerr;
 	uintmax_t s;
@@ -291,9 +256,6 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
 			ptr,(uintmax_t)ptr + s);
-	if(check_const_ram(CONSTWIN)){
-		return -1;
-	}
 	// FIXME need to set fd, free up bitmap (especially on error paths!)
 	if(create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
@@ -326,24 +288,34 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,unsigned gran){
 	return 0;
 }
 
+// FIXME: we really ought take a bus specification rather than a device number,
+// since the latter are unsafe across hardware removal/additions.
 static void
 usage(const char *a0){
 	fprintf(stderr,"usage: %s devno\n",a0);
 }
 
 int main(int argc,char **argv){
-	unsigned gran = 1024 * 1024;	// Granularity of report / verification
+	uintmax_t gran = 1024 * 1024;	// Granularity of report / verification
 	unsigned unit = 4;		// Minimum alignment of references
 	unsigned mem,tmem;
-	int z,count,fd;
+	unsigned long zul;
+	unsigned count;
 	CUresult cerr;
 	CUcontext ctx;
+	int fd;
+	char *eptr;
 
 	if(argc != 2){
 		usage(*argv);
 		return EXIT_FAILURE;
 	}
-	z = atoi(argv[1]);
+	if(((zul = strtoul(argv[1],&eptr,0)) == ULONG_MAX && errno == ERANGE)
+			|| eptr == argv[1] || *eptr){
+		fprintf(stderr,"Invalid device number: %s\n",argv[1]);
+		usage(*argv);
+		return EXIT_FAILURE;
+	}
 	if(init_cuda(&count)){
 		cudaError_t err;
 
@@ -352,17 +324,17 @@ int main(int argc,char **argv){
 				cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	if(z >= count){
-		fprintf(stderr,"devno too large (%d >= %d)\n",z,count);
+	if(zul >= count){
+		fprintf(stderr,"devno too large (%lu >= %d)\n",zul,count);
 		usage(*argv);
 		return EXIT_FAILURE;
 	}
-	if(id_cuda(z,&mem,&tmem,&ctx)){
+	if(id_cuda(zul,&mem,&tmem,&ctx)){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"\nError probing CUDA device %d (%s?)\n",
-				z,cudaGetErrorString(err));
+		fprintf(stderr,"\nError probing CUDA device %lu (%s?)\n",
+				zul,cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
 	if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
