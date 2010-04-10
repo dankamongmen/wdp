@@ -17,9 +17,10 @@
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80
 static int
-id_cuda(int dev,unsigned *mem,unsigned *tmem,CUcontext *ctx){
+id_cuda(int dev,CUcontext *ctx){
 	struct cudaDeviceProp dprop;
 	int major,minor,attr,cerr;
+	unsigned mem,tmem;
 	void *str = NULL;
 	CUdevice c;
 
@@ -49,18 +50,18 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,CUcontext *ctx){
 	if((cerr = cuCtxCreate(ctx,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
 		goto err;
 	}
-	if((cerr = cuMemGetInfo(mem,tmem)) != CUDA_SUCCESS){
+	if((cerr = cuMemGetInfo(&mem,&tmem)) != CUDA_SUCCESS){
 		cuCtxDetach(*ctx);
 		goto err;
 	}
-	if(printf("%d.%d %s %s %u/%uMB free %s\n",
+	if(printf(" %d.%d %s %s %u/%uMB free %s\n",
 		major,minor,
 		dprop.integrated ? "Integrated" : "Standalone",(char *)str,
-		*mem / (1024 * 1024) + !!(*mem / (1024 * 1024)),
-		*tmem / (1024 * 1024) + !!(*tmem / (1024 * 1024)),
+		mem / (1024 * 1024) + !!(mem / (1024 * 1024)),
+		tmem / (1024 * 1024) + !!(tmem / (1024 * 1024)),
 		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
-		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "" :
+		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "(shared)" :
 		"(unknown compute mode)") < 0){
 		cuCtxDetach(*ctx);
 		cerr = -1;
@@ -104,70 +105,6 @@ init_cuda(unsigned *count){
 	return CUDA_SUCCESS;
 }
 
-// Takes in start and end of memory area to be scanned, and fd. Returns the
-// number of |unit|-byte words in this region, or 0 on error. mstart and mend
-// must be |unit|-byte aligned, and mstart must be less than mend. Requires
-// sufficient virtual memory to allocate the bitmap, and sufficient disk space
-// for the backing file (FIXME we currently use a hole, so not quite...).
-static uintmax_t
-create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap,unsigned unit){
-	int mflags;
-	size_t s;
-
-	if(!unit || mstart % unit || mend % unit || mstart >= mend || fd < 0){
-		errno = EINVAL;
-		return 0;
-	}
-	mflags = MAP_SHARED;
-#ifdef MAP_HUGETLB
-	mflags |= MAP_HUGETLB;
-#endif
-	s = (mend - mstart) / unit / CHAR_BIT;
-	*bmap = mmap(NULL,s,PROT_READ|PROT_WRITE,mflags,fd,0);
-	if(*bmap == MAP_FAILED){
-		return 0;
-	}
-	if(ftruncate(fd,s)){
-		munmap(*bmap,s);
-		return 0;
-	}
-	return s * CHAR_BIT;
-}
-
-static uintmax_t
-cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
-	uintmax_t min = 0,s;
-
-	printf("  Determining max allocation...");
-	while( (s = ((tmax + min) / 2) & (~(uintmax_t)0u << 2u)) ){
-		fflush(stdout);
-
-		if(cuMemAlloc(ptr,s)){
-			if((tmax = s) <= min + unit){
-				tmax = min;
-			}
-		}else if(s != tmax && s != min){
-			printf("%jub...",s);
-			// Arbitrary canary constant
-			cuMemsetD32(*ptr,0x42069420,s / unit);
-			if(cuMemFree(*ptr)){
-				cudaError_t err;
-
-				err = cudaGetLastError();
-				fprintf(stderr,"  Couldn't free %jub (%s?)\n",
-						s,cudaGetErrorString(err));
-				return 0;
-			}
-			min = s;
-		}else{
-			printf("%jub!\n",s);
-			return s;
-		}
-	}
-	fprintf(stderr,"  All allocations failed.\n");
-	return 0;
-}
-
 __global__ void
 memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	__shared__ unsigned psum[BLOCK_SIZE];
@@ -179,55 +116,26 @@ memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	}
 }
 
-// Returns the maxpoint of the first of at most two ranges into which the
-// region will be divided, where a premium is placed on the first range being
-// a multiple of gran.
-static uintmax_t
-carve_range(uintmax_t min,uintmax_t max,unsigned gran){
-	uintmax_t mid;
-
-	if(max < min){
-		return 0;
-	}
-	// This way, we can't overflow given proper arguments. Simply averaging
-	// min and max could overflow, resulting in an incorrect midpoint.
-	mid  = min + (max - min) / 2;
-	if((mid - min) % gran){
-		if((mid += gran - ((mid - min) % gran)) > max){
-			mid = max;
-		}
-	}
-	return mid - min;
-}
-
 static int
-divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
+dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	int punit = 'M',cerr;
 	dim3 dgrid(1,1,1);
-	uintmax_t usec;
+	uintmax_t usec,s;
 	float bw;
 
+	if(tmin >= tmax){
+		return -1;
+	}
+	s = tmax - tmin;
 	printf("   memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
-		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,off,off + s,s,unit);
+		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>(off,off + s,unit);
-	cuCtxSynchronize();
+	memkernel<<<dgrid,dblock>>>(tmin,tmax,unit);
 	if( (cerr = cuCtxSynchronize()) ){
-		uintmax_t mid;
-
 		fprintf(stderr,"   Error running kernel (%d?)\n",cerr);
-		mid = carve_range(off,off + s,gran);
-		if(mid != s){
-			if(divide_address_space(off,mid,unit,gran)){
-				return -1;
-			}
-			if(divide_address_space(off + mid,s - mid,unit,gran)){
-				return -1;
-			}
-		}
-		return 0;
+		return -1;
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
@@ -242,77 +150,41 @@ divide_address_space(uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	return 0;
 }
 
-static int
-dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
-	CUdeviceptr ptr;
-	CUresult cerr;
-	uintmax_t s;
-	void *map;
-
-	if((s = cuda_alloc_max(tmem,&ptr,unit)) == 0){
-		return -1;
-	}
-	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
-			s / (1024 * 1024) + !!(s % (1024 * 1024)),
-			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
-			ptr,(uintmax_t)ptr + s);
-	// FIXME need to set fd, free up bitmap (especially on error paths!)
-	if(create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit) == 0){
-		fprintf(stderr,"  Error creating bitmap (%s?)\n",
-				strerror(errno));
-		return -1;
-	}
-	printf("  Sanity checking allocated region...\n");
-	if(divide_address_space((uintmax_t)ptr,(s / gran) * gran,unit,gran)){
-		fprintf(stderr,"  Sanity check failed!\n");
-		return -1;
-	}
-	if( (cerr = cuCtxSynchronize()) ){
-		fprintf(stderr,"  Sanity check failed! (%d?)\n",cerr);
-		return -1;
-	}
-	printf("  Dumping full address space...\n");
-	/*gran = ((s - (uintptr_t)CONSTWIN + ((uintptr_t)ptr - (uintptr_t)CONSTWIN))
-			/ gran) * gran;
-			*/
-	gran = tmem - (uintptr_t)CONSTWIN;
-	if(divide_address_space((uintptr_t)CONSTWIN,gran,unit,gran)){
-	//if(divide_address_space(0,(uintmax_t)1 << ADDRESS_BITS,unit,gran)){
-		fprintf(stderr,"  Error probing CUDA memory!\n");
-		return -1;
-	}
-	if( (cerr = cuMemFree(ptr)) ){
-		fprintf(stderr,"  Error freeing CUDA memory (%d?)\n",cerr);
-		return -1;
-	}
-	return 0;
-}
-
 // FIXME: we really ought take a bus specification rather than a device number,
 // since the latter are unsafe across hardware removal/additions.
 static void
 usage(const char *a0){
-	fprintf(stderr,"usage: %s devno\n",a0);
+	fprintf(stderr,"usage: %s devno addrmin addrmax\n",a0);
 }
 
 int main(int argc,char **argv){
-	uintmax_t gran = 1024 * 1024;	// Granularity of report / verification
+	unsigned long long min,max;
 	unsigned unit = 4;		// Minimum alignment of references
-	unsigned mem,tmem;
 	unsigned long zul;
 	unsigned count;
 	CUresult cerr;
 	CUcontext ctx;
-	int fd;
 	char *eptr;
 
-	if(argc != 2){
+	if(argc != 4){
 		usage(*argv);
 		return EXIT_FAILURE;
 	}
 	if(((zul = strtoul(argv[1],&eptr,0)) == ULONG_MAX && errno == ERANGE)
 			|| eptr == argv[1] || *eptr){
 		fprintf(stderr,"Invalid device number: %s\n",argv[1]);
+		usage(*argv);
+		return EXIT_FAILURE;
+	}
+	if(((min = strtoull(argv[2],&eptr,0)) == ULLONG_MAX && errno == ERANGE)
+			|| eptr == argv[2] || *eptr){
+		fprintf(stderr,"Invalid minimum address: %s\n",argv[2]);
+		usage(*argv);
+		return EXIT_FAILURE;
+	}
+	if(((max = strtoull(argv[3],&eptr,0)) == ULLONG_MAX && errno == ERANGE)
+			|| eptr == argv[3] || *eptr){
+		fprintf(stderr,"Invalid maximum address: %s\n",argv[3]);
 		usage(*argv);
 		return EXIT_FAILURE;
 	}
@@ -329,7 +201,7 @@ int main(int argc,char **argv){
 		usage(*argv);
 		return EXIT_FAILURE;
 	}
-	if(id_cuda(zul,&mem,&tmem,&ctx)){
+	if(id_cuda(zul,&ctx)){
 		cudaError_t err;
 
 		err = cudaGetLastError();
@@ -337,18 +209,7 @@ int main(int argc,char **argv){
 				zul,cudaGetErrorString(err));
 		return EXIT_FAILURE;
 	}
-	if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
-		fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
-		cuCtxDetach(ctx);
-		return EXIT_FAILURE;
-	}
-	if(dump_cuda(&ctx,tmem,fd,unit,gran)){
-		close(fd);
-		cuCtxDetach(ctx);
-		return EXIT_FAILURE;
-	}
-	if(close(fd)){
-		fprintf(stderr,"\nError closing bitmap (%s?)\n",strerror(errno));
+	if(dump_cuda(min,max,unit)){
 		cuCtxDetach(ctx);
 		return EXIT_FAILURE;
 	}

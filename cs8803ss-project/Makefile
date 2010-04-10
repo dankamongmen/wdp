@@ -68,6 +68,7 @@ preview: all
 
 test: all
 	#timelimit -T 1 -t 10 ./$(CUDADUMP)
+	! ./$(CUDARANGER) 0 0 0xffffffff
 	./$(CUDADUMP)
 
 clean:

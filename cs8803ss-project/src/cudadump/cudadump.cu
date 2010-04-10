@@ -60,7 +60,7 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,CUcontext *ctx){
 		*tmem / (1024 * 1024) + !!(*tmem / (1024 * 1024)),
 		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
-		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "" :
+		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "(shared)" :
 		"(unknown compute mode)") < 0){
 		cuCtxDetach(*ctx);
 		cerr = -1;
@@ -305,6 +305,10 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		fprintf(stderr,"  Sanity check failed!\n");
 		return -1;
 	}
+	if( (cerr = cuMemFree(ptr)) ){
+		fprintf(stderr,"  Error freeing CUDA memory (%d?)\n",cerr);
+		return -1;
+	}
 	if( (cerr = cuCtxSynchronize()) ){
 		fprintf(stderr,"  Sanity check failed! (%d?)\n",cerr);
 		return -1;
@@ -313,10 +317,6 @@ dump_cuda(CUcontext *ctx,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	printf("  Dumping %jub...\n",gran);
 	if(divide_address_space((uintptr_t)CONSTWIN,gran,unit,gran)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
-		return -1;
-	}
-	if( (cerr = cuMemFree(ptr)) ){
-		fprintf(stderr,"  Error freeing CUDA memory (%d?)\n",cerr);
 		return -1;
 	}
 	return 0;
