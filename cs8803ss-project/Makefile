@@ -1,25 +1,78 @@
 .DELETE_ON_ERROR:
-.PHONY: all test clean
+.PHONY: all preview profile test clean
 .DEFAULT_GOAL:=test
 
 VPDF:=evince
 
-CFLAGS:=-Wall -W -Werror -O2
-
+SRC:=src
 PRO:=cs8803ssProject
-PROP:=cs8803ssProposal
-PDF:=$(PRO).pdf $(PROP).pdf
-TEX:=$(PRO).tex $(PROP).tex
+PDF:=$(PRO).pdf
+TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
+CUDADUMP:=out/cudadump
+CUDARANGER:=out/cudaranger
+BIN:=$(CUDADUMP) $(CUDARANGER)
+PTX:=$(addsuffix .ptx,$(BIN))
+PROFDATA:=$(addsuffix .prof,$(BIN))
 
-all: $(PDF)
+CUDA?=/usr/local/cuda
+CUDAINC:=$(CUDA)/include
+CUDALIB:=$(CUDA)/lib64
 
-$(PDF): $(TEX) $(TEXOBJS)
+CC:=$(CUDA)/bin/nvcc
+CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
+CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
+LFLAGS:=-lcuda --linker-options -R$(CUDALIB)
+PTXFLAGS:=--ptx
+#CUBINFLAGS:=-deviceemu
+TAGS:=.tags
+
+all: $(PDF) $(BIN) $(PTX)
+
+$(TAGS): $(SRC)/cudadump/cudadump.cu $(SRC)/cudaranger/cudaranger.cu $(SRC)/cuda8803ss.h
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	ctags --langmap=c:.c.cu -f $@ $^
+
+out/cudaranger: $(SRC)/cudaranger/cudaranger.cu $(TAGS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
+out/cudadump: $(SRC)/cudadump/cudadump.cu $(TAGS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
+out/cudadump.ptx: $(SRC)/cudadump/cudadump.cu $(TAGS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
+out/cudaranger.ptx: $(SRC)/cudaranger/cudaranger.cu $(TAGS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
+%.pdf: %.tex %.bib $(TEXOBJS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	pdflatex $<
+	bibtex $(basename $<)
 	pdflatex $<
 	pdflatex $<
 
-test: all
+profile: $(PROFDATA)
+
+PROF:=CUDA_PROFILE_LOG=$(shell pwd)/$(PROFDATA) CUDA_PROFILE=1
+$(PROFDATA): test
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	env $(PROF) out/cudadump
+	cat $@
+
+preview: all
 	$(VPDF) $(PDF)
 
+test: all
+	#timelimit -T 1 -t 10 ./$(CUDADUMP)
+	! ./$(CUDARANGER) 0 0 0xffffffff
+	./$(CUDADUMP)
+
 clean:
-	rm -f $(wildcard *.aux) $(wildcard *.log) $(wildcard *.out) $(wildcard *.pdf)
+	rm -rf out $(TAGS) $(wildcard *.dump)
+	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg)
+	rm -f $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)

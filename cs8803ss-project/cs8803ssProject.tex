@@ -1,11 +1,13 @@
 \documentclass[letterpaper,10pt]{article}
 \usepackage{fullpage}
+\usepackage{textcomp}
 \usepackage{times}
 \usepackage{cite}
 \usepackage{fancyvrb}
 \usepackage{moreverb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{multicol}
 
 \newcommand{\squishlist}{\begin{list}{$\bullet$}
   {\setlength{\itemsep}{0pt}
@@ -14,17 +16,344 @@
     \setlength{\partopsep}{0pt}
     \setlength{\leftmargin}{1.5em}
     \setlength{\labelwidth}{1em}
-    \setlength{\labelsep}{0.5em}}}
+    \setlength{\labelsep}{0.5em}
+  } }
 
 \newcommand{\squishend}{\end{list}}
 
-\title{CS8803SS Spring 2010 Project}
-\author{
-  Nick Black and Jason Rodzik
-  % Should be alphabetical order
-}
+\title{System-Centric Threat Modeling of CUDA\footnote{CUDA\textsuperscript{\textregistered}
+is a registered trademark of the NVIDIA Corporation.}}
+\author{Nick Black and Jason Rodzik\\
+CS8803SS Project, Spring 2010}
 \date{}
 
 \begin{document}
 \maketitle
+
+\begin{abstract}
+Within modern desktops, high-performance workstations, and even laptops there
+exist sources of tremendous computing power: programmable, massively parallel graphics cards\footnote{Also known as ``unified shaders'' and General-Purpose GPUs (GPGPUs).}.
+The hundreds of simple in-order cores found on recent NVIDIA and ATI hardware provide many more peak FLOPS than the x86 processor packages with
+which they're commonly coupled.
+Devices such as NVIDIA's Tesla\texttrademark{} have already traded video outputs for onboard memory, giving rise to ``desktop
+supercomputing.'' Those who would fully utilize their machines can
+no more ignore heterogeneous processors than multiple cores or SIMD\@. Leaving
+large matrix multiplications on general-purpose, out-of-order CPUs is about as
+efficient as eschewing hardware multipliers in favor of iterated addition.
+
+It is, however, almost certainly safer. GPUs have traditionally accelerated
+single-instance, interactive tasks (such as video games and CAD) and
+decomposable, compute-bound tasks (such as batch rendering) for which a
+deinterleaved schedule is optimal. Hardware facilities for the support of
+multiple threads or processes are primitive at best. When the GPU was limited to
+blitting, fogging and aliasing framebuffers, minimal isolation and
+assurance capabilities were tolerable. Compromises of scientific data,
+cryptographic materials and SCADA systems are rather more serious, yet these
+precise applications are driving GPGPU's adoption. We provide a system-centric threat
+model analysis of NVIDIA's CUDA system. We attack the system, drawing blood.
+We close with software-level defenses against our attacks, and their limitations.
+Our results suggest that, unless GPGPU systems add complexity related to security state (and thus devote
+less transistor budget to performance), they cannot provide a trusted computing
+base.
+
+\end{abstract}
+
+\begin{multicols}{2}
+\section{Introduction}
+Heterogeneous computing has definitely arrived, and graphics processing units (GPUs) in the millions are employed worldwide. Tradition has shown newly programmable domains to be rapidly subjected (and often found vulnerable) to attacks of the past; indeed, wherever processing goes, so does the possibility of automated attacks. With high powered GPU's moving from the gamer's desktop to the laboratory's cluster, it's essential that the security issues surrounding their use be fleshed out earlier rather than later. Unfortunately, this is not the case; graphics card manufacturers have not publicized any of their own internal security studies (if any exist), and popular manufacturers are infamous for their
+hostility to open source and academia\footnote{See for instance Wikipedia's page on
+``\href{http://en.wikipedia.org/wiki/NVIDIA\_and\_FOSS}{Graphics hardware and FOSS}''.}
+% This needs to be revised a bit and needs to have more added to it...
+We have identified a variety of attack paths on existing GPU platforms from NVIDIA and ATI in addition to methods for countering these attacks.
+
+\section{An overview of CUDA}
+CUDA is accessed via \texttt{open(2)}ing an appropriate device node and
+invoking \texttt{ioctl(2)}\footnote{See Appendix~\ref{strace} for sample \texttt{strace(2)}
+output.} upon the resulting file descriptor. All accesses to the card and its memory
+originate from the (ring 0) driver; only the \texttt{ioctl(2)} calls themselves
+are executed in userspace. The device node is set 0660 by default;
+ability to make use of the GPU therefore depends upon membership in the
+associated ``\texttt{video}'' group. Aside from this filesystem-level access check, no
+isolation or authentication schemes are known to be present in NVIDIA's driver
+or hardware. It ought be noted that failure to set a device file descriptor
+close-on-exec via \texttt{O\_CLOEXEC} or \texttt{FD\_CLOEXEC} will
+result in a usable device descriptor being duplicated into child processes,
+and that these file descriptors can (by design or error) be passed via
+\texttt{SCM\_RIGHTS} messages on \texttt{PF\_UNIX} sockets.
+
+CUDA devices are either integrated or standalone; integrated hardware typically
+claims a chunk of system RAM, and promptly marks it unprotected. No memory
+protection hardware exists for onboard GDDR\@. All accesses to video memory go
+through the card, unless page-locked memory is comutually mapped. In the
+absence of shared mappings, data must be explicitly copied from video to system
+memory (and vice versa) to be shared among computation devices\cite{cudaguide}.
+
+CUDA kernels are typically distributed as JIT-friendly PTX binaries\cite{kerr},
+an intermediate representation suitable for all NVIDIA hardware. Upon being
+loaded onto the card, dynamic compilation\footnote{Likely performed in the
+driver, not the hardware, though we have not yet verified this.} is performed,
+resulting in a locally-optimized CUBIN blob. These blobs are dispatched to
+Streaming Multiprocessors across the card, all of which share a common memory.
+A given system thread can use only one device at a time, but a device may be
+used by more than one system thread.
+
+CUDA maintains forward compatibility, but augments the instruction set
+between various ``Compute Capabilities''.  CUDA through Capability 1.3 uses
+32-bit physical addressing, while Capability 2.0 uses 40 bits.
+
+\section{Threat model}
+Well-known threat taxonomies include the ``CIA Triad'' (extended by the
+``Parkerian Hexad\cite{sechandbook}'') and Microsoft's STRIDE\@. The latter, developed as part of
+Microsoft's Secure Product Lifecycle, is designed for system-centric threat
+modeling and suitable for our purposes. We assume that an attacker has access
+to the NVIDIA device node(s) (by default, \texttt{/dev/nvidiaX}); such privileges
+are necessary to compute on the device, and thus a safe assumption. Escalation
+to device access is an attack on the operating system's access control, and
+outside the scope of this paper.
+
+We seek to answer the following questions, for machines with one or more CUDA-capable
+cards:
+\subsection{Spoofing}
+\squishlist
+\item Is it possible for one CUDA kernel to pre\"empt data copies requested
+from another?
+\squishend
+\subsection{Tampering}
+\squishlist
+\item Can one CUDA kernel manipulate another's data set?
+\item Is it possible to manipulate the system's video channel from an arbitrary
+CUDA kernel? If so, how might this be further leveraged (for instance, replacing
+a browser padlock icon or disabling system notifications)? What about textures?
+\item Is it possible to construct a debugging environment around other CUDA kernels?
+\squishend
+\subsection{Repudiation}
+\squishlist
+\item Can a CUDA kernel disassociate itself from the system process which spawned it?
+\item Can a CUDA kernel spawn new CUDA kernels?
+\item What forensic data, if any, is created as a result of CUDA computing?
+\squishend
+\subsection{Information disclosure}
+\squishlist
+\item Can a CUDA kernel read another kernel's data set? Need they be simultaneously
+scheduled for this to occur?
+\item Is it possible to read another CUDA kernel's code, even if it cannot be
+controlled?
+\item Is it possible to read the system memory of another CUDA application via
+calls through the CUDA intermediary?
+\item Is it possible to reconstruct the system's video channel from an arbitrary
+CUDA kernel? What about textures?
+\squishend
+\subsection{Denial of service}
+\squishlist
+\item Can a CUDA kernel monopolize resources in the face of competitors?
+\item Can a CUDA kernel prevent another from being controlled, or executing
+data transfers to or from the system?
+\item Can a CUDA kernel deny resources beyond the GPU\@?
+\squishend
+\subsection{Escalation of privilege}
+\squishlist
+\item Might the driver be exploited, allowing arbitrary ring 0 code to run?
+\item If it is possible to return doppelg\"anger data, might it be leveraged
+to attack (and hopefully exploit) system-side processes?
+\item Is it possible to arbitrarily (i.e.\ without exploitation) manipulate
+another CUDA kernel's code? Is it possible to construct a CUDA virus?
+\item Is it possible to arbitrarily (i.e.\ without exploitation) manipulate a
+system process's code maps from a CUDA kernel?
+\squishend
+
+\section{Methodology}
+It is first necessary to develop a model of memory protection, multiple user
+contexts, and memory layout in CUDA. Few details have been made public
+regarding these topics; what public knowledge exists takes the form of
+scattered fora posts, Wikis\cite{nouveaucuda}, and mailing lists. Foremost among these is memory
+protection; a trusted multiprocess computing base cannot be constructed in its
+absence. Memory protection for host accesses of the GPU could be implemented at
+three levels, each more effective than the last:
+\squishlist
+\item the proprietary CUDA and OpenGL libaries,
+\item the proprietary \texttt{nvidia.ko} kernel driver, and
+\item on the hardware itself.
+\squishend
+Userspace protection can likely be thwarted by userspace code, whereas
+protection implemented within the kernel module ought be secure against
+all but ring 0 operations (recall that our threat model does not assume access
+to ring 0). It is unlikely that protection on the card itself can be generally
+circumvented. Furthermore, this is the only place to protect memory from CUDA
+kernels.
+
+We implemented the \texttt{cudadump} and
+\texttt{cudascorch} tools (see below)%fixme use ref%
+to explore memory protection.
+
+\subsection{Tools}
+We developed
+\squishlist
+\item \texttt{cudadump} to read raw address ranges, generating as output a
+bitmap of valid and invalid accesses, and an optional disk image.
+\item \texttt{cudascorch} to write raw address ranges, generating as output a
+bitmap of valid and invalid accesses.
+\squishend
+We made use of
+\squishlist
+\item \texttt{cuda-gdb}\cite{cudagdb} to debug CUDA programs,
+\item \texttt{strace}\cite{stracecode} to track system calls,
+\item \texttt{nv50dis}\cite{nv50dis} to disassemble nv50 binaries,
+\item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl(2)}s
+issued to the NVIDIA proprietary driver, and
+\item The Linux kernel's MMIOTrace\cite{mmiotrace}
+infrastructure to track memory-mapped I/O operations.
+\squishend
+
+\section{Attacking CUDA}
+Some addressing details are definitively declared in the PTX Reference\cite{ptxguide}.
+Through Compute Capability 1.3, load and store instructions require a "state space"
+modifier in addition to an address. General-purpose registers (\texttt{r0}--\texttt{r127}) are
+indexed via a 7-bit immediate. Global memory, accessed via one of 16 linear ranges
+of up to 4GB each (\texttt{g0}--\texttt{g15}), is addressed via the
+contents of a 32-bit general purpose register. Other state spaces are addressed
+via the sum of an address register (\texttt{a0}--\texttt{a7}) and an immediate
+offset. Constant memory is referenced through one of 16 linear ranges of up to
+64KB each (\texttt{c0}--\texttt{c15}), as is a block-shared region of up to 16KB
+(\texttt{s}). The per-thread local memory (\texttt{l}), an abstraction atop the
+global memory, performs address translation based on the block and thread indices.
+Platforms such as the Tesla\textsuperscript{\texttrademark} provide the full 
+4GB of memory accessible via these 32 bits.
+
+Compute Capability 2.0 unifies addressing, but provides backwards-compatibility.
+Virtual addresses are extended to 64 bits, with 40 physical bits currently
+supported for up to 1TB of RAM.
+\section{Defending CUDA}
+
+\section{Conclusions} 
+The recommendations of the Orange Book\cite{orangebook}, requirements of the Common Criteria\cite{ccrit},
+and Saltzer-Schroeder\cite{principles} have long provided general principles for
+security-conscious design. Any number of these principles have been ignored
+(or poorly effected) along the way to NVIDIA's and ATI's current GPUs. These
+manufacturers focused nigh-exclusively on performance relative to cost and
+power, resulting in some of the world's most powerful devices. Harnessing these
+mighty processing units is necessary to even approach full machine utilization.
+This will become only more true:
+\begin{itemize}
+\item Increasing the clock frequency affects cooling and power requirements
+(dynamic power consumption is proportional to frequency). Furthermore,
+clock frequency increases tend to force decomposition of pipeline
+stages, exacerbating branch misprediction delays and pressuring any OOO
+system\cite{cormean}.
+\item Increasing the issue width, or duplicating functional units, either
+requires ISA changes (for VLIW) or massive frontend resources for lookahead,
+disambiguation, and hazard tracking. Assuming these expenses acceptable,
+diminishing returns result from limitations of instruction-level parallelism.
+Furthermore, very wide issues lead to sparse code flows, taxing the instruction
+store subsystem. 
+\item Further investments in cache --- and thus, hopefully, fewer memory
+delays --- serve only to approach more closely a device's theoretical peak.
+That peak itself is a function of architecture, not of programs or their
+access patterns.
+\item Investments in OOO apparatus (reorder buffers,
+frontend reservation stations, register renaming) yield diminishing returns due
+to the profound limitations of instruction level parallelism\cite{phenn}. Like improvements
+to cache, OOO can only hide delays, not find new FLOPS\@.
+\item Denser chip-multithreading similarly serves only to hide latency.
+\item Larger chips require either pipelined wires or high voltages to operate
+reliably, and place strict requirements on clock-signaling circuity. Efficient
+power management requires complex and expensive partial power gating\footnote{For
+instance, feeding $\mu$ops from Nehalem's Loop Stream Detector results in power-down
+of the leading three pipeline stages.}.
+\end{itemize}
+We see that FLOPS --- at any price --- can be had only by adding cores or extending
+SIMD order. The former is obviously easier with small, in-order, SISD cores,
+such as the unified shaders of a modern GPU\@; duplicating a Nehalem core is a
+much more daunting process. As for the latter, note that Intel's ``Sandy
+Bridge'' microarchitecture is expected to add the AVX instruction scheme and
+its 256-bit \texttt{YMM} vector registers\cite{avx}\cite{fma4}. The data-based decomposition of CUDA's
+``SIMT'' model can immediately take advantage of their new cores (given
+sufficiently large problem sets, of course), whereas x86 binaries\footnote{Most of them, anyway.} would
+require dynamic translation or recompilation to take advantage of the new SIMD
+order.
+
+Extensive manycoring and huge memory bandwidths are certainly the key to FLOPS,
+but programmable GPUs in their current state are damningly insecure. Without the
+addition of infrastructure and policy, they must not be trusted in a
+multiprocessing context. Even in the absence of calculated attack, one's own
+mistakes or accidents can wreck undetected havoc. It ought be noted that memory
+protection could be implemented without the added complexity of
+hardware-supported virtual memory (provided some assistance from the OS); this
+would immediately address most issues.
+
+\section{Related work}
+Our research in this area is focused on the possibility of security
+vulnerabilities against the GPU itself, an area which we were unable to find
+prior research for. However, our research is motivated in part by an increase
+in applications being developed for GPUs and also by GPUs being used as the
+processing unit for security related tasks.
+  
+\subsection{General applications}
+  
+  Dedicated graphical processing units (GPUs) have seen significant advancement
+in the past couple decades due to the insatiable demand that consumers have for
+ever-increasing advances in video game graphics. This development has led to
+recent GPUs reaching the point where they are powerful enough that there has
+been significant research invested into using them to execute tasks outside the
+realm of video games. One of the most popular examples of this is the
+Folding@Home project, which in recent years has developed a version of its
+application that runs on both ATI and nVidia brand GPUs
+\url{http://folding.stanford.edu/English/Guide#ntoc4}.
+  
+  In 2007, nVidia released an SDK for CUDA, their ``Compute Unified Device
+Architecture'', allowing for the GPU to be much more accessible to developers
+wishing to use the GPU for non-graphical applications. In the three years since
+then, a wide variety of applications for CUDA have been developed\footnote{\url{http://www.nvidia.com/object/what\_is\_cuda\_new.html}}.
+  
+  General Mills developed an application that used CUDA to model the optimal
+way to cook a frozen pizza in a microwave. SeismicCity used CUDA to improve the
+amount of time it takes to interpret seismic data to determine the optimal
+drilling locations for finding oil
+\url{http://www.nvidia.com/object/cuda\_in\_action.html}.
+  
+  Other companies are offering CUDA solutions for problems in the realms of
+electromagnetics, bioinformatics, finance, accelerator physics, aerodynamics,
+engine optimizations, image and video stream compression, healthcare and life
+sciences, medical imaging, defense, and more
+\squishlist
+\item \url{http://www.acceleware.com/default/index.cfm/professional-services/}
+\item \url{http://www.aneo.fr/index.php?option=com\_content&amp;view=article&amp;id=91&amp;Itemid=110}
+\item \url{http://www.parallel-compute.com/}
+\item \url{http://www.caps-entreprise.com/nvidia.html}
+\item \url{http://www.elegant-mathematics.com/index.html?NVGPU}
+\item \url{http://www.culatools.com/consulting}
+\item \url{http://www.fixstars.com/en/solutions/gpu/}
+\item \url{http://www.hoopoe-cloud.com/Services.aspx}
+\item \url{http://www.hpc-project.com/gpu2.htm}
+\item \url{http://www.sagivtech.com/21541.html}
+\item \url{http://www.stoneridgetechnology.com/services/visualcomputing.asp}
+\item \url{http://gpucomputing.txcorp.com/}.
+\squishend
+  
+\subsection{Security applications}
+  There are a few research areas where GPUs have been used in security applications, but all of these involve using the GPU as a faster processor than the CPU, and none of the research involves investigating the GPU itself or coding frameworks such as CUDA from a security standpoint.
+  
+  The most common security task that GPUs have been used for in prior work have been to use the GPU for performing cryptographic computations. Research has found that GPUs can perform some AES-related OpenSSL computations up to 20 times as fast as a typical implementation
+\url{http://www.manavski.com/downloads/PID505889.pdf}. Another aspect that is of importance, particularly to copyright groups such as the RIAA and MPAA, are the encryption techniques used with GPUs for the security of applications involving remote displays, such as for HDCP blu-ray implementations\url{http://www.amazon.com/CryptoGraphics-Exploiting-Graphics-Security-Information/dp/038729015X}.
+  
+  While GPUs can be used for improving the speed of cipher implementations, they can be used to speed up cryptographic attacks as well. In some cases, applications have been developed using CUDA to allow for WiFi keys to be broken up to 100 times as fast as in typical implementations \url{http://arstechnica.com/security/news/2008/10/company-puts-nvida-gpus-to-work-cracking-wireless-security.ars}.
+  
+  Intrusion detection systems can exhibit performance degradation under heavy
+  loads, and some of the proposed solutions to this problem have involved
+  offloading IDS computations to the GPU
+  \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.125.3302&amp;rep=rep1&amp;type=pdf}.
+  Additionally, some techniques in pattern-matching are difficult to perform
+  quickly enough to be useful, and GPUs have been proposed as a solution that
+  allow for significant decreases in computation time
+  \url{http://portal.acm.org/citation.cfm?id=1395492}.
+
+\bibliographystyle{acm}
+\bibliography{cs8803ssProject}
+\end{multicols}
+\appendix
+\newpage
+\section{\texttt{strace(2)d} CUDA binary}\label{strace}
+\VerbatimInput[fontsize=\scriptsize,numbers=left,framerule=.8mm,label=strace(2)d deviceQueryDrv]{texobjs/deviceQueryDrv.strace}
+\newpage
+\section{\texttt{libcuda.so.195.36.15} 3.0 symbols}\label{strace}
+\VerbatimInput[fontsize=\scriptsize,numbers=left,framerule=.8mm,label=dynamic symbols]{texobjs/cudasymbols}
 \end{document}
