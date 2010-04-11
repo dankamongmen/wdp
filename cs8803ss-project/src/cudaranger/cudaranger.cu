@@ -49,9 +49,8 @@ memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	__shared__ unsigned psum[BLOCK_SIZE];
 
 	psum[threadIdx.x] = 0;
-	psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
 	while(aptr + threadIdx.x * unit < bptr){
-		//psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
+		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
 		aptr += BLOCK_SIZE * unit;
 	}
 }

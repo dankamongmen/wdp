@@ -233,7 +233,6 @@ memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	__shared__ unsigned psum[BLOCK_SIZE];
 
 	psum[threadIdx.x] = 0;
-	psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
 	while(aptr + threadIdx.x * unit < bptr){
 		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
 		aptr += BLOCK_SIZE * unit;
@@ -258,17 +257,18 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 	}else if(pid == 0){
 		int err;
 
-		memkernel<<<1,1>>>((uintptr_t)off,(uintptr_t)(off + s),unit);
+		memkernel<<<1,512>>>((uintptr_t)off,(uintptr_t)(off + s),unit);
 		if((err = cuCtxSynchronize()) == CUDA_SUCCESS){
-			printf("W00T!\n");
-			return 0;
+			exit(CUDARANGER_EXIT_SUCCESS);
+		}else if(err == CUDA_ERROR_LAUNCH_FAILED){
+			exit(CUDARANGER_EXIT_CUDAFAIL);
 		}
-		printf("ARGH! %d\n",err);
-		if(execvp(RANGER,argv)){
+		fprintf(stderr,"  Error running kernel (%d)\n",err);
+		/*if(execvp(RANGER,argv)){
 			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",
 					RANGER,strerror(errno));
-		}
-		exit(EXIT_FAILURE);
+		}*/
+		exit(CUDARANGER_EXIT_ERROR);
 	}else{
 		int status;
 		pid_t w;
@@ -281,7 +281,6 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 			}
 		}
 		if(!WIFEXITED(status) || WEXITSTATUS(status) == CUDARANGER_EXIT_ERROR){
-			printf("SHIT! %d %d\n",WIFEXITED(status),WEXITSTATUS(status));
 			fprintf(stderr,"  Exception running %s %s %s %s\n",
 					argv[0],argv[1],argv[2],argv[3]);
 			return -1;
@@ -300,7 +299,6 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 					return -1;
 				}
 			}
-			printf("BEARFUCKER 2 %ju %ju %ju\n",mid,s,gran);
 		}else{
 			fprintf(stderr,"  Unknown result code %d running"
 				       " %s %s %s %s\n",WEXITSTATUS(status),
@@ -336,7 +334,7 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		cuMemFree(ptr);
 		return -1;
 	}
-	printf("  Sanity checking allocated region...\n");
+	printf("  Verifying allocated region...\n");
 	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran)){
 		fprintf(stderr,"  Sanity check failed!\n");
 		cuMemFree(ptr);
@@ -353,12 +351,21 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	}
 	printf("  Dumping %jub...\n",tmem - (uintptr_t)CONSTWIN);
 	if(divide_address_space(devno,(uintptr_t)CONSTWIN,
-				//(uintptr_t)0x10000000ull - (uintptr_t)CONSTWIN,unit,gran)){
 				tmem - (uintptr_t)CONSTWIN,unit,gran)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		cuMemFree(ptr);
 		return -1;
 	}
+	printf("  Dumping address space (%jub)...\n",(uintmax_t)0x100000000ull);
+	if(divide_address_space(devno,0,0x100000000ull,unit,gran)){
+		fprintf(stderr,"  Error probing CUDA memory!\n");
+		cuMemFree(ptr);
+		return -1;
+	}
+	/*if( (cerr = cuCtxSynchronize()) ){
+		fprintf(stderr,"  Error probing CUDA memory! (%d?)\n",cerr);
+		return -1;
+	}*/
 	return 0;
 }
 
