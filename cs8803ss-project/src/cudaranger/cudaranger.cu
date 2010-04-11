@@ -9,71 +9,11 @@
 #include <sys/mman.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
+#include "cuda8803ss.h"
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 #define CONSTWIN ((unsigned *)0x10000u)
 #define BLOCK_SIZE 512
-
-// CUDA must already have been initialized before calling cudaid().
-#define CUDASTRLEN 80
-static int
-id_cuda(int dev,CUcontext *ctx){
-	struct cudaDeviceProp dprop;
-	int major,minor,attr,cerr;
-	unsigned mem,tmem;
-	void *str = NULL;
-	CUdevice c;
-
-	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if((cerr = cudaGetDeviceProperties(&dprop,dev)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
-	if(cerr != CUDA_SUCCESS || attr <= 0){
-		return cerr;
-	}
-	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,c);
-	if(cerr != CUDA_SUCCESS || attr <= 0){
-		return cerr;
-	}
-	if((cerr = cuDeviceComputeCapability(&major,&minor,c)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if((str = malloc(CUDASTRLEN)) == NULL){
-		return -1;
-	}
-	if((cerr = cuDeviceGetName((char *)str,CUDASTRLEN,c)) != CUDA_SUCCESS){
-		goto err;
-	}
-	if((cerr = cuCtxCreate(ctx,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
-		goto err;
-	}
-	if((cerr = cuMemGetInfo(&mem,&tmem)) != CUDA_SUCCESS){
-		cuCtxDetach(*ctx);
-		goto err;
-	}
-	if(printf(" %d.%d %s %s %u/%uMB free %s\n",
-		major,minor,
-		dprop.integrated ? "Integrated" : "Standalone",(char *)str,
-		mem / (1024 * 1024) + !!(mem / (1024 * 1024)),
-		tmem / (1024 * 1024) + !!(tmem / (1024 * 1024)),
-		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
-		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
-		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "(shared)" :
-		"(unknown compute mode)") < 0){
-		cuCtxDetach(*ctx);
-		cerr = -1;
-		goto err;
-	}
-	free(str);
-	return CUDA_SUCCESS;
-
-err:	// cerr ought already be set!
-	free(str);
-	return cerr;
-}
 
 #define CUDAMAJMIN(v) v / 1000, v % 1000
 
@@ -87,8 +27,6 @@ init_cuda(unsigned *count){
 	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
 		return cerr;
 	}
-	printf("Compiled against CUDA version %d.%d. Linked against CUDA version %d.%d.\n",
-			CUDAMAJMIN(CUDA_VERSION),CUDAMAJMIN(attr));
 	if(CUDA_VERSION > attr){
 		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
 		return -1;
@@ -101,7 +39,6 @@ init_cuda(unsigned *count){
 		return -1;
 	}
 	*count = c;
-	printf("CUDA device count: %d\n",*count);
 	return CUDA_SUCCESS;
 }
 
@@ -126,16 +63,19 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit){
 	float bw;
 
 	if(tmin >= tmax){
-		return -1;
+		return CUDARANGER_EXIT_ERROR;
 	}
 	s = tmax - tmin;
-	printf("   memkernel {%u x %u} x {%u x %u x %u} (0x%jx, 0x%jx (%jub), %u)\n",
+	printf("   memkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(tmin,tmax,unit);
-	if( (cerr = cuCtxSynchronize()) ){
-		fprintf(stderr,"   Error running kernel (%d?)\n",cerr);
-		return -1;
+	if( (cerr = cudaThreadSynchronize()) ){
+		if(cerr != CUDA_ERROR_LAUNCH_FAILED){
+			fprintf(stderr,"   Error running kernel (%d?)\n",cerr);
+			return CUDARANGER_EXIT_ERROR;
+		}
+		return CUDARANGER_EXIT_CUDAFAIL;
 	}
 	gettimeofday(&time1,NULL);
 	timersub(&time1,&time0,&timer);
@@ -147,7 +87,7 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit){
 	}
 	printf("   elapsed time: %ju.%jus (%.3f %cB/s)\n",
 			usec / 1000000,usec % 1000000,bw,punit);
-	return 0;
+	return CUDARANGER_EXIT_SUCCESS;
 }
 
 // FIXME: we really ought take a bus specification rather than a device number,
@@ -162,31 +102,30 @@ int main(int argc,char **argv){
 	unsigned unit = 4;		// Minimum alignment of references
 	unsigned long zul;
 	unsigned count;
-	CUresult cerr;
-	CUcontext ctx;
 	char *eptr;
 
 	if(argc != 4){
 		usage(*argv);
-		return EXIT_FAILURE;
+		return CUDARANGER_EXIT_ERROR;
 	}
 	if(((zul = strtoul(argv[1],&eptr,0)) == ULONG_MAX && errno == ERANGE)
 			|| eptr == argv[1] || *eptr){
 		fprintf(stderr,"Invalid device number: %s\n",argv[1]);
+		printf("%lu %d\n",zul,*eptr);
 		usage(*argv);
-		return EXIT_FAILURE;
+		return CUDARANGER_EXIT_ERROR;
 	}
 	if(((min = strtoull(argv[2],&eptr,0)) == ULLONG_MAX && errno == ERANGE)
 			|| eptr == argv[2] || *eptr){
 		fprintf(stderr,"Invalid minimum address: %s\n",argv[2]);
 		usage(*argv);
-		return EXIT_FAILURE;
+		return CUDARANGER_EXIT_ERROR;
 	}
 	if(((max = strtoull(argv[3],&eptr,0)) == ULLONG_MAX && errno == ERANGE)
 			|| eptr == argv[3] || *eptr){
 		fprintf(stderr,"Invalid maximum address: %s\n",argv[3]);
 		usage(*argv);
-		return EXIT_FAILURE;
+		return CUDARANGER_EXIT_ERROR;
 	}
 	if(init_cuda(&count)){
 		cudaError_t err;
@@ -194,28 +133,20 @@ int main(int argc,char **argv){
 		err = cudaGetLastError();
 		fprintf(stderr,"Error initializing CUDA (%s?)\n",
 				cudaGetErrorString(err));
-		return EXIT_FAILURE;
+		return CUDARANGER_EXIT_ERROR;
 	}
-	if(zul >= count){
-		fprintf(stderr,"devno too large (%lu >= %d)\n",zul,count);
-		usage(*argv);
-		return EXIT_FAILURE;
-	}
-	if(id_cuda(zul,&ctx)){
+	if(cudaSetDevice(zul)){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"\nError probing CUDA device %lu (%s?)\n",
+		fprintf(stderr,"Error selecting device %lu (%s?)\n",
 				zul,cudaGetErrorString(err));
-		return EXIT_FAILURE;
+		if(zul > count){
+			fprintf(stderr,"devno too large (%lu >= %d)\n",zul,count);
+		}
+		usage(*argv);
+		return CUDARANGER_EXIT_ERROR;
 	}
-	if(dump_cuda(min,max,unit)){
-		cuCtxDetach(ctx);
-		return EXIT_FAILURE;
-	}
-	if((cerr = cuCtxDetach(ctx)) != CUDA_SUCCESS){
-		fprintf(stderr,"\nError detaching context (%d?)\n",cerr);
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
+	// select device!
+	return dump_cuda(min,max,unit);
 }

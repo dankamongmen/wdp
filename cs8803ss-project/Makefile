@@ -4,6 +4,7 @@
 
 VPDF:=evince
 
+SRC:=src
 PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
@@ -19,7 +20,7 @@ CUDAINC:=$(CUDA)/include
 CUDALIB:=$(CUDA)/lib64
 
 CC:=$(CUDA)/bin/nvcc
-CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(CUDAINC)
+CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda --linker-options -R$(CUDALIB)
 PTXFLAGS:=--ptx
@@ -28,23 +29,23 @@ TAGS:=.tags
 
 all: $(PDF) $(BIN) $(PTX)
 
-$(TAGS): src/cudadump/cudadump.cu
+$(TAGS): $(SRC)/cudadump/cudadump.cu $(SRC)/cudaranger/cudaranger.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu -f $@ $^
 
-out/cudaranger: src/cudaranger/cudaranger.cu $(TAGS)
+out/cudaranger: $(SRC)/cudaranger/cudaranger.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudadump: src/cudadump/cudadump.cu $(TAGS)
+out/cudadump: $(SRC)/cudadump/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudadump.ptx: src/cudadump/cudadump.cu $(TAGS)
+out/cudadump.ptx: $(SRC)/cudadump/cudadump.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudaranger.ptx: src/cudaranger/cudaranger.cu $(TAGS)
+out/cudaranger.ptx: $(SRC)/cudaranger/cudaranger.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 

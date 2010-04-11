@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
+#include "cuda8803ss.h"
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 #define CONSTWIN ((unsigned *)0x10000u)
@@ -229,21 +230,20 @@ carve_range(uintmax_t min,uintmax_t max,unsigned gran){
 
 static int
 divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
+	char min[40],max[40],dev[20];
+	char * const argv[] = { RANGER, dev, min, max, NULL };
 	pid_t pid;
 
+	if((size_t)snprintf(min,sizeof(min),"%ju",off) >= sizeof(min) ||
+			(size_t)snprintf(max,sizeof(max),"%ju",off + s) >= sizeof(max) ||
+			(size_t)snprintf(dev,sizeof(dev),"%d",devno) >= sizeof(dev)){
+		fprintf(stderr,"  Invalid arguments: %d %ju %ju\n",devno,min,max);
+		return -1;
+	}
 	if((pid = fork()) < 0){
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
-		char min[40],max[40],dev[20];
-		char * const argv[] = { RANGER, dev, min, max, NULL };
-
-		if((size_t)snprintf(min,sizeof(min),"%ju\n",off) >= sizeof(min) ||
-				(size_t)snprintf(max,sizeof(max),"%ju\n",off + s) >= sizeof(max) ||
-				(size_t)snprintf(dev,sizeof(dev),"%d\n",devno) >= sizeof(dev)){
-			fprintf(stderr,"  Invalid arguments: %d %ju %ju\n",devno,min,max);
-			exit(EXIT_FAILURE);
-		}
 		if(execvp(RANGER,argv)){
 			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",
 					RANGER,strerror(errno));
@@ -260,7 +260,15 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 				return -1;
 			}
 		}
-		if(!WIFEXITED(status) || WEXITSTATUS(status)){
+		if(!WIFEXITED(status) || WEXITSTATUS(status) == CUDARANGER_EXIT_ERROR){
+			printf("SHIT! %d %d\n",WIFEXITED(status),WEXITSTATUS(status));
+			fprintf(stderr,"  Exception running %s %s %s %s\n",
+					argv[0],argv[1],argv[2],argv[3]);
+			return -1;
+		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_SUCCESS){
+			printf("BEARFUCKER\n");
+			// FIXME Success! mark up the map
+		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_CUDAFAIL){
 			uintmax_t mid;
 
 			mid = carve_range(off,off + s,gran);
@@ -272,8 +280,12 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 					return -1;
 				}
 			}
+			printf("BEARFUCKER 2 %ju %ju %ju\n",mid,s,gran);
 		}else{
-			// FIXME Success! mark up the map
+			fprintf(stderr,"  Unknown result code %d running"
+				       " %s %s %s %s\n",WEXITSTATUS(status),
+				       argv[0],argv[1],argv[2],argv[3]);
+			return -1;
 		}
 	}
 	return 0;
@@ -296,7 +308,7 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	if(check_const_ram(CONSTWIN)){
 		return -1;
 	}
-	// FIXME need to set fd, free up bitmap (especially on error paths!)
+	// FIXME need to munmap(2) bitmap (especially on error paths!)
 	if(create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
 				strerror(errno));
@@ -315,9 +327,9 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		fprintf(stderr,"  Sanity check failed! (%d?)\n",cerr);
 		return -1;
 	}
-	gran = tmem - (uintptr_t)CONSTWIN;
-	printf("  Dumping %jub...\n",gran);
-	if(divide_address_space(devno,(uintptr_t)CONSTWIN,gran,unit,gran)){
+	printf("  Dumping %jub...\n",tmem - (uintptr_t)CONSTWIN);
+	if(divide_address_space(devno,(uintptr_t)CONSTWIN,
+				tmem - (uintptr_t)CONSTWIN,unit,gran)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
@@ -325,7 +337,7 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 }
 
 int main(void){
-	uintmax_t gran = 1024 * 1024;	// Granularity of report / verification
+	uintmax_t gran = 64 * 1024;	// Granularity of report / verification
 	unsigned unit = 4;		// Minimum alignment of references
 	int z,count;
 
