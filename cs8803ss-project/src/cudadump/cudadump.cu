@@ -362,10 +362,10 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		cuMemFree(ptr);
 		return -1;
 	}
-	/*if( (cerr = cuCtxSynchronize()) ){
+	if( (cerr = cuCtxSynchronize()) ){
 		fprintf(stderr,"  Error probing CUDA memory! (%d?)\n",cerr);
 		return -1;
-	}*/
+	}
 	return 0;
 }
 
