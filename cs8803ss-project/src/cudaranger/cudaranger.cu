@@ -18,8 +18,10 @@
 #define CUDAMAJMIN(v) v / 1000, v % 1000
 
 static int
-init_cuda(unsigned *count){
-	int attr,cerr,c;
+init_cuda(int devno){
+	int attr,cerr;
+	CUcontext ctx;
+	CUdevice c;
 
 	if((cerr = cuInit(0)) != CUDA_SUCCESS){
 		return cerr;
@@ -31,14 +33,14 @@ init_cuda(unsigned *count){
 		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
 		return -1;
 	}
-	if((cerr = cuDeviceGetCount(&c)) != CUDA_SUCCESS){
+	if((cerr = cuDeviceGet(&c,devno)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't get device reference, exiting.\n");
 		return cerr;
 	}
-	if(c <= 0){
-		fprintf(stderr,"No CUDA devices found, exiting.\n");
-		return -1;
+	if((cerr = cuCtxCreate(&ctx,0,c)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't create context, exiting.\n");
+		return cerr;
 	}
-	*count = c;
 	return CUDA_SUCCESS;
 }
 
@@ -47,8 +49,9 @@ memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
 	__shared__ unsigned psum[BLOCK_SIZE];
 
 	psum[threadIdx.x] = 0;
+	psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
 	while(aptr + threadIdx.x * unit < bptr){
-		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
+		//psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
 		aptr += BLOCK_SIZE * unit;
 	}
 }
@@ -62,17 +65,18 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit){
 	uintmax_t usec,s;
 	float bw;
 
-	if(tmin >= tmax){
-		return CUDARANGER_EXIT_ERROR;
-	}
 	s = tmax - tmin;
 	printf("   memkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(tmin,tmax,unit);
 	if( (cerr = cudaThreadSynchronize()) ){
+		cudaError_t err;
+
 		if(cerr != CUDA_ERROR_LAUNCH_FAILED){
-			fprintf(stderr,"   Error running kernel (%d?)\n",cerr);
+			err = cudaGetLastError();
+			fprintf(stderr,"   Error running kernel (%d, %s?)\n",
+					cerr,cudaGetErrorString(err));
 			return CUDARANGER_EXIT_ERROR;
 		}
 		return CUDARANGER_EXIT_CUDAFAIL;
@@ -101,8 +105,8 @@ int main(int argc,char **argv){
 	unsigned long long min,max;
 	unsigned unit = 4;		// Minimum alignment of references
 	unsigned long zul;
-	unsigned count;
 	char *eptr;
+	int cerr;
 
 	if(argc != 4){
 		usage(*argv);
@@ -127,26 +131,19 @@ int main(int argc,char **argv){
 		usage(*argv);
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if(init_cuda(&count)){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"Error initializing CUDA (%s?)\n",
-				cudaGetErrorString(err));
-		return CUDARANGER_EXIT_ERROR;
-	}
-	if(cudaSetDevice(zul)){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"Error selecting device %lu (%s?)\n",
-				zul,cudaGetErrorString(err));
-		if(zul > count){
-			fprintf(stderr,"devno too large (%lu >= %d)\n",zul,count);
-		}
+	if(max <= min){
+		fprintf(stderr,"Invalid arguments: max (%ju) <= min (%ju)\n",
+				max,min);
 		usage(*argv);
 		return CUDARANGER_EXIT_ERROR;
 	}
-	// select device!
+	if((cerr = init_cuda(zul)) != CUDA_SUCCESS){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"Error initializing CUDA device %d (%d, %s?)\n",
+				zul,cerr,cudaGetErrorString(err));
+		return CUDARANGER_EXIT_ERROR;
+	}
 	return dump_cuda(min,max,unit);
 }
