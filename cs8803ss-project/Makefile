@@ -69,8 +69,8 @@ preview: all
 
 test: all
 	#timelimit -T 1 -t 10 ./$(CUDADUMP)
-	! ./$(CUDARANGER) 0 0 0xffffffff
 	./$(CUDADUMP)
+	! ./$(CUDARANGER) 0 0 0x100000000
 
 clean:
 	rm -rf out $(TAGS) $(wildcard *.dump)
