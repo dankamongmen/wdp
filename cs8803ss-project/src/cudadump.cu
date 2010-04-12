@@ -228,17 +228,6 @@ carve_range(uintmax_t min,uintmax_t max,unsigned gran){
 
 #define RANGER "out/cudaranger"
 
-__global__ void
-memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
-	__shared__ unsigned psum[BLOCK_SIZE];
-
-	psum[threadIdx.x] = 0;
-	while(aptr + threadIdx.x * unit < bptr){
-		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
-		aptr += BLOCK_SIZE * unit;
-	}
-}
-
 static int
 divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	char min[40],max[40],dev[20];
@@ -255,12 +244,15 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
+		dim3 dblock(BLOCK_SIZE,1,1);
+		dim3 dgrid(1,1);
 		int err;
 
-		memkernel<<<1,512>>>((uintptr_t)off,(uintptr_t)(off + s),unit);
+		memkernel<<<dgrid,dblock>>>((uintptr_t)off,(uintptr_t)(off + s),unit);
 		if((err = cuCtxSynchronize()) == CUDA_SUCCESS){
 			exit(CUDARANGER_EXIT_SUCCESS);
 		}else if(err == CUDA_ERROR_LAUNCH_FAILED){
+		fprintf(stderr,"  Error running kernel (%d)\n",err);
 			exit(CUDARANGER_EXIT_CUDAFAIL);
 		}
 		fprintf(stderr,"  Error running kernel (%d)\n",err);

@@ -5,6 +5,7 @@
 VPDF:=evince
 
 SRC:=src
+OUT:=out
 PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
@@ -29,25 +30,25 @@ TAGS:=.tags
 
 all: $(PDF) $(BIN) $(PTX)
 
-$(TAGS): $(SRC)/cudadump/cudadump.cu $(SRC)/cudaranger/cudaranger.cu $(SRC)/cuda8803ss.h
+$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu -f $@ $^
 
-out/cudaranger: $(SRC)/cudaranger/cudaranger.cu $(TAGS)
+$(OUT)/cudaranger: $(OUT)/cudaranger.o $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudadump: $(SRC)/cudadump/cudadump.cu $(TAGS)
+$(OUT)/cudadump: $(OUT)/cudadump.o $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudadump.ptx: $(SRC)/cudadump/cudadump.cu $(TAGS)
+$(OUT)/%.ptx: $(SRC)/%.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-out/cudaranger.ptx: $(SRC)/cudaranger/cudaranger.cu $(TAGS)
+$(OUT)/%.o: $(SRC)/%.cu $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
 %.pdf: %.tex %.bib $(TEXOBJS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
