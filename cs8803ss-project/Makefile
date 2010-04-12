@@ -32,7 +32,7 @@ all: $(PDF) $(BIN) $(PTX)
 
 $(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	ctags --langmap=c:.c.cu -f $@ $^
+	ctags --langmap=c:.c.cu.h -f $@ $^
 
 $(OUT)/cudaranger: $(OUT)/cudaranger.o $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)

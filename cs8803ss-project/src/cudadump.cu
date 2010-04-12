@@ -244,23 +244,11 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
-		dim3 dblock(BLOCK_SIZE,1,1);
-		dim3 dgrid(1,1);
-		int err;
-
-		memkernel<<<dgrid,dblock>>>((uintptr_t)off,(uintptr_t)(off + s),unit);
-		if((err = cuCtxSynchronize()) == CUDA_SUCCESS){
-			exit(CUDARANGER_EXIT_SUCCESS);
-		}else if(err == CUDA_ERROR_LAUNCH_FAILED){
-		fprintf(stderr,"  Error running kernel (%d)\n",err);
-			exit(CUDARANGER_EXIT_CUDAFAIL);
-		}
-		fprintf(stderr,"  Error running kernel (%d)\n",err);
 		/*if(execvp(RANGER,argv)){
-			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",
-					RANGER,strerror(errno));
-		}*/
-		exit(CUDARANGER_EXIT_ERROR);
+			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
+		}
+		exit(CUDARANGER_EXIT_ERROR);*/
+		exit(dump_cuda(off,off + s,unit));
 	}else{
 		int status;
 		pid_t w;
@@ -301,7 +289,7 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 }
 
 static int
-dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
+cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	CUdeviceptr ptr;
 	CUresult cerr;
 	uintmax_t s;
@@ -391,7 +379,7 @@ int main(void){
 			fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}
-		if(dump_cuda(z,tmem,fd,unit,gran)){
+		if(cudadump(z,tmem,fd,unit,gran)){
 			close(fd);
 			return EXIT_FAILURE;
 		}

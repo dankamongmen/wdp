@@ -68,8 +68,8 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit){
 		bw /= 1000.0f;
 		punit = 'G';
 	}
-	printf("   elapsed time: %ju.%jus (%.3f %cB/s)\n",
-			usec / 1000000,usec % 1000000,bw,punit);
+	printf("   elapsed time: %ju.%jus (%.3f %cB/s) res: %d\n",
+			usec / 1000000,usec % 1000000,bw,punit,cerr);
 	return CUDARANGER_EXIT_SUCCESS;
 }
 
