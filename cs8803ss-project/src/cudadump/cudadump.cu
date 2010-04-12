@@ -285,8 +285,7 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 					argv[0],argv[1],argv[2],argv[3]);
 			return -1;
 		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_SUCCESS){
-			printf("BEARFUCKER\n");
-			// FIXME Success! mark up the map
+			// FIXME mark up the map
 		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_CUDAFAIL){
 			uintmax_t mid;
 
@@ -316,7 +315,7 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	uintmax_t s;
 	void *map;
 
-	if((s = cuda_alloc_max(tmem / 2,&ptr,unit)) == 0){
+	if((s = cuda_alloc_max(tmem / 2 + tmem / 3,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
@@ -366,6 +365,7 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		fprintf(stderr,"  Error probing CUDA memory! (%d?)\n",cerr);
 		return -1;
 	}
+	printf(" Success.\n");
 	return 0;
 }
 

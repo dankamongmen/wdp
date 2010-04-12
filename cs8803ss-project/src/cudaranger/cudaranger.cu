@@ -72,7 +72,7 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit){
 	if( (cerr = cudaThreadSynchronize()) ){
 		cudaError_t err;
 
-		if(cerr != CUDA_ERROR_LAUNCH_FAILED){
+		if(cerr != CUDA_ERROR_LAUNCH_FAILED && cerr != CUDA_ERROR_DEINITIALIZED){
 			err = cudaGetLastError();
 			fprintf(stderr,"   Error running kernel (%d, %s?)\n",
 					cerr,cudaGetErrorString(err));
