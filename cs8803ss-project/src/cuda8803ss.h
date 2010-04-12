@@ -44,12 +44,16 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit){
 	uintmax_t usec,s;
 	float bw;
 
+	if( (cerr = cuCtxSynchronize()) ){
+		fprintf(stderr,"   Error prior to running kernel (%d).\n",cerr);
+		return CUDARANGER_EXIT_ERROR;
+	}
 	s = tmax - tmin;
 	printf("   memkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>(tmin,tmax,unit);
-	if( (cerr = cudaThreadSynchronize()) ){
+	if( (cerr = cuCtxSynchronize()) ){
 		cudaError_t err;
 
 		if(cerr != CUDA_ERROR_LAUNCH_FAILED && cerr != CUDA_ERROR_DEINITIALIZED){
