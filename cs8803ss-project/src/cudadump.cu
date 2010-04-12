@@ -228,17 +228,6 @@ carve_range(uintmax_t min,uintmax_t max,unsigned gran){
 
 #define RANGER "out/cudaranger"
 
-__global__ void
-memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit){
-	__shared__ unsigned psum[BLOCK_SIZE];
-
-	psum[threadIdx.x] = 0;
-	while(aptr + threadIdx.x * unit < bptr){
-		psum[threadIdx.x] += *(unsigned *)(aptr + unit * threadIdx.x);
-		aptr += BLOCK_SIZE * unit;
-	}
-}
-
 static int
 divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
 	char min[40],max[40],dev[20];
@@ -255,20 +244,11 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
-		int err;
-
-		memkernel<<<1,512>>>((uintptr_t)off,(uintptr_t)(off + s),unit);
-		if((err = cuCtxSynchronize()) == CUDA_SUCCESS){
-			exit(CUDARANGER_EXIT_SUCCESS);
-		}else if(err == CUDA_ERROR_LAUNCH_FAILED){
-			exit(CUDARANGER_EXIT_CUDAFAIL);
-		}
-		fprintf(stderr,"  Error running kernel (%d)\n",err);
 		/*if(execvp(RANGER,argv)){
-			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",
-					RANGER,strerror(errno));
-		}*/
-		exit(CUDARANGER_EXIT_ERROR);
+			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
+		}
+		exit(CUDARANGER_EXIT_ERROR);*/
+		exit(dump_cuda(off,off + s,unit));
 	}else{
 		int status;
 		pid_t w;
@@ -285,8 +265,7 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 					argv[0],argv[1],argv[2],argv[3]);
 			return -1;
 		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_SUCCESS){
-			printf("BEARFUCKER\n");
-			// FIXME Success! mark up the map
+			// FIXME mark up the map
 		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_CUDAFAIL){
 			uintmax_t mid;
 
@@ -310,13 +289,13 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 }
 
 static int
-dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
+cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	CUdeviceptr ptr;
 	CUresult cerr;
 	uintmax_t s;
 	void *map;
 
-	if((s = cuda_alloc_max(tmem / 2,&ptr,unit)) == 0){
+	if((s = cuda_alloc_max(tmem / 2 + tmem / 3,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
@@ -366,6 +345,7 @@ dump_cuda(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		fprintf(stderr,"  Error probing CUDA memory! (%d?)\n",cerr);
 		return -1;
 	}
+	printf(" Success.\n");
 	return 0;
 }
 
@@ -399,7 +379,7 @@ int main(void){
 			fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}
-		if(dump_cuda(z,tmem,fd,unit,gran)){
+		if(cudadump(z,tmem,fd,unit,gran)){
 			close(fd);
 			return EXIT_FAILURE;
 		}
