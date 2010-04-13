@@ -133,40 +133,6 @@ create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap,unsigned unit){
 	return s * CHAR_BIT;
 }
 
-static uintmax_t
-cuda_alloc_max(uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
-	uintmax_t min = 0,s;
-
-	printf("  Determining max allocation...");
-	while( (s = ((tmax + min) / 2) & (~(uintmax_t)0u << 2u)) ){
-		fflush(stdout);
-
-		if(cuMemAlloc(ptr,s)){
-			if((tmax = s) <= min + unit){
-				tmax = min;
-			}
-		}else if(s != tmax && s != min){
-			printf("%jub...",s);
-			if(cuMemFree(*ptr)){
-				cudaError_t err;
-
-				err = cudaGetLastError();
-				fprintf(stderr,"  Couldn't free %jub (%s?)\n",
-						s,cudaGetErrorString(err));
-				return 0;
-			}
-			min = s;
-		}else{
-			// Arbitrary canary constant
-			cuMemsetD32(*ptr,0x42069420,s / unit);
-			printf("%jub!\n",s);
-			return s;
-		}
-	}
-	fprintf(stderr,"  All allocations failed.\n");
-	return 0;
-}
-
 // Returns the maxpoint of the first of at most two ranges into which the
 // region will be divided, where a premium is placed on the first range being
 // a multiple of gran.
@@ -207,11 +173,11 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
-		/*if(execvp(RANGER,argv)){
+		if(execvp(RANGER,argv)){
 			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
 		}
-		exit(CUDARANGER_EXIT_ERROR);*/
-		exit(dump_cuda(off,off + s,unit,results));
+		exit(CUDARANGER_EXIT_ERROR);
+		//exit(dump_cuda(off,off + s,unit,results));
 	}else{
 		int status;
 		pid_t w;
@@ -253,12 +219,10 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 
 static int
 cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *results){
-	CUdeviceptr ptr;
-	CUresult cerr;
+	void *map,*ptr;
 	uintmax_t s;
-	void *map;
 
-	if((s = cuda_alloc_max(tmem / 2 + tmem / 3,&ptr,unit)) == 0){
+	if((s = cuda_alloc_max(stdout,tmem / 2 + tmem / 3,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
@@ -266,46 +230,44 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
 			ptr,(uintmax_t)ptr + s);
 	if(check_const_ram(CONSTWIN)){
-		cuMemFree(ptr);
+		cudaFree(ptr);
 		return -1;
 	}
 	// FIXME need to munmap(2) bitmap (especially on error paths!)
 	if(create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
 				strerror(errno));
-		cuMemFree(ptr);
+		cudaFree(ptr);
 		return -1;
 	}
 	printf("  Verifying allocated region...\n");
 	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran,results)){
 		fprintf(stderr,"  Sanity check failed!\n");
-		cuMemFree(ptr);
+		cudaFree(ptr);
 		return -1;
 	}
-	if( (cerr = cuMemFree(ptr)) ){
-		fprintf(stderr,"  Error freeing CUDA memory (%d?)\n",cerr);
+	if(cudaFree(ptr)){
+		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
+				cudaGetErrorString(cudaGetLastError()));
 		return -1;
 	}
-	if( (cerr = cuCtxSynchronize()) ){
-		fprintf(stderr,"  Sanity check failed! (%d?)\n",cerr);
-		cuMemFree(ptr);
+	if(cudaThreadSynchronize()){
+		fprintf(stderr,"  Sanity check failed! (%s?)\n",
+				cudaGetErrorString(cudaGetLastError()));
 		return -1;
 	}
 	printf("  Dumping %jub...\n",tmem - (uintptr_t)CONSTWIN);
 	if(divide_address_space(devno,(uintptr_t)CONSTWIN,
 				tmem - (uintptr_t)CONSTWIN,unit,gran,results)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
-		cuMemFree(ptr);
 		return -1;
 	}
 	if(check_const_ram(CONSTWIN)){
-		cuMemFree(ptr);
 		return -1;
 	}
 	printf("  Dumping address space (%jub)...\n",(uintmax_t)0x100000000ull);
 	if(divide_address_space(devno,0,0x100000000ull,unit,gran,results)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
-		cuMemFree(ptr);
 		return -1;
 	}
 	printf(" Success.\n");

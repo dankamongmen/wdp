@@ -71,6 +71,8 @@ int main(int argc,char **argv){
 	unsigned long zul;
 	cudadump_e res;
 	char *eptr;
+	void *ptr;
+	size_t s;
 	int cerr;
 
 	if(argc != 4){
@@ -103,19 +105,21 @@ int main(int argc,char **argv){
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if((cerr = init_cuda(zul)) != CUDA_SUCCESS){
-		cudaError_t err;
-
-		err = cudaGetLastError();
 		fprintf(stderr,"Error initializing CUDA device %d (%d, %s?)\n",
-				zul,cerr,cudaGetErrorString(err));
+				zul,cerr,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	memset(hostres,0,sizeof(hostres));
 	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0x88,sizeof(hostres))){
 		fprintf(stderr,"Error allocating %zu on device %d (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
+	if((s = cuda_alloc_max(NULL,0x10000,&ptr,sizeof(unsigned))) == 0){
+		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
+			zul,cudaGetErrorString(cudaGetLastError()));
+		return CUDARANGER_EXIT_ERROR;
+	}
+	printf(" MAXALLOC: %zu@%p\n",s,ptr);
 	if((res = dump_cuda(min,max,unit,hostres)) != CUDARANGER_EXIT_SUCCESS){
 		return res;
 	}

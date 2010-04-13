@@ -37,7 +37,6 @@ int main(void){
 	dim3 dblock(BLOCK_SIZE,1,1);
 	dim3 dgrid(1,1);
 
-	memset(hr,0,sizeof(hr));
 	if(cudaMalloc(&ptr,sizeof(hr)) || cudaMemset(ptr,0x00,sizeof(hr))){
 		return EXIT_FAILURE;
 	}

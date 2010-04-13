@@ -43,21 +43,20 @@ typedef enum {
 	CUDARANGER_EXIT_CUDAFAIL,
 } cudadump_e;
 
-// Iterates over the specified memory region in units of |unit| * BLOCK_SIZE
-// bytes. bptr must not be less than aptr, and unit must not be 0. The provided
-// array must be BLOCK_SIZE 32-bit integers; it holds the number of non-0 words
-// seen by each of the BLOCK_SIZE threads.
+// Iterates over the specified memory region in units of CUDA's unsigned int.
+// bptr must not be less than aptr. The provided array must be BLOCK_SIZE
+// 32-bit integers; it holds the number of non-0 words seen by each of the
+// BLOCK_SIZE threads.
 __global__ void
-memkernel(uintptr_t aptr,const uintptr_t bptr,const unsigned unit,
-			uint32_t *results){
+memkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
 	__shared__ typeof(*results) psum[BLOCK_SIZE];
 
 	psum[threadIdx.x] = results[threadIdx.x];
-	while(aptr + threadIdx.x * unit < bptr){
-		if(*(unsigned *)(aptr + unit * threadIdx.x)){
+	while(aptr + threadIdx.x < bptr){
+		if(aptr[threadIdx.x]){
 			++psum[threadIdx.x];
 		}
-		aptr += BLOCK_SIZE * unit;
+		aptr += BLOCK_SIZE;
 	}
 	results[threadIdx.x] = psum[threadIdx.x];
 }
@@ -79,7 +78,7 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 	printf("   memkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>(tmin,tmax,unit,results);
+	memkernel<<<dgrid,dblock>>>((unsigned *)tmin,(unsigned *)tmax,results);
 	if( (cerr = cuCtxSynchronize()) ){
 		cudaError_t err;
 
@@ -89,8 +88,8 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 					cerr,cudaGetErrorString(err));
 			return CUDARANGER_EXIT_ERROR;
 		}
-			fprintf(stderr,"   Error running kernel (%d, %s?)\n",
-					cerr,cudaGetErrorString(cudaGetLastError()));
+		fprintf(stderr,"   Minor error running kernel (%d, %s?)\n",
+				cerr,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_CUDAFAIL;
 	}
 	gettimeofday(&time1,NULL);
@@ -123,6 +122,37 @@ check_const_ram(const unsigned *max){
 		return -1;
 	}
 	printf("good.\n");
+	return 0;
+}
+
+static uintmax_t
+cuda_alloc_max(FILE *o,uintmax_t tmax,void **ptr,unsigned unit){
+	uintmax_t min = 0,s;
+
+	if(o){ fprintf(o,"  Determining max allocation..."); }
+	while( (s = ((tmax + min) / 2) & (~(uintmax_t)0u << 2u)) ){
+		if(o) { fflush(o); }
+
+		if(cudaMalloc(ptr,s)){
+			if((tmax = s) <= min + unit){
+				tmax = min;
+			}
+		}else if(s != tmax && s != min){
+			if(o){ fprintf(o,"%jub...",s); }
+			if(cudaFree(*ptr)){
+				fprintf(stderr,"  Couldn't free %jub at %p (%s?)\n",
+					s,*ptr,cudaGetErrorString(cudaGetLastError()));
+				return 0;
+			}
+			min = s;
+		}else{
+			// Arbitrary canary constant
+			cudaMemset(*ptr,0,s);
+			if(o) { fprintf(stderr,"%jub!\n",s); }
+			return s;
+		}
+	}
+	fprintf(stderr,"  All allocations failed.\n");
 	return 0;
 }
 
