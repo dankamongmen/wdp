@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include "cuda8803ss.h"
 
-#define BLOCK_SIZE 64
-
 static int
 dumpresults(const uint32_t *res,unsigned count){
 	unsigned z,y;
