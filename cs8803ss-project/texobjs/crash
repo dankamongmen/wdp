@@ -1,0 +1,148 @@
+NVRM: loading NVIDIA UNIX x86_64 Kernel Module  195.36.15  Fri Mar 12 00:29:13 PST 2010
+NVRM: Xid (0007:00): 13, 0001 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+NVRM: Xid (0007:00): 13, 0003 00000000 000050c0 00000368 00000000 00000100
+INFO: task cudadump:7314 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+cudadump      D ffff880143d843b0     0  7314   7000 0x00000004
+ ffff880146f6f9b8 0000000000000046 ffffffff812ddb8e ffff880146f6fa80
+ 000000000005e450 0000000000000000 ffff880146f6ffd8 000000000000dea0
+ 0000000000012940 0000000000004000 ffff880143d84740 ffff8800e2009000
+Call Trace:
+ [<ffffffff812ddb8e>] ? common_interrupt+0xe/0x13
+ [<ffffffff8101d749>] ? __change_page_attr_set_clr+0xed/0x983
+ [<ffffffff812dc0a0>] schedule_timeout+0x35/0x1ea
+ [<ffffffff81078ae6>] ? __pagevec_free+0x29/0x3c
+ [<ffffffff81077839>] ? free_pcppages_bulk+0x46/0x244
+ [<ffffffff812dbf26>] wait_for_common+0xc4/0x13a
+ [<ffffffff8102f121>] ? default_wake_function+0x0/0xf
+ [<ffffffff812dc026>] wait_for_completion+0x18/0x1a
+ [<ffffffffa12048bd>] os_acquire_sema+0x3f/0x66 [nvidia]
+ [<ffffffffa110c8dc>] _nv006655rm+0x6/0x1f [nvidia]
+ [<ffffffffa1114e9d>] ? rm_free_unused_clients+0x5a/0xb7 [nvidia]
+ [<ffffffffa1201967>] ? nv_kern_ctl_close+0x93/0xcb [nvidia]
+ [<ffffffffa12025b8>] ? nv_kern_close+0xa1/0x373 [nvidia]
+ [<ffffffff810a6af3>] ? __fput+0x112/0x1d1
+ [<ffffffff810a6bc7>] ? fput+0x15/0x17
+ [<ffffffff810a3f71>] ? filp_close+0x58/0x62
+ [<ffffffff8103550a>] ? put_files_struct+0x65/0xb4
+ [<ffffffff81035594>] ? exit_files+0x3b/0x40
+ [<ffffffff81036d1c>] ? do_exit+0x1dc/0x661
+ [<ffffffff81037211>] ? do_group_exit+0x70/0x99
+ [<ffffffff81040435>] ? get_signal_to_deliver+0x2de/0x2f9
+ [<ffffffff81001527>] ? do_signal+0x6d/0x681
+ [<ffffffff81046ce0>] ? remove_wait_queue+0x4c/0x51
+ [<ffffffff810368bc>] ? do_wait+0x1b2/0x1f5
+ [<ffffffff810369a7>] ? sys_wait4+0xa8/0xbc
+ [<ffffffff81001b62>] ? do_notify_resume+0x27/0x51
+ [<ffffffff81035195>] ? child_wait_callback+0x0/0x53
+ [<ffffffff810021cb>] ? int_signal+0x12/0x17
+INFO: task cudadump:7314 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+cudadump      D ffff880143d843b0     0  7314   7000 0x00000004
+ ffff880146f6f9b8 0000000000000046 ffffffff812ddb8e ffff880146f6fa80
+ 000000000005e450 0000000000000000 ffff880146f6ffd8 000000000000dea0
+ 0000000000012940 0000000000004000 ffff880143d84740 ffff8800e2009000
+Call Trace:
+ [<ffffffff812ddb8e>] ? common_interrupt+0xe/0x13
+ [<ffffffff8101d749>] ? __change_page_attr_set_clr+0xed/0x983
+ [<ffffffff812dc0a0>] schedule_timeout+0x35/0x1ea
+ [<ffffffff81078ae6>] ? __pagevec_free+0x29/0x3c
+ [<ffffffff81077839>] ? free_pcppages_bulk+0x46/0x244
+ [<ffffffff812dbf26>] wait_for_common+0xc4/0x13a
+ [<ffffffff8102f121>] ? default_wake_function+0x0/0xf
+ [<ffffffff812dc026>] wait_for_completion+0x18/0x1a
+ [<ffffffffa12048bd>] os_acquire_sema+0x3f/0x66 [nvidia]
+ [<ffffffffa110c8dc>] _nv006655rm+0x6/0x1f [nvidia]
+ [<ffffffffa1114e9d>] ? rm_free_unused_clients+0x5a/0xb7 [nvidia]
+ [<ffffffffa1201967>] ? nv_kern_ctl_close+0x93/0xcb [nvidia]
+ [<ffffffffa12025b8>] ? nv_kern_close+0xa1/0x373 [nvidia]
+ [<ffffffff810a6af3>] ? __fput+0x112/0x1d1
+ [<ffffffff810a6bc7>] ? fput+0x15/0x17
+ [<ffffffff810a3f71>] ? filp_close+0x58/0x62
+ [<ffffffff8103550a>] ? put_files_struct+0x65/0xb4
+ [<ffffffff81035594>] ? exit_files+0x3b/0x40
+ [<ffffffff81036d1c>] ? do_exit+0x1dc/0x661
+ [<ffffffff81037211>] ? do_group_exit+0x70/0x99
+ [<ffffffff81040435>] ? get_signal_to_deliver+0x2de/0x2f9
+ [<ffffffff81001527>] ? do_signal+0x6d/0x681
+ [<ffffffff81046ce0>] ? remove_wait_queue+0x4c/0x51
+ [<ffffffff810368bc>] ? do_wait+0x1b2/0x1f5
+ [<ffffffff810369a7>] ? sys_wait4+0xa8/0xbc
+ [<ffffffff81001b62>] ? do_notify_resume+0x27/0x51
+ [<ffffffff81035195>] ? child_wait_callback+0x0/0x53
+ [<ffffffff810021cb>] ? int_signal+0x12/0x17
+INFO: task cudadump:7314 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+cudadump      D ffff880143d843b0     0  7314   7000 0x00000004
+ ffff880146f6f9b8 0000000000000046 ffffffff812ddb8e ffff880146f6fa80
+ 000000000005e450 0000000000000000 ffff880146f6ffd8 000000000000dea0
+ 0000000000012940 0000000000004000 ffff880143d84740 ffff8800e2009000
+Call Trace:
+ [<ffffffff812ddb8e>] ? common_interrupt+0xe/0x13
+ [<ffffffff8101d749>] ? __change_page_attr_set_clr+0xed/0x983
+ [<ffffffff812dc0a0>] schedule_timeout+0x35/0x1ea
+ [<ffffffff81078ae6>] ? __pagevec_free+0x29/0x3c
+ [<ffffffff81077839>] ? free_pcppages_bulk+0x46/0x244
+ [<ffffffff812dbf26>] wait_for_common+0xc4/0x13a
+ [<ffffffff8102f121>] ? default_wake_function+0x0/0xf
+ [<ffffffff812dc026>] wait_for_completion+0x18/0x1a
+ [<ffffffffa12048bd>] os_acquire_sema+0x3f/0x66 [nvidia]
+ [<ffffffffa110c8dc>] _nv006655rm+0x6/0x1f [nvidia]
+ [<ffffffffa1114e9d>] ? rm_free_unused_clients+0x5a/0xb7 [nvidia]
+ [<ffffffffa1201967>] ? nv_kern_ctl_close+0x93/0xcb [nvidia]
+ [<ffffffffa12025b8>] ? nv_kern_close+0xa1/0x373 [nvidia]
+ [<ffffffff810a6af3>] ? __fput+0x112/0x1d1
+ [<ffffffff810a6bc7>] ? fput+0x15/0x17
+ [<ffffffff810a3f71>] ? filp_close+0x58/0x62
+ [<ffffffff8103550a>] ? put_files_struct+0x65/0xb4
+ [<ffffffff81035594>] ? exit_files+0x3b/0x40
+ [<ffffffff81036d1c>] ? do_exit+0x1dc/0x661
+ [<ffffffff81037211>] ? do_group_exit+0x70/0x99
+ [<ffffffff81040435>] ? get_signal_to_deliver+0x2de/0x2f9
+ [<ffffffff81001527>] ? do_signal+0x6d/0x681
+ [<ffffffff81046ce0>] ? remove_wait_queue+0x4c/0x51
+ [<ffffffff810368bc>] ? do_wait+0x1b2/0x1f5
+ [<ffffffff810369a7>] ? sys_wait4+0xa8/0xbc
+ [<ffffffff81001b62>] ? do_notify_resume+0x27/0x51
+ [<ffffffff81035195>] ? child_wait_callback+0x0/0x53
+ [<ffffffff810021cb>] ? int_signal+0x12/0x17
+INFO: task cudaranger:7349 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+cudaranger    D ffff88002820dea0     0  7349   7314 0x00000004
+ ffff8800663199e8 0000000000000046 0000000000000000 0000000000000000
+ ffff8800663199f8 ffffffff8102694c ffff880066319fd8 000000000000dea0
+ 0000000000012940 0000000000004000 ffff880143caddd0 000000010037459f
+Call Trace:
+ [<ffffffff8102694c>] ? select_task_rq_fair+0x4eb/0x8a2
+ [<ffffffff812dc0a0>] schedule_timeout+0x35/0x1ea
+ [<ffffffff8102f10f>] ? try_to_wake_up+0x328/0x33a
+ [<ffffffff812dbf26>] wait_for_common+0xc4/0x13a
+ [<ffffffff8102f121>] ? default_wake_function+0x0/0xf
+ [<ffffffff812dc026>] wait_for_completion+0x18/0x1a
+ [<ffffffffa12048bd>] os_acquire_sema+0x3f/0x66 [nvidia]
+ [<ffffffffa110c8dc>] _nv006655rm+0x6/0x1f [nvidia]
+ [<ffffffffa1114e9d>] ? rm_free_unused_clients+0x5a/0xb7 [nvidia]
+ [<ffffffffa12025e2>] ? nv_kern_close+0xcb/0x373 [nvidia]
+ [<ffffffff810a6af3>] ? __fput+0x112/0x1d1
+ [<ffffffff810a6bc7>] ? fput+0x15/0x17
+ [<ffffffff810a3f71>] ? filp_close+0x58/0x62
+ [<ffffffff8103550a>] ? put_files_struct+0x65/0xb4
+ [<ffffffff81035594>] ? exit_files+0x3b/0x40
+ [<ffffffff81036d1c>] ? do_exit+0x1dc/0x661
+ [<ffffffffa1204865>] ? os_release_sema+0x47/0x60 [nvidia]
+ [<ffffffff81037211>] ? do_group_exit+0x70/0x99
+ [<ffffffff81040435>] ? get_signal_to_deliver+0x2de/0x2f9
+ [<ffffffff81001527>] ? do_signal+0x6d/0x681
+ [<ffffffff812dbc43>] ? schedule+0x9fd/0xaf0
+ [<ffffffff810b1fd1>] ? do_vfs_ioctl+0x480/0x4c6
+ [<ffffffff81001b62>] ? do_notify_resume+0x27/0x51
+ [<ffffffff810b2059>] ? sys_ioctl+0x42/0x65
+ [<ffffffff812ddc5a>] ? retint_signal+0x3d/0x83
+[recombinator](0) $ 

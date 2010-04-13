@@ -48,10 +48,9 @@ typedef enum {
 // 32-bit integers; it holds the number of non-0 words seen by each of the
 // BLOCK_SIZE threads.
 __global__ void
-memkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
+readkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
 	__shared__ typeof(*results) psum[BLOCK_SIZE];
 
-	results[threadIdx.x] = 0x44;
 	psum[threadIdx.x] = results[threadIdx.x];
 	while(aptr + threadIdx.x < bptr){
 		++psum[threadIdx.x];
@@ -78,10 +77,10 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 		return CUDARANGER_EXIT_ERROR;
 	}
 	s = tmax - tmin;
-	printf("   memkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
+	printf("   readkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
-	memkernel<<<dgrid,dblock>>>((unsigned *)tmin,(unsigned *)tmax,results);
+	readkernel<<<dgrid,dblock>>>((unsigned *)tmin,(unsigned *)tmax,results);
 	if( (cerr = cudaThreadSynchronize()) ){
 		cudaError_t err;
 

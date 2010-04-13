@@ -45,7 +45,7 @@ int main(void){
 	}
 	printf("got %zu at %p\n",s,big);
 	//cudasanity<<<dgrid,dblock>>>(ptr,0xf0);
-	memkernel<<<dgrid,dblock>>>(ptr,(unsigned *)((char *)ptr + sizeof(hr)),ptr);
+	readkernel<<<dgrid,dblock>>>(ptr,(unsigned *)((char *)ptr + sizeof(hr)),ptr);
 	if(cudaMemcpy(hr,ptr,sizeof(hr),cudaMemcpyDeviceToHost)){
 		return EXIT_FAILURE;
 	}
