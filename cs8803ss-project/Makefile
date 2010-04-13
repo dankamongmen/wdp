@@ -30,7 +30,7 @@ PTXFLAGS:=--ptx
 #CUBINFLAGS:=-deviceemu
 TAGS:=.tags
 
-all: $(PDF) $(BIN) $(PTX)
+all: $(TAGS) $(PDF) $(BIN) $(PTX)
 
 $(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -48,11 +48,11 @@ $(OUT)/cudasanity: $(OUT)/cudasanity.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-$(OUT)/%.ptx: $(SRC)/%.cu $(TAGS)
+$(OUT)/%.ptx: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-$(OUT)/%.o: $(SRC)/%.cu $(TAGS)
+$(OUT)/%.o: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
