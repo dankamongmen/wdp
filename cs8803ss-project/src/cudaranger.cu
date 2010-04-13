@@ -48,9 +48,11 @@ usage(const char *a0){
 }
 
 int main(int argc,char **argv){
+	uint32_t hostres[BLOCK_SIZE],*resarr;
 	unsigned long long min,max;
 	unsigned unit = 4;		// Minimum alignment of references
 	unsigned long zul;
+	cudadump_e res;
 	char *eptr;
 	int cerr;
 
@@ -91,5 +93,23 @@ int main(int argc,char **argv){
 				zul,cerr,cudaGetErrorString(err));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	return dump_cuda(min,max,unit);
+	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0,sizeof(hostres))){
+		fprintf(stderr,"Error allocating %zu on device %d (%s?)\n",
+			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
+		return CUDARANGER_EXIT_ERROR;
+	}
+	if((res = dump_cuda(min,max,unit,hostres)) != CUDARANGER_EXIT_SUCCESS){
+		return res;
+	}
+	if(cudaMemcpy(hostres,resarr,sizeof(hostres),cudaMemcpyDeviceToHost)){
+		fprintf(stderr,"Error copying %zu from device %d (%s?)\n",
+			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
+		return CUDARANGER_EXIT_ERROR;
+	}
+	if(cudaFree(hostres)){
+		fprintf(stderr,"Couldn't free %zu on device %d (%s?)\n",
+			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
+		return CUDARANGER_EXIT_ERROR;
+	}
+	return CUDARANGER_EXIT_SUCCESS;
 }

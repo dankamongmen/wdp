@@ -229,7 +229,8 @@ carve_range(uintmax_t min,uintmax_t max,unsigned gran){
 #define RANGER "out/cudaranger"
 
 static int
-divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned gran){
+divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
+					unsigned gran,uint32_t *results){
 	char min[40],max[40],dev[20];
 	char * const argv[] = { RANGER, dev, min, max, NULL };
 	pid_t pid;
@@ -244,11 +245,11 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
-		//if(execvp(RANGER,argv)){
-		//	fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
-		//}
-		//exit(CUDARANGER_EXIT_ERROR);
-		exit(dump_cuda(off,off + s,unit));
+		/*if(execvp(RANGER,argv)){
+			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
+		}
+		exit(CUDARANGER_EXIT_ERROR);*/
+		exit(dump_cuda(off,off + s,unit,results));
 	}else{
 		int status;
 		pid_t w;
@@ -271,10 +272,10 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 
 			mid = carve_range(off,off + s,gran);
 			if(mid != s){
-				if(divide_address_space(devno,off,mid,unit,gran)){
+				if(divide_address_space(devno,off,mid,unit,gran,results)){
 					return -1;
 				}
-				if(divide_address_space(devno,off + mid,s - mid,unit,gran)){
+				if(divide_address_space(devno,off + mid,s - mid,unit,gran,results)){
 					return -1;
 				}
 			}
@@ -289,7 +290,7 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 }
 
 static int
-cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
+cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *results){
 	CUdeviceptr ptr;
 	CUresult cerr;
 	uintmax_t s;
@@ -314,7 +315,7 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 		return -1;
 	}
 	printf("  Verifying allocated region...\n");
-	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran)){
+	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran,results)){
 		fprintf(stderr,"  Sanity check failed!\n");
 		cuMemFree(ptr);
 		return -1;
@@ -330,13 +331,17 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	}
 	printf("  Dumping %jub...\n",tmem - (uintptr_t)CONSTWIN);
 	if(divide_address_space(devno,(uintptr_t)CONSTWIN,
-				tmem - (uintptr_t)CONSTWIN,unit,gran)){
+				tmem - (uintptr_t)CONSTWIN,unit,gran,results)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		cuMemFree(ptr);
 		return -1;
 	}
+	if(check_const_ram(CONSTWIN)){
+		cuMemFree(ptr);
+		return -1;
+	}
 	printf("  Dumping address space (%jub)...\n",(uintmax_t)0x100000000ull);
-	if(divide_address_space(devno,0,0x100000000ull,unit,gran)){
+	if(divide_address_space(devno,0,0x100000000ull,unit,gran,results)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		cuMemFree(ptr);
 		return -1;
@@ -359,7 +364,9 @@ int main(void){
 		return EXIT_FAILURE;
 	}
 	for(z = 0 ; z < count ; ++z){
+		uint32_t hostresarr[BLOCK_SIZE];
 		unsigned mem,tmem;
+		uint32_t *resarr;
 		int fd;
 
 		printf(" %03d ",z);
@@ -367,20 +374,44 @@ int main(void){
 			cudaError_t err;
 
 			err = cudaGetLastError();
-			fprintf(stderr,"\nError probing CUDA device %d (%s?)\n",
+			fprintf(stderr," Error probing CUDA device %d (%s?)\n",
 					z,cudaGetErrorString(err));
 			return EXIT_FAILURE;
 		}
 		if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
-			fprintf(stderr,"\nError creating bitmap (%s?)\n",strerror(errno));
+			fprintf(stderr," Error creating bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}
-		if(cudadump(z,tmem,fd,unit,gran)){
+		printf(" %03d ",z);
+		if(id_cuda(z,&mem,&tmem)){
+			cudaError_t err;
+
+			err = cudaGetLastError();
+			fprintf(stderr," Error probing CUDA device %d (%s?)\n",
+					z,cudaGetErrorString(err));
+			return EXIT_FAILURE;
+		}
+		if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
+			fprintf(stderr," Error creating bitmap (%s?)\n",strerror(errno));
+			return EXIT_FAILURE;
+		}
+		if(cudaMalloc(&resarr,sizeof(hostresarr)) || cudaMemset(resarr,0,sizeof(hostresarr))){
+			fprintf(stderr," Couldn't allocate result array (%s?)\n",
+				cudaGetErrorString(cudaGetLastError()));
+			return EXIT_FAILURE;
+		}
+		if(cudadump(z,tmem,fd,unit,gran,resarr)){
+			close(fd);
+			return EXIT_FAILURE;
+		}
+		if(cudaMemcpy(hostresarr,resarr,sizeof(hostresarr),cudaMemcpyDeviceToHost) || cudaFree(resarr)){
+			fprintf(stderr," Couldn't free result array (%s?)\n",
+				cudaGetErrorString(cudaGetLastError()));
 			close(fd);
 			return EXIT_FAILURE;
 		}
 		if(close(fd)){
-			fprintf(stderr,"\nError closing bitmap (%s?)\n",strerror(errno));
+			fprintf(stderr," Error closing bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}
 	}
