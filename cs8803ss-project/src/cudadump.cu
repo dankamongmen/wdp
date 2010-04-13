@@ -161,7 +161,8 @@ carve_range(uintmax_t min,uintmax_t max,unsigned gran){
 
 static int
 divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
-					unsigned gran,uint32_t *results){
+					unsigned gran,uint32_t *results,
+					uintmax_t *worked){
 	char min[40],max[40],dev[20];
 	char * const argv[] = { RANGER, dev, min, max, NULL };
 	pid_t pid;
@@ -181,7 +182,6 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
 		}
 		exit(CUDARANGER_EXIT_ERROR);
-		//exit(dump_cuda(off,off + s,unit,results));
 	}else{
 		int status;
 		pid_t w;
@@ -198,16 +198,16 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 					argv[0],argv[1],argv[2],argv[3]);
 			return -1;
 		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_SUCCESS){
-			// FIXME mark up the map
+			*worked += s;
 		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_CUDAFAIL){
 			uintmax_t mid;
 
 			mid = carve_range(off,off + s,gran);
 			if(mid != s){
-				if(divide_address_space(devno,off,mid,unit,gran,results)){
+				if(divide_address_space(devno,off,mid,unit,gran,results,worked)){
 					return -1;
 				}
-				if(divide_address_space(devno,off + mid,s - mid,unit,gran,results)){
+				if(divide_address_space(devno,off + mid,s - mid,unit,gran,results,worked)){
 					return -1;
 				}
 			}
@@ -223,6 +223,7 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 
 static int
 cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *results){
+	uintmax_t worked = 0;
 	void *map,*ptr;
 	uintmax_t s;
 
@@ -248,22 +249,27 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *
 		return -1;
 	}
 	printf("  Verifying allocated region...\n");
-	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran,results)){
+	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran,results,&worked)){
 		fprintf(stderr,"  Sanity check failed!\n");
 		cudaFree(ptr);
 		return -1;
 	}
+	printf("  Readable: %jub\n",worked);
+	worked = 0;
 	printf("  Dumping %jub...\n",tmem - (uintptr_t)CONSTWIN);
 	if(divide_address_space(devno,(uintptr_t)CONSTWIN,
-				tmem - (uintptr_t)CONSTWIN,unit,gran,results)){
+			tmem - (uintptr_t)CONSTWIN,unit,gran,results,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
+	printf("  Readable: %jub\n",worked);
+	worked = 0;
 	printf("  Dumping address space (%jub)...\n",(uintmax_t)0x100000000ull);
-	if(divide_address_space(devno,0,0x100000000ull,unit,gran,results)){
+	if(divide_address_space(devno,0,0x100000000ull,unit,gran,results,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
+	printf("  Readable: %jub\n",worked);
 	printf(" Success.\n");
 	return 0;
 }
