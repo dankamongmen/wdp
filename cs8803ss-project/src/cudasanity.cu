@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "cuda8803ss.h"
 
 #define BLOCK_SIZE 64
 
@@ -23,22 +24,6 @@ dumpresults(const uint32_t *res,unsigned count){
 }
 
 __global__ void
-memkernel(unsigned *aptr,unsigned *bptr,unsigned *results){
-	__shared__ typeof(*results) psum[BLOCK_SIZE];
-
-	psum[threadIdx.x] = results[threadIdx.x];
-	while(aptr + threadIdx.x < bptr){
-		//printf("%p %u\n",(unsigned *)(aptr + unit * threadIdx.x),*(unsigned *)(aptr + unit * threadIdx.x));
-		if(aptr[threadIdx.x]){
-			++psum[threadIdx.x];
-		}
-		aptr += BLOCK_SIZE;
-	}
-	results[threadIdx.x] = psum[threadIdx.x];
-	__syncthreads();
-}
-
-__global__ void
 cudasanity(uint32_t *res,unsigned byte){
 	__shared__ uint32_t psum[BLOCK_SIZE];
 
@@ -56,7 +41,7 @@ int main(void){
 	if(cudaMalloc(&ptr,sizeof(hr)) || cudaMemset(ptr,0x00,sizeof(hr))){
 		return EXIT_FAILURE;
 	}
-//	cudasanity<<<dgrid,dblock>>>(ptr,0xf0);
+	//cudasanity<<<dgrid,dblock>>>(ptr,0xf0);
 	memkernel<<<dgrid,dblock>>>(ptr,(unsigned *)((char *)ptr + sizeof(hr)),ptr);
 	if(cudaMemcpy(hr,ptr,sizeof(hr),cudaMemcpyDeviceToHost)){
 		return EXIT_FAILURE;
