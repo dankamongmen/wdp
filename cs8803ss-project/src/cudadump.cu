@@ -166,12 +166,13 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 	char * const argv[] = { RANGER, dev, min, max, NULL };
 	pid_t pid;
 
-	if((size_t)snprintf(min,sizeof(min),"%ju",off) >= sizeof(min) ||
-			(size_t)snprintf(max,sizeof(max),"%ju",off + s) >= sizeof(max) ||
+	if((size_t)snprintf(min,sizeof(min),"0x%jx",off) >= sizeof(min) ||
+			(size_t)snprintf(max,sizeof(max),"0x%jx",off + s) >= sizeof(max) ||
 			(size_t)snprintf(dev,sizeof(dev),"%d",devno) >= sizeof(dev)){
 		fprintf(stderr,"  Invalid arguments: %d %ju %ju\n",devno,min,max);
 		return -1;
 	}
+	//printf("CALL: %s %s %s\n",dev,min,max);
 	if((pid = fork()) < 0){
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
@@ -225,22 +226,25 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *
 	void *map,*ptr;
 	uintmax_t s;
 
-	if((s = cuda_alloc_max(stdout,tmem / 2 + tmem / 3,&ptr,unit)) == 0){
+	if((s = cuda_alloc_max(stdout,tmem / 2,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
 			ptr,(uintmax_t)ptr + s);
+	if(cudaFree(ptr)){
+		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
+				cudaGetErrorString(cudaGetLastError()));
+		return -1;
+	}
 	if(check_const_ram(CONSTWIN)){
-		cudaFree(ptr);
 		return -1;
 	}
 	// FIXME need to munmap(2) bitmap (especially on error paths!)
 	if(create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit) == 0){
 		fprintf(stderr,"  Error creating bitmap (%s?)\n",
 				strerror(errno));
-		cudaFree(ptr);
 		return -1;
 	}
 	printf("  Verifying allocated region...\n");
@@ -249,23 +253,10 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *
 		cudaFree(ptr);
 		return -1;
 	}
-	if(cudaFree(ptr)){
-		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
-				cudaGetErrorString(cudaGetLastError()));
-		return -1;
-	}
-	if(cudaThreadSynchronize()){
-		fprintf(stderr,"  Sanity check failed! (%s?)\n",
-				cudaGetErrorString(cudaGetLastError()));
-		return -1;
-	}
 	printf("  Dumping %jub...\n",tmem - (uintptr_t)CONSTWIN);
 	if(divide_address_space(devno,(uintptr_t)CONSTWIN,
 				tmem - (uintptr_t)CONSTWIN,unit,gran,results)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
-		return -1;
-	}
-	if(check_const_ram(CONSTWIN)){
 		return -1;
 	}
 	printf("  Dumping address space (%jub)...\n",(uintmax_t)0x100000000ull);
@@ -278,7 +269,7 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *
 }
 
 int main(void){
-	uintmax_t gran = 64 * 1024;	// Granularity of report / verification
+	uintmax_t gran = 4 * 1024 * 1024;	// Granularity of report / verification
 	unsigned unit = 4;		// Minimum alignment of references
 	int z,count;
 

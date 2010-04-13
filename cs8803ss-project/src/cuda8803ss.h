@@ -51,11 +51,13 @@ __global__ void
 memkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
 	__shared__ typeof(*results) psum[BLOCK_SIZE];
 
+	results[threadIdx.x] = 0x44;
 	psum[threadIdx.x] = results[threadIdx.x];
 	while(aptr + threadIdx.x < bptr){
-		if(aptr[threadIdx.x]){
+		++psum[threadIdx.x];
+		/*if(aptr[threadIdx.x]){
 			++psum[threadIdx.x];
-		}
+		}*/
 		aptr += BLOCK_SIZE;
 	}
 	results[threadIdx.x] = psum[threadIdx.x];
@@ -70,8 +72,9 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 	uintmax_t usec,s;
 	float bw;
 
-	if( (cerr = cuCtxSynchronize()) ){
-		fprintf(stderr,"   Error prior to running kernel (%d).\n",cerr);
+	if(cudaThreadSynchronize()){
+		fprintf(stderr,"   Error prior to running kernel (%s)\n",
+				cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
 	s = tmax - tmin;
@@ -79,7 +82,7 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
 	memkernel<<<dgrid,dblock>>>((unsigned *)tmin,(unsigned *)tmax,results);
-	if( (cerr = cuCtxSynchronize()) ){
+	if( (cerr = cudaThreadSynchronize()) ){
 		cudaError_t err;
 
 		if(cerr != CUDA_ERROR_LAUNCH_FAILED && cerr != CUDA_ERROR_DEINITIALIZED){
@@ -146,8 +149,6 @@ cuda_alloc_max(FILE *o,uintmax_t tmax,void **ptr,unsigned unit){
 			}
 			min = s;
 		}else{
-			// Arbitrary canary constant
-			cudaMemset(*ptr,0,s);
 			if(o) { fprintf(stderr,"%jub!\n",s); }
 			return s;
 		}

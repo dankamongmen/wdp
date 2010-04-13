@@ -40,15 +40,21 @@ int main(void){
 	if(cudaMalloc(&ptr,sizeof(hr)) || cudaMemset(ptr,0x00,sizeof(hr))){
 		return EXIT_FAILURE;
 	}
+	size_t s;
+	void *big;
+	if((s = cuda_alloc_max(stderr,0x100000000,&big,BLOCK_SIZE * sizeof(unsigned))) == 0){
+		return EXIT_FAILURE;
+	}
+	printf("got %zu at %p\n",s,big);
 	//cudasanity<<<dgrid,dblock>>>(ptr,0xf0);
 	memkernel<<<dgrid,dblock>>>(ptr,(unsigned *)((char *)ptr + sizeof(hr)),ptr);
 	if(cudaMemcpy(hr,ptr,sizeof(hr),cudaMemcpyDeviceToHost)){
 		return EXIT_FAILURE;
 	}
-	if(cudaFree(ptr)){
+	if(dumpresults(hr,sizeof(hr) / sizeof(*hr))){
 		return EXIT_FAILURE;
 	}
-	if(dumpresults(hr,sizeof(hr) / sizeof(*hr))){
+	if(cudaFree(ptr)){
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
