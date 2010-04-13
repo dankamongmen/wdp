@@ -76,6 +76,8 @@ preview: all
 
 test: all
 	#timelimit -T 1 -t 10 ./$(CUDADUMP)
+	! ./$(CUDARANGER) 0 0 0x100000000
+	./$(CUDARANGER) 0 0x110000 0x111000
 	./$(CUDADUMP)
 
 clean:

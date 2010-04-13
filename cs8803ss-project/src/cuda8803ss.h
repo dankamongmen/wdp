@@ -55,9 +55,9 @@ memkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
 	psum[threadIdx.x] = results[threadIdx.x];
 	while(aptr + threadIdx.x < bptr){
 		++psum[threadIdx.x];
-		/*if(aptr[threadIdx.x]){
+		if(aptr[threadIdx.x]){
 			++psum[threadIdx.x];
-		}*/
+		}
 		aptr += BLOCK_SIZE;
 	}
 	results[threadIdx.x] = psum[threadIdx.x];
