@@ -12,7 +12,9 @@ TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
 CUDADUMP:=out/cudadump
 CUDARANGER:=out/cudaranger
-BIN:=$(CUDADUMP) $(CUDARANGER)
+CUDASANITY:=out/cudasanity
+CUDASITTER:=out/cudasitter
+BIN:=$(CUDADUMP) $(CUDARANGER) $(CUDASANITY)
 PTX:=$(addsuffix .ptx,$(BIN))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
@@ -21,7 +23,7 @@ CUDAINC:=$(CUDA)/include
 CUDALIB:=$(CUDA)/lib64
 
 CC:=$(CUDA)/bin/nvcc
-CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
+CFLAGS:=-g -G --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda --linker-options -R$(CUDALIB)
 PTXFLAGS:=--ptx
@@ -34,11 +36,15 @@ $(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
+$(OUT)/cudadump: $(OUT)/cudadump.o $(SRC)/cuda8803ss.h
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
 $(OUT)/cudaranger: $(OUT)/cudaranger.o $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-$(OUT)/cudadump: $(OUT)/cudadump.o $(SRC)/cuda8803ss.h
+$(OUT)/cudasanity: $(OUT)/cudasanity.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
