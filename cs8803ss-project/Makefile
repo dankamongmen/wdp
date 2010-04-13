@@ -32,15 +32,15 @@ TAGS:=.tags
 
 all: $(TAGS) $(PDF) $(BIN) $(PTX)
 
-$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu $(SRC)/cuda8803ss.h
+$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
-$(OUT)/cudadump: $(OUT)/cudadump.o $(SRC)/cuda8803ss.h
+$(OUT)/cudadump: $(OUT)/cudadump.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-$(OUT)/cudaranger: $(OUT)/cudaranger.o $(SRC)/cuda8803ss.h
+$(OUT)/cudaranger: $(OUT)/cudaranger.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
@@ -52,7 +52,7 @@ $(OUT)/%.ptx: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(PTXFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-$(OUT)/%.o: $(SRC)/%.cu
+$(OUT)/%.o: $(SRC)/%.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
