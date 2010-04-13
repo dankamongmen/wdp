@@ -114,12 +114,12 @@ int main(int argc,char **argv){
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if((s = cuda_alloc_max(NULL,0x10000000000,&ptr,sizeof(unsigned))) == 0 || cudaMemset(ptr,0x00,s)){
+	if((s = cuda_alloc_max(NULL,0x100000000,&ptr,sizeof(unsigned))) == 0){
 		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
 			zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if((res = dump_cuda(min,max,unit,hostres)) != CUDARANGER_EXIT_SUCCESS){
+	if((res = dump_cuda(min,max,unit,resarr)) != CUDARANGER_EXIT_SUCCESS){
 		return res;
 	}
 	if(cudaThreadSynchronize()){
