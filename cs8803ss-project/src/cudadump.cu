@@ -244,10 +244,10 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,unsigned 
 		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
 		return -1;
 	}else if(pid == 0){
-		/*if(execvp(RANGER,argv)){
-			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
-		}
-		exit(CUDARANGER_EXIT_ERROR);*/
+		//if(execvp(RANGER,argv)){
+		//	fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
+		//}
+		//exit(CUDARANGER_EXIT_ERROR);
 		exit(dump_cuda(off,off + s,unit));
 	}else{
 		int status;
@@ -339,10 +339,6 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran){
 	if(divide_address_space(devno,0,0x100000000ull,unit,gran)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		cuMemFree(ptr);
-		return -1;
-	}
-	if( (cerr = cuCtxSynchronize()) ){
-		fprintf(stderr,"  Error probing CUDA memory! (%d?)\n",cerr);
 		return -1;
 	}
 	printf(" Success.\n");
