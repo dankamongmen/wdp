@@ -40,6 +40,23 @@ init_cuda(int devno){
 	return CUDA_SUCCESS;
 }
 
+static int
+dumpresults(const uint32_t *res,unsigned count){
+	unsigned z,y;
+
+	for(z = 0 ; z < count ; z += 8){
+		for(y = 0 ; y < 8 ; ++y){
+			if(printf("%9x ",res[z + y]) < 0){
+				return -1;
+			}
+		}
+		if(printf("\n") < 0){
+			return -1;
+		}
+	}
+	return 0;
+}
+
 // FIXME: we really ought take a bus specification rather than a device number,
 // since the latter are unsafe across hardware removal/additions.
 static void
@@ -93,7 +110,8 @@ int main(int argc,char **argv){
 				zul,cerr,cudaGetErrorString(err));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0,sizeof(hostres))){
+	memset(hostres,0,sizeof(hostres));
+	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0x88,sizeof(hostres))){
 		fprintf(stderr,"Error allocating %zu on device %d (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
@@ -101,14 +119,20 @@ int main(int argc,char **argv){
 	if((res = dump_cuda(min,max,unit,hostres)) != CUDARANGER_EXIT_SUCCESS){
 		return res;
 	}
+	if(cudaThreadSynchronize()){
+		return res;
+	}
 	if(cudaMemcpy(hostres,resarr,sizeof(hostres),cudaMemcpyDeviceToHost)){
 		fprintf(stderr,"Error copying %zu from device %d (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if(cudaFree(hostres)){
+	if(cudaFree(resarr)){
 		fprintf(stderr,"Couldn't free %zu on device %d (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
+		return CUDARANGER_EXIT_ERROR;
+	}
+	if(dumpresults(hostres,sizeof(hostres) / sizeof(*hostres))){
 		return CUDARANGER_EXIT_ERROR;
 	}
 	return CUDARANGER_EXIT_SUCCESS;

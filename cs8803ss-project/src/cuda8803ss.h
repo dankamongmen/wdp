@@ -14,7 +14,25 @@ extern "C" {
 #include <sys/time.h>
 #include "cuda8803ss.h"
 
-#define BLOCK_SIZE 512
+#define BLOCK_SIZE 64
+
+__device__ __constant__ unsigned constptr[1];
+
+__global__ void constkernel(const unsigned *constmax){
+	__shared__ unsigned psum[BLOCK_SIZE];
+	unsigned *ptr;
+
+	psum[threadIdx.x] = 0;
+	// Accesses below 64k result in immediate termination, due to use of
+	// the .global state space (2.0 provides unified addressing, which can
+	// overcome this). That area's reserved for constant memory (.const
+	// state space; see 5.1.3 of the PTX 2.0 Reference), from what I see.
+	for(ptr = constptr ; ptr < constmax ; ptr += BLOCK_SIZE){
+		psum[threadIdx.x] += ptr[threadIdx.x];
+	}
+}
+
+#define CONSTWIN ((unsigned *)0x10000u)
 
 // Result codes. _CUDAFAIL means that the CUDA kernel raised an exception -- an
 // expected mode of failure. _ERROR means some other exception occurred (abort
@@ -71,6 +89,8 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 					cerr,cudaGetErrorString(err));
 			return CUDARANGER_EXIT_ERROR;
 		}
+			fprintf(stderr,"   Error running kernel (%d, %s?)\n",
+					cerr,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_CUDAFAIL;
 	}
 	gettimeofday(&time1,NULL);
@@ -84,6 +104,26 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 	printf("   elapsed time: %ju.%jus (%.3f %cB/s) res: %d\n",
 			usec / 1000000,usec % 1000000,bw,punit,cerr);
 	return CUDARANGER_EXIT_SUCCESS;
+}
+
+static int
+check_const_ram(const unsigned *max){
+	dim3 dblock(BLOCK_SIZE,1,1);
+	dim3 dgrid(1,1,1);
+
+	printf("  Verifying %jub constant memory...",(uintmax_t)max);
+	fflush(stdout);
+	constkernel<<<dblock,dgrid>>>(max);
+	if(cuCtxSynchronize()){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+				cudaGetErrorString(err));
+		return -1;
+	}
+	printf("good.\n");
+	return 0;
 }
 
 #ifdef __cplusplus

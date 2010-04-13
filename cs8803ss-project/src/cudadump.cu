@@ -13,8 +13,6 @@
 #include "cuda8803ss.h"
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
-#define CONSTWIN ((unsigned *)0x10000u)
-#define BLOCK_SIZE 512
 
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80
@@ -103,42 +101,6 @@ init_cuda(int *count){
 	}
 	printf("CUDA device count: %d\n",*count);
 	return CUDA_SUCCESS;
-}
-
-__device__ __constant__ unsigned constptr[1];
-
-__global__ void constkernel(const unsigned *constmax){
-	__shared__ unsigned psum[BLOCK_SIZE];
-	unsigned *ptr;
-
-	psum[threadIdx.x] = 0;
-	// Accesses below 64k result in immediate termination, due to use of
-	// the .global state space (2.0 provides unified addressing, which can
-	// overcome this). That area's reserved for constant memory (.const
-	// state space; see 5.1.3 of the PTX 2.0 Reference), from what I see.
-	for(ptr = constptr ; ptr < constmax ; ptr += BLOCK_SIZE){
-		psum[threadIdx.x] += ptr[threadIdx.x];
-	}
-}
-
-static int
-check_const_ram(const unsigned *max){
-	dim3 dblock(BLOCK_SIZE,1,1);
-	dim3 dgrid(1,1,1);
-
-	printf("  Verifying %jub constant memory...",(uintmax_t)max);
-	fflush(stdout);
-	constkernel<<<dblock,dgrid>>>(max);
-	if(cuCtxSynchronize()){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
-				cudaGetErrorString(err));
-		return -1;
-	}
-	printf("good.\n");
-	return 0;
 }
 
 // Takes in start and end of memory area to be scanned, and fd. Returns the

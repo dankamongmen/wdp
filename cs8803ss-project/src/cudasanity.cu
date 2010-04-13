@@ -25,7 +25,6 @@ dumpresults(const uint32_t *res,unsigned count){
 __global__ void
 memkernel(unsigned *aptr,unsigned *bptr,unsigned *results){
 	__shared__ typeof(*results) psum[BLOCK_SIZE];
-	unsigned z;
 
 	psum[threadIdx.x] = results[threadIdx.x];
 	while(aptr + threadIdx.x < bptr){
