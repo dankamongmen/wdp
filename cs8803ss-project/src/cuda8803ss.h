@@ -148,7 +148,7 @@ cuda_alloc_max(FILE *o,uintmax_t tmax,void **ptr,unsigned unit){
 			}
 			min = s;
 		}else{
-			if(o) { fprintf(stderr,"%jub!\n",s); }
+			if(o) { fprintf(o,"%jub!\n",s); }
 			return s;
 		}
 	}while( (s = (tmax + min) / 2) );
