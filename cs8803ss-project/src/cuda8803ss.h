@@ -88,8 +88,8 @@ cudadump_e dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,
 					cerr,cudaGetErrorString(err));
 			return CUDARANGER_EXIT_ERROR;
 		}
-		fprintf(stderr,"   Minor error running kernel (%d, %s?)\n",
-				cerr,cudaGetErrorString(cudaGetLastError()));
+		//fprintf(stderr,"   Minor error running kernel (%d, %s?)\n",
+				//cerr,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_CUDAFAIL;
 	}
 	gettimeofday(&time1,NULL);
@@ -127,10 +127,10 @@ check_const_ram(const unsigned *max){
 
 static uintmax_t
 cuda_alloc_max(FILE *o,uintmax_t tmax,void **ptr,unsigned unit){
-	uintmax_t min = 0,s;
+	uintmax_t min = 0,s = tmax;
 
 	if(o){ fprintf(o,"  Determining max allocation..."); }
-	while( (s = ((tmax + min) / 2) & (~(uintmax_t)0u << 2u)) ){
+	do{
 		if(o) { fflush(o); }
 
 		if(cudaMalloc(ptr,s)){
@@ -151,7 +151,7 @@ cuda_alloc_max(FILE *o,uintmax_t tmax,void **ptr,unsigned unit){
 			if(o) { fprintf(stderr,"%jub!\n",s); }
 			return s;
 		}
-	}
+	}while( (s = (tmax + min) / 2) );
 	fprintf(stderr,"  All allocations failed.\n");
 	return 0;
 }

@@ -113,6 +113,9 @@ create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap,unsigned unit){
 	int mflags;
 	size_t s;
 
+	if((mend - mstart) % 4096){
+		mend = mstart + ((((mend - mstart) / 4096) + 1) * 4096);
+	}
 	if(!unit || mstart % unit || mend % unit || mstart >= mend || fd < 0){
 		errno = EINVAL;
 		return 0;

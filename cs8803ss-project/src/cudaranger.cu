@@ -109,17 +109,16 @@ int main(int argc,char **argv){
 				zul,cerr,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0x88,sizeof(hostres))){
+	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0x00,sizeof(hostres))){
 		fprintf(stderr,"Error allocating %zu on device %d (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if((s = cuda_alloc_max(NULL,0x10000,&ptr,sizeof(unsigned))) == 0){
+	if((s = cuda_alloc_max(NULL,0x10000000000,&ptr,sizeof(unsigned))) == 0 || cudaMemset(ptr,0x00,s)){
 		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
 			zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	printf(" MAXALLOC: %zu@%p\n",s,ptr);
 	if((res = dump_cuda(min,max,unit,hostres)) != CUDARANGER_EXIT_SUCCESS){
 		return res;
 	}

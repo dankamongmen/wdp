@@ -32,7 +32,7 @@ TAGS:=.tags
 
 all: $(TAGS) $(PDF) $(BIN) $(PTX)
 
-$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu
+$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu $(SRC)/cudasanity.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
