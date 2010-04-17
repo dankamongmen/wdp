@@ -39,31 +39,6 @@ init_cuda(int devno){
 	return CUDA_SUCCESS;
 }
 
-static int
-dumpresults(const uint32_t *res,unsigned count){
-	unsigned z,y,nonzero;
-
-	nonzero = 0;
-	for(z = 0 ; z < count ; z += 8){
-		for(y = 0 ; y < 8 ; ++y){
-			if(printf("%9x ",res[z + y]) < 0){
-				return -1;
-			}
-			if(res[z + y]){
-				++nonzero;
-			}
-		}
-		if(printf("\n") < 0){
-			return -1;
-		}
-	}
-	if(nonzero == 0){
-		fprintf(stderr,"  All-zero results. Kernel probably didn't run.\n");
-		return -1;
-	}
-	return 0;
-}
-
 // FIXME: we really ought take a bus specification rather than a device number,
 // since the latter are unsafe across hardware removal/additions.
 static void
@@ -86,31 +61,32 @@ get_devno(const char *argv0,const char *arg,unsigned long *zul){
 }
 
 int main(int argc,char **argv){
-	unsigned unit = 4;		// Minimum alignment of references
 	unsigned long zul;
+	uintmax_t total,s;
 	CUdeviceptr ptr;
-	cudadump_e res;
 	int cerr;
 
 	if(argc != 2){
 		usage(*argv);
-		return CUDARANGER_EXIT_ERROR;
+		exit(EXIT_FAILURE);
 	}
 	if(get_devno(argv[0],argv[1],&zul)){
-		return CUDARANGER_EXIT_ERROR;
+		exit(EXIT_FAILURE);
 	}
 	if((cerr = init_cuda(zul)) != CUDA_SUCCESS){
 		fprintf(stderr,"Error initializing CUDA device %d (%d, %s?)\n",
 				zul,cerr,cudaGetErrorString(cudaGetLastError()));
-		return CUDARANGER_EXIT_ERROR;
+		exit(EXIT_FAILURE);
 	}
-	if(cuda_alloc_max(NULL,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned)) == 0){
+	if((s = cuda_alloc_max(NULL,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) == 0){
 		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
 			zul,cudaGetErrorString(cudaGetLastError()));
-		return CUDARANGER_EXIT_ERROR;
+		exit(EXIT_FAILURE);
 	}
-	if(cuMemFree(ptr)){
-		fprintf(stderr,"Warning: couldn't free memory\n");
+	total = s;
+	while( (s = cuda_alloc_max(NULL,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) ){
+		total += s;
 	}
-	return CUDARANGER_EXIT_SUCCESS;
+	printf(" Got a total of %jub (0x%jx)\n",total,total);
+	exit(EXIT_SUCCESS);
 }

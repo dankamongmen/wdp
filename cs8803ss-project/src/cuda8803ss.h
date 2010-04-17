@@ -14,8 +14,8 @@ extern "C" {
 #include <sys/time.h>
 #include "cuda8803ss.h"
 
-#define GRID_SIZE 1
-#define BLOCK_SIZE 64
+#define GRID_SIZE 4
+#define BLOCK_SIZE 128
 
 // Result codes. _CUDAFAIL means that the CUDA kernel raised an exception -- an
 // expected mode of failure. _ERROR means some other exception occurred (abort
@@ -62,7 +62,7 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 		return CUDARANGER_EXIT_ERROR;
 	}
 	s = tmax - tmin;
-	printf("   readkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
+	printf("   readkernel {%ux%u} x {%ux%ux%u} (0x%08jx, 0x%08jx (0x%jxb), %u)\n",
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
 	readkernel<<<dgrid,dblock>>>((unsigned *)tmin,(unsigned *)tmax,results);

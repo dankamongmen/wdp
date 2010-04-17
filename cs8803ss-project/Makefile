@@ -21,7 +21,7 @@ CUDA?=/usr/local/cuda
 CUDAINC:=$(CUDA)/include
 
 CC:=$(CUDA)/bin/nvcc
-CFLAGS:=-v -O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
+CFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 CFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda
 PTXFLAGS:=--ptx
