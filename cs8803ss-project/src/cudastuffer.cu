@@ -10,8 +10,6 @@
 #include <cuda_runtime_api.h>
 #include "cuda8803ss.h"
 
-#define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
-
 static int
 init_cuda(int devno){
 	int attr,cerr;
@@ -78,7 +76,7 @@ int main(int argc,char **argv){
 				zul,cerr,cudaGetErrorString(cudaGetLastError()));
 		exit(EXIT_FAILURE);
 	}
-	if((s = cuda_alloc_max(stdout,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) == 0){
+	if((s = cuda_alloc_max(stdout,&ptr,sizeof(unsigned))) == 0){
 		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
 			zul,cudaGetErrorString(cudaGetLastError()));
 		exit(EXIT_FAILURE);
@@ -97,7 +95,7 @@ int main(int argc,char **argv){
 		}
 		oldptr = (char *)ptr + s;
 		++zul;
-	}while( (s = cuda_alloc_max(stdout,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) );
+	}while( (s = cuda_alloc_max(stdout,&ptr,sizeof(unsigned))) );
 	printf(" Got %ju (0x%jx) total bytes in %lu allocations.\n",total,total,zul);
 	exit(EXIT_SUCCESS);
 }

@@ -16,6 +16,7 @@ extern "C" {
 
 #define GRID_SIZE 4
 #define BLOCK_SIZE 128
+#define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 
 // Result codes. _CUDAFAIL means that the CUDA kernel raised an exception -- an
 // expected mode of failure. _ERROR means some other exception occurred (abort
@@ -93,7 +94,8 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 }
 
 static uintmax_t
-cuda_alloc_max(FILE *o,uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
+cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
+	uintmax_t tmax = 1ul << ADDRESS_BITS;
 	uintmax_t min = 0,s = tmax;
 
 	if(o){ fprintf(o,"  Determining max allocation..."); }
@@ -104,7 +106,7 @@ cuda_alloc_max(FILE *o,uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 			if((tmax = s) <= min + unit){
 				tmax = min;
 			}
-		}else if(s != tmax && tmax - unit > min){
+		}else if(s != tmax){
 			int cerr;
 
 			if(o){ fprintf(o,"%jub...",s); }
