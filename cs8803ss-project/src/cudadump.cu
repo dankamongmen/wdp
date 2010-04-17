@@ -12,8 +12,6 @@
 #include <cuda_runtime_api.h>
 #include "cuda8803ss.h"
 
-#define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
-
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80
 static int
@@ -237,7 +235,7 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	if(check_const_ram(CONSTWIN)){
 		return -1;
 	}
-	if((s = cuda_alloc_max(stdout,tmem,&ptr,unit)) == 0){
+	if((s = cuda_alloc_max(stdout,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
