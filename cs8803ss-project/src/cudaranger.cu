@@ -133,9 +133,9 @@ int main(int argc,char **argv){
 	unsigned long long min,max;
 	unsigned unit = 4;		// Minimum alignment of references
 	unsigned long zul;
+	CUdeviceptr ptr;
 	cudadump_e res;
 	char *eptr;
-	void *ptr;
 	int cerr;
 
 	if(argc != 4){
@@ -187,6 +187,9 @@ int main(int argc,char **argv){
 	}
 	if(cudaThreadSynchronize()){
 		return res;
+	}
+	if(cuMemFree(ptr)){
+		fprintf(stderr,"Warning: couldn't free memory\n");
 	}
 	if(cudaMemcpy(hostres,resarr,sizeof(hostres),cudaMemcpyDeviceToHost)){
 		fprintf(stderr,"Error copying %zu from device %d (%s?)\n",

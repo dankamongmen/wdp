@@ -231,9 +231,8 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 
 static int
 cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results){
-	uintmax_t worked = 0;
-	uintmax_t s;
-	void *ptr;
+	uintmax_t worked = 0,s;
+	CUdeviceptr ptr;
 
 	if(check_const_ram(CONSTWIN)){
 		return -1;
@@ -241,7 +240,7 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	if((s = cuda_alloc_max(stdout,tmem / 2,&ptr,unit)) == 0){
 		return -1;
 	}
-	if(cudaFree(ptr)){
+	if(cuMemFree(ptr)){
 		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
 				cudaGetErrorString(cudaGetLastError()));
 		return -1;

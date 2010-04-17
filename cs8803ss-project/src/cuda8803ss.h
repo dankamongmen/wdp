@@ -26,22 +26,24 @@ typedef enum {
 } cudadump_e;
 
 static uintmax_t
-cuda_alloc_max(FILE *o,uintmax_t tmax,void **ptr,unsigned unit){
+cuda_alloc_max(FILE *o,uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 	uintmax_t min = 0,s = tmax;
 
 	if(o){ fprintf(o,"  Determining max allocation..."); }
 	do{
 		if(o) { fflush(o); }
 
-		if(cudaMalloc(ptr,s)){
+		if(cuMemAlloc(ptr,s)){
 			if((tmax = s) <= min + unit){
 				tmax = min;
 			}
 		}else if(s != tmax && s != min){
+			int cerr;
+
 			if(o){ fprintf(o,"%jub...",s); }
-			if(cudaFree(*ptr)){
-				fprintf(stderr,"  Couldn't free %jub at %p (%s?)\n",
-					s,*ptr,cudaGetErrorString(cudaGetLastError()));
+			if((cerr = cuMemFree(*ptr)) ){
+				fprintf(stderr,"  Couldn't free %jub at %p (%d?)\n",
+					s,*ptr,cerr);
 				return 0;
 			}
 			min = s;
