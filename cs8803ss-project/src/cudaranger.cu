@@ -11,7 +11,6 @@
 #include "cuda8803ss.h"
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
-#define CONSTWIN ((unsigned *)0x10000u)
 
 static int
 init_cuda(int devno){
@@ -33,7 +32,7 @@ init_cuda(int devno){
 		fprintf(stderr,"Couldn't get device reference, exiting.\n");
 		return cerr;
 	}
-	if((cerr = cuCtxCreate(&ctx,0,c)) != CUDA_SUCCESS){
+	if((cerr = cuCtxCreate(&ctx,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't create context, exiting.\n");
 		return cerr;
 	}
@@ -73,7 +72,7 @@ usage(const char *a0){
 }
 
 int main(int argc,char **argv){
-	uint32_t hostres[BLOCK_SIZE],*resarr;
+	uint32_t hostres[GRID_SIZE * BLOCK_SIZE],*resarr;
 	unsigned long long min,max;
 	unsigned unit = 4;		// Minimum alignment of references
 	unsigned long zul;
@@ -121,7 +120,7 @@ int main(int argc,char **argv){
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if(cuda_alloc_max(NULL,0x100000000,&ptr,sizeof(unsigned)) == 0){
+	if(cuda_alloc_max(NULL,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned)) == 0){
 		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
 			zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;

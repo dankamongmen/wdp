@@ -286,7 +286,7 @@ int main(void){
 		return EXIT_FAILURE;
 	}
 	for(z = 0 ; z < count ; ++z){
-		uint32_t hostresarr[BLOCK_SIZE];
+		uint32_t hostresarr[GRID_SIZE * BLOCK_SIZE];
 		unsigned mem,tmem;
 		uint32_t *resarr;
 

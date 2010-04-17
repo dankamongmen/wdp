@@ -14,6 +14,7 @@ extern "C" {
 #include <sys/time.h>
 #include "cuda8803ss.h"
 
+#define GRID_SIZE 1
 #define BLOCK_SIZE 64
 
 // Result codes. _CUDAFAIL means that the CUDA kernel raised an exception -- an
@@ -33,15 +34,17 @@ __global__ void
 readkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
 	__shared__ typeof(*results) psum[BLOCK_SIZE];
 
-	psum[threadIdx.x] = results[threadIdx.x];
-	while(aptr + threadIdx.x < bptr){
-		++psum[threadIdx.x];
-		if(aptr[threadIdx.x]){
-			++psum[threadIdx.x];
+	psum[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
+		results[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+	while(aptr + BLOCK_SIZE * blockIdx.x + threadIdx.x < bptr){
+		++psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+		if(aptr[BLOCK_SIZE * blockIdx.x + threadIdx.x]){
+			++psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
 		}
-		aptr += BLOCK_SIZE;
+		aptr += BLOCK_SIZE * GRID_SIZE;
 	}
-	results[threadIdx.x] = psum[threadIdx.x];
+	results[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
+		psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
 }
 
 static cudadump_e
@@ -49,7 +52,7 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
 	int punit = 'M',cerr;
-	dim3 dgrid(1,1,1);
+	dim3 dgrid(GRID_SIZE,1,1);
 	uintmax_t usec,s;
 	float bw;
 
