@@ -15,13 +15,14 @@
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80
 static int
-id_cuda(int dev,unsigned *mem,unsigned *tmem){
+id_cuda(int dev,unsigned *mem,unsigned *tmem,int *state){
 	struct cudaDeviceProp dprop;
 	int major,minor,attr,cerr;
 	void *str = NULL;
 	CUcontext ctx;
 	CUdevice c;
 
+	*state = 0;
 	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
 		fprintf(stderr," Couldn't associative with device (%d)\n",cerr);
 		return cerr;
@@ -55,14 +56,15 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem){
 		cuCtxDetach(ctx);
 		goto err;
 	}
+	*state = dprop.computeMode;
 	if(printf("%d.%d %s %s %u/%uMB free %s\n",
 		major,minor,
 		dprop.integrated ? "Integrated" : "Standalone",(char *)str,
 		*mem / (1024 * 1024) + !!(*mem / (1024 * 1024)),
 		*tmem / (1024 * 1024) + !!(*tmem / (1024 * 1024)),
-		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
-		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
-		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "(shared)" :
+		*state == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
+		*state == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
+		*state == CU_COMPUTEMODE_DEFAULT ? "(shared)" :
 		"(unknown compute mode)") < 0){
 		cerr = -1;
 		goto err;
@@ -287,12 +289,15 @@ int main(void){
 		uint32_t hostresarr[GRID_SIZE * BLOCK_SIZE];
 		unsigned mem,tmem;
 		uint32_t *resarr;
+		int state;
 
 		printf(" %03d ",z);
-		if(id_cuda(z,&mem,&tmem)){
-			fprintf(stderr," Error probing CUDA device %d (%s?)\n",
-				z,cudaGetErrorString(cudaGetLastError()));
+		if(id_cuda(z,&mem,&tmem,&state)){
 			return EXIT_FAILURE;
+		}
+		if(state != CU_COMPUTEMODE_DEFAULT){
+			printf("  Skipping device (put it in shared mode).\n",z);
+			continue;
 		}
 		if(cudaMalloc(&resarr,sizeof(hostresarr)) || cudaMemset(resarr,0,sizeof(hostresarr))){
 			fprintf(stderr," Couldn't allocate result array (%s?)\n",
