@@ -11,9 +11,11 @@ PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
 CUDADUMP:=out/cudadump
+CUDAMINIMAL:=out/cudaminimal
 CUDARANGER:=out/cudaranger
+CUDASPAWNER:=out/cudaspawner
 CUDASTUFFER:=out/cudastuffer
-BIN:=$(CUDADUMP) $(CUDARANGER) $(CUDASTUFFER)
+BIN:=$(CUDADUMP) $(CUDAMINIMAL) $(CUDARANGER) $(CUDASPAWNER) $(CUDASTUFFER)
 PTX:=$(addsuffix .ptx,$(BIN))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
@@ -30,7 +32,7 @@ TAGS:=.tags
 
 all: $(TAGS) $(PDF) $(BIN) $(PTX)
 
-$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaranger.cu $(SRC)/cudastuffer.cu $(SRC)/cuda8803ss.h
+$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaminimal.cu $(SRC)/cudaranger.cu $(SRC)/cudaspawner.cu $(SRC)/cudastuffer.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
@@ -38,7 +40,15 @@ $(OUT)/cudadump: $(OUT)/cudadump.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
+$(OUT)/cudaminimal: $(OUT)/cudaminimal.o
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
 $(OUT)/cudaranger: $(OUT)/cudaranger.o
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
+
+$(OUT)/cudaspawner: $(OUT)/cudaspawner.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CUBINFLAGS) $(CFLAGS) -o $@ $< $(LFLAGS)
 
