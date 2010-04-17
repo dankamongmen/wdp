@@ -88,7 +88,6 @@ int main(int argc,char **argv){
 	if(((zul = strtoul(argv[1],&eptr,0)) == ULONG_MAX && errno == ERANGE)
 			|| eptr == argv[1] || *eptr){
 		fprintf(stderr,"Invalid device number: %s\n",argv[1]);
-		printf("%lu %d\n",zul,*eptr);
 		usage(*argv);
 		return CUDARANGER_EXIT_ERROR;
 	}

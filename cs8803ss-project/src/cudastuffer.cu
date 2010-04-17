@@ -53,7 +53,6 @@ get_devno(const char *argv0,const char *arg,unsigned long *zul){
 	if(((*zul = strtoul(arg,&eptr,0)) == ULONG_MAX && errno == ERANGE)
 			|| eptr == arg || *eptr){
 		fprintf(stderr,"Invalid device number: %s\n",arg);
-		printf("%lu %d\n",*zul,*eptr);
 		usage(argv0);
 		return -1;
 	}
@@ -78,13 +77,13 @@ int main(int argc,char **argv){
 				zul,cerr,cudaGetErrorString(cudaGetLastError()));
 		exit(EXIT_FAILURE);
 	}
-	if((s = cuda_alloc_max(NULL,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) == 0){
+	if((s = cuda_alloc_max(stdout,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) == 0){
 		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
 			zul,cudaGetErrorString(cudaGetLastError()));
 		exit(EXIT_FAILURE);
 	}
 	total = s;
-	while( (s = cuda_alloc_max(NULL,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) ){
+	while( (s = cuda_alloc_max(stdout,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) ){
 		total += s;
 	}
 	printf(" Got a total of %jub (0x%jx)\n",total,total);
