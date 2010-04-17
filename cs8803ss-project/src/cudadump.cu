@@ -103,39 +103,6 @@ init_cuda(int *count){
 	return CUDA_SUCCESS;
 }
 
-// Takes in start and end of memory area to be scanned, and fd. Returns the
-// number of |unit|-byte words in this region, or 0 on error. mstart and mend
-// must be |unit|-byte aligned, and mstart must be less than mend. Requires
-// sufficient virtual memory to allocate the bitmap, and sufficient disk space
-// for the backing file (FIXME we currently use a hole, so not quite...).
-static uintmax_t
-create_bitmap(uintptr_t mstart,uintptr_t mend,int fd,void **bmap,unsigned unit){
-	int mflags;
-	size_t s;
-
-	if((mend - mstart) % 4096){
-		mend = mstart + ((((mend - mstart) / 4096) + 1) * 4096);
-	}
-	if(!unit || mstart % unit || mend % unit || mstart >= mend || fd < 0){
-		errno = EINVAL;
-		return 0;
-	}
-	mflags = MAP_SHARED;
-#ifdef MAP_HUGETLB
-	mflags |= MAP_HUGETLB;
-#endif
-	s = (mend - mstart) / unit / CHAR_BIT;
-	*bmap = mmap(NULL,s,PROT_READ|PROT_WRITE,mflags,fd,0);
-	if(*bmap == MAP_FAILED){
-		return 0;
-	}
-	if(ftruncate(fd,s)){
-		munmap(*bmap,s);
-		return 0;
-	}
-	return s * CHAR_BIT;
-}
-
 // Returns the maxpoint of the first of at most two ranges into which the
 // region will be divided, where a premium is placed on the first range being
 // a multiple of gran.
@@ -222,10 +189,10 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 }
 
 static int
-cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *results){
+cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results){
 	uintmax_t worked = 0;
-	void *map,*ptr;
 	uintmax_t s;
+	void *ptr;
 
 	if((s = cuda_alloc_max(stdout,tmem / 2,&ptr,unit)) == 0){
 		return -1;
@@ -240,12 +207,6 @@ cudadump(int devno,uintmax_t tmem,int fd,unsigned unit,uintmax_t gran,uint32_t *
 		return -1;
 	}
 	if(check_const_ram(CONSTWIN)){
-		return -1;
-	}
-	// FIXME need to munmap(2) bitmap (especially on error paths!)
-	if(create_bitmap(0,(uintptr_t)((char *)ptr + s),fd,&map,unit) == 0){
-		fprintf(stderr,"  Error creating bitmap (%s?)\n",
-				strerror(errno));
 		return -1;
 	}
 	printf("  Verifying allocated region...\n");
@@ -291,7 +252,6 @@ int main(void){
 		uint32_t hostresarr[BLOCK_SIZE];
 		unsigned mem,tmem;
 		uint32_t *resarr;
-		int fd;
 
 		printf(" %03d ",z);
 		if(id_cuda(z,&mem,&tmem)){
@@ -302,10 +262,6 @@ int main(void){
 					z,cudaGetErrorString(err));
 			return EXIT_FAILURE;
 		}
-		if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
-			fprintf(stderr," Error creating bitmap (%s?)\n",strerror(errno));
-			return EXIT_FAILURE;
-		}
 		printf(" %03d ",z);
 		if(id_cuda(z,&mem,&tmem)){
 			cudaError_t err;
@@ -313,10 +269,6 @@ int main(void){
 			err = cudaGetLastError();
 			fprintf(stderr," Error probing CUDA device %d (%s?)\n",
 					z,cudaGetErrorString(err));
-			return EXIT_FAILURE;
-		}
-		if((fd = open("localhost.dump",O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)) < 0){
-			fprintf(stderr," Error creating bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}
 		if(cudaMalloc(&resarr,sizeof(hostresarr)) || cudaMemset(resarr,0,sizeof(hostresarr))){
@@ -324,18 +276,12 @@ int main(void){
 				cudaGetErrorString(cudaGetLastError()));
 			return EXIT_FAILURE;
 		}
-		if(cudadump(z,tmem,fd,unit,gran,resarr)){
-			close(fd);
+		if(cudadump(z,tmem,unit,gran,resarr)){
 			return EXIT_FAILURE;
 		}
 		if(cudaMemcpy(hostresarr,resarr,sizeof(hostresarr),cudaMemcpyDeviceToHost) || cudaFree(resarr)){
 			fprintf(stderr," Couldn't free result array (%s?)\n",
 				cudaGetErrorString(cudaGetLastError()));
-			close(fd);
-			return EXIT_FAILURE;
-		}
-		if(close(fd)){
-			fprintf(stderr," Error closing bitmap (%s?)\n",strerror(errno));
 			return EXIT_FAILURE;
 		}
 	}
