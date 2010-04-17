@@ -73,8 +73,8 @@ preview: all
 	$(VPDF) $(PDF)
 
 test: all
-	#timelimit -T 1 -t 10 ./$(CUDADUMP)
 	./$(CUDARANGER) 0 0x110000 0x111000
+	./$(CUDASTUFFER) 0
 	./$(CUDADUMP)
 	! ./$(CUDARANGER) 0 0 0x100000000
 
