@@ -262,15 +262,6 @@ int main(void){
 					z,cudaGetErrorString(err));
 			return EXIT_FAILURE;
 		}
-		printf(" %03d ",z);
-		if(id_cuda(z,&mem,&tmem)){
-			cudaError_t err;
-
-			err = cudaGetLastError();
-			fprintf(stderr," Error probing CUDA device %d (%s?)\n",
-					z,cudaGetErrorString(err));
-			return EXIT_FAILURE;
-		}
 		if(cudaMalloc(&resarr,sizeof(hostresarr)) || cudaMemset(resarr,0,sizeof(hostresarr))){
 			fprintf(stderr," Couldn't allocate result array (%s?)\n",
 				cudaGetErrorString(cudaGetLastError()));
