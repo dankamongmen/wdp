@@ -237,12 +237,7 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	if(check_const_ram(CONSTWIN)){
 		return -1;
 	}
-	if((s = cuda_alloc_max(stdout,tmem / 2,&ptr,unit)) == 0){
-		return -1;
-	}
-	if(cuMemFree(ptr)){
-		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
-				cudaGetErrorString(cudaGetLastError()));
+	if((s = cuda_alloc_max(stdout,tmem,&ptr,unit)) == 0){
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
@@ -250,16 +245,16 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
 			ptr,(uintmax_t)ptr + s);
 	printf("  Verifying allocated region...\n");
-	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran,results,&worked)){
+	if(dump_cuda(ptr,ptr + (s / gran) * gran,unit,results)){
+		cuMemFree(ptr);
 		fprintf(stderr,"  Sanity check failed!\n");
 		return -1;
 	}
-	printf("  Readable: %jub\n",worked);
-	if(worked != (s / gran) * gran){
-		fprintf(stderr,"  Error probing allocated memory!\n");
+	if(cuMemFree(ptr)){
+		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
+				cudaGetErrorString(cudaGetLastError()));
 		return -1;
 	}
-	worked = 0;
 	printf("  Dumping %jub...\n",tmem);
 	if(divide_address_space(devno,0,tmem,unit,gran,results,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");

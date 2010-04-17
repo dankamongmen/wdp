@@ -25,6 +25,70 @@ typedef enum {
 	CUDARANGER_EXIT_CUDAFAIL,
 } cudadump_e;
 
+// Iterates over the specified memory region in units of CUDA's unsigned int.
+// bptr must not be less than aptr. The provided array must be BLOCK_SIZE
+// 32-bit integers; it holds the number of non-0 words seen by each of the
+// BLOCK_SIZE threads.
+__global__ void
+readkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
+	__shared__ typeof(*results) psum[BLOCK_SIZE];
+
+	psum[threadIdx.x] = results[threadIdx.x];
+	while(aptr + threadIdx.x < bptr){
+		++psum[threadIdx.x];
+		if(aptr[threadIdx.x]){
+			++psum[threadIdx.x];
+		}
+		aptr += BLOCK_SIZE;
+	}
+	results[threadIdx.x] = psum[threadIdx.x];
+}
+
+static cudadump_e
+dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
+	struct timeval time0,time1,timer;
+	dim3 dblock(BLOCK_SIZE,1,1);
+	int punit = 'M',cerr;
+	dim3 dgrid(1,1,1);
+	uintmax_t usec,s;
+	float bw;
+
+	if(cudaThreadSynchronize()){
+		fprintf(stderr,"   Error prior to running kernel (%s)\n",
+				cudaGetErrorString(cudaGetLastError()));
+		return CUDARANGER_EXIT_ERROR;
+	}
+	s = tmax - tmin;
+	printf("   readkernel {%ux%u} x {%ux%ux%u} (0x%jx, 0x%jx (%jub), %u)\n",
+		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
+	gettimeofday(&time0,NULL);
+	readkernel<<<dgrid,dblock>>>((unsigned *)tmin,(unsigned *)tmax,results);
+	if( (cerr = cudaThreadSynchronize()) ){
+		cudaError_t err;
+
+		if(cerr != CUDA_ERROR_LAUNCH_FAILED && cerr != CUDA_ERROR_DEINITIALIZED){
+			err = cudaGetLastError();
+			fprintf(stderr,"   Error running kernel (%d, %s?)\n",
+					cerr,cudaGetErrorString(err));
+			return CUDARANGER_EXIT_ERROR;
+		}
+		//fprintf(stderr,"   Minor error running kernel (%d, %s?)\n",
+				//cerr,cudaGetErrorString(cudaGetLastError()));
+		return CUDARANGER_EXIT_CUDAFAIL;
+	}
+	gettimeofday(&time1,NULL);
+	timersub(&time1,&time0,&timer);
+	usec = (timer.tv_sec * 1000000 + timer.tv_usec);
+	bw = (float)s / usec;
+	if(bw > 1000.0f){
+		bw /= 1000.0f;
+		punit = 'G';
+	}
+	printf("   elapsed time: %ju.%jus (%.3f %cB/s) res: %d\n",
+			usec / 1000000,usec % 1000000,bw,punit,cerr);
+	return CUDARANGER_EXIT_SUCCESS;
+}
+
 static uintmax_t
 cuda_alloc_max(FILE *o,uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 	uintmax_t min = 0,s = tmax;
