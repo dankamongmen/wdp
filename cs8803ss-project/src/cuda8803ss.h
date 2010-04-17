@@ -104,7 +104,7 @@ cuda_alloc_max(FILE *o,uintmax_t tmax,CUdeviceptr *ptr,unsigned unit){
 			if((tmax = s) <= min + unit){
 				tmax = min;
 			}
-		}else if(s != tmax && s != min){
+		}else if(s != tmax){
 			int cerr;
 
 			if(o){ fprintf(o,"%jub...",s); }

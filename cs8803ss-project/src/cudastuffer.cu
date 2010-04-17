@@ -60,8 +60,9 @@ get_devno(const char *argv0,const char *arg,unsigned long *zul){
 }
 
 int main(int argc,char **argv){
+	uintmax_t total = 0,s;
+	char *oldptr = NULL;
 	unsigned long zul;
-	uintmax_t total,s;
 	CUdeviceptr ptr;
 	int cerr;
 
@@ -82,10 +83,19 @@ int main(int argc,char **argv){
 			zul,cudaGetErrorString(cudaGetLastError()));
 		exit(EXIT_FAILURE);
 	}
-	total = s;
-	while( (s = cuda_alloc_max(stdout,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) ){
+	do{
+		if(printf("  Allocation at %p (expected %p)\n",ptr,oldptr) < 0){
+			exit(EXIT_FAILURE);
+		}
 		total += s;
-	}
+		if((char *)ptr != oldptr){
+			if(printf("  Memory hole: 0x%p->0x%p (%jub)\n",
+				oldptr,(char *)ptr - 1,(char *)ptr - oldptr) < 0){
+				exit(EXIT_SUCCESS);
+			}
+		}
+		oldptr = (char *)ptr + s;
+	}while( (s = cuda_alloc_max(stdout,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) );
 	printf(" Got a total of %jub (0x%jx)\n",total,total);
 	exit(EXIT_SUCCESS);
 }
