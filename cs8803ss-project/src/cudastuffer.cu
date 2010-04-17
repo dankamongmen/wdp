@@ -83,6 +83,7 @@ int main(int argc,char **argv){
 			zul,cudaGetErrorString(cudaGetLastError()));
 		exit(EXIT_FAILURE);
 	}
+	zul = 0;
 	do{
 		if(printf("  Allocation at %p (expected %p)\n",ptr,oldptr) < 0){
 			exit(EXIT_FAILURE);
@@ -95,7 +96,8 @@ int main(int argc,char **argv){
 			}
 		}
 		oldptr = (char *)ptr + s;
+		++zul;
 	}while( (s = cuda_alloc_max(stdout,1ul << ADDRESS_BITS,&ptr,sizeof(unsigned))) );
-	printf(" Got a total of %jub (0x%jx)\n",total,total);
+	printf(" Got %ju (0x%jx) total bytes in %lu allocations.\n",total,total,zul);
 	exit(EXIT_SUCCESS);
 }
