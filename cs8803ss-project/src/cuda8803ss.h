@@ -32,7 +32,7 @@ typedef enum {
 // BLOCK_SIZE threads.
 __global__ void
 readkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
-	__shared__ typeof(*results) psum[BLOCK_SIZE];
+	__shared__ typeof(*results) psum[GRID_SIZE * BLOCK_SIZE];
 
 	psum[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
 		results[BLOCK_SIZE * blockIdx.x + threadIdx.x];
