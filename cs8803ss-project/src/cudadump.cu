@@ -77,6 +77,44 @@ err:	// cerr ought already be set!
 	return cerr;
 }
 
+__device__ __constant__ unsigned constptr[1];
+
+__global__ void constkernel(const unsigned *constmax){
+	__shared__ unsigned psum[BLOCK_SIZE];
+	unsigned *ptr;
+
+	psum[threadIdx.x] = 0;
+	// Accesses below 64k result in immediate termination, due to use of
+	// the .global state space (2.0 provides unified addressing, which can
+	// overcome this). That area's reserved for constant memory (.const
+	// state space; see 5.1.3 of the PTX 2.0 Reference), from what I see.
+	for(ptr = constptr ; ptr < constmax ; ptr += BLOCK_SIZE){
+		psum[threadIdx.x] += ptr[threadIdx.x];
+	}
+}
+
+#define CONSTWIN ((unsigned *)0x10000u)
+
+static int
+check_const_ram(const unsigned *max){
+	dim3 dblock(BLOCK_SIZE,1,1);
+	dim3 dgrid(1,1,1);
+
+	printf("  Verifying %jub constant memory...",(uintmax_t)max);
+	fflush(stdout);
+	constkernel<<<dblock,dgrid>>>(max);
+	if(cuCtxSynchronize()){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+				cudaGetErrorString(err));
+		return -1;
+	}
+	printf("good.\n");
+	return 0;
+}
+
 #define CUDAMAJMIN(v) v / 1000, v % 1000
 
 static int
