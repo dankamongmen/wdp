@@ -15,8 +15,10 @@ CUDAMINIMAL:=out/cudaminimal
 CUDARANGER:=out/cudaranger
 CUDASPAWNER:=out/cudaspawner
 CUDASTUFFER:=out/cudastuffer
-BIN:=$(CUDADUMP) $(CUDAMINIMAL) $(CUDARANGER) $(CUDASPAWNER) $(CUDASTUFFER)
-PTX:=$(addsuffix .ptx,$(BIN))
+CSRC:=$(wildcard src/*.c)
+CUDASRC:=$(wildcard src/*.cu)
+BIN:=$(addprefix out/,$(basename $(notdir $(CSRC) $(CUDASRC))))
+PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
 CUDA?=/usr/local/
