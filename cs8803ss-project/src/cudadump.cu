@@ -260,14 +260,14 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
-	printf("  Readable: %jub\n",worked);
+	printf("  Readable: %jub/%jub (%f%%)\n",worked,tmem,(float)worked / tmem * 100);
 	worked = 0;
 	printf("  Dumping address space (%jub)...\n",(uintmax_t)0x100000000ull);
 	if(divide_address_space(devno,0,0x100000000ull,unit,gran,results,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
-	printf("  Readable: %jub\n",worked);
+	printf("  Readable: %jub/%jub (%f%%)\n",worked,0x100000000ull,(float)worked / 0x100000000 * 100);
 	printf(" Success.\n");
 	return 0;
 }
