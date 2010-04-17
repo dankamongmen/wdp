@@ -1,0 +1,148 @@
+
+/usr/lib/libcuda.so:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+00000000001173f0 <.text+0x976e0> (File Offset: 0x1173f0):
+  1173f0:	48 89 5c 24 e0       	mov    %rbx,-0x20(%rsp)
+  1173f5:	48 89 6c 24 e8       	mov    %rbp,-0x18(%rsp)
+  1173fa:	89 fd                	mov    %edi,%ebp
+  1173fc:	4c 89 64 24 f0       	mov    %r12,-0x10(%rsp)
+  117401:	4c 89 6c 24 f8       	mov    %r13,-0x8(%rsp)
+  117406:	48 81 ec 88 00 00 00 	sub    $0x88,%rsp
+  11740d:	48 c7 44 24 48 00 00 	movq   $0x0,0x48(%rsp)
+  117414:	00 00 
+  117416:	e8 b5 48 fd ff       	callq  ebcd0 <__isinff@plt+0x6bfd0> (File Offset: 0xebcd0)
+  11741b:	84 c0                	test   %al,%al
+  11741d:	89 c3                	mov    %eax,%ebx
+  11741f:	0f 85 52 01 00 00    	jne    117577 <__isinff@plt+0x97877> (File Offset: 0x117577)
+  117425:	45 31 ed             	xor    %r13d,%r13d
+  117428:	44 8b 0d e5 93 6f 00 	mov    0x6f93e5(%rip),%r9d        # 810814 <__isinff@plt+0x790b14> (File Offset: 0x810814)
+  11742f:	45 85 c9             	test   %r9d,%r9d
+  117432:	0f 84 08 01 00 00    	je     117540 <__isinff@plt+0x97840> (File Offset: 0x117540)
+  117438:	89 ef                	mov    %ebp,%edi
+  11743a:	e8 31 ac f6 ff       	callq  82070 <__isinff@plt+0x2370> (File Offset: 0x82070)
+  11743f:	44 8b 15 ce 93 6f 00 	mov    0x6f93ce(%rip),%r10d        # 810814 <__isinff@plt+0x790b14> (File Offset: 0x810814)
+  117446:	41 89 c4             	mov    %eax,%r12d
+  117449:	45 85 d2             	test   %r10d,%r10d
+  11744c:	0f 84 b4 00 00 00    	je     117506 <__isinff@plt+0x97806> (File Offset: 0x117506)
+  117452:	84 db                	test   %bl,%bl
+  117454:	0f 95 c3             	setne  %bl
+  117457:	44 84 eb             	test   %r13b,%bl
+  11745a:	75 24                	jne    117480 <__isinff@plt+0x97780> (File Offset: 0x117480)
+  11745c:	44 89 e0             	mov    %r12d,%eax
+  11745f:	48 8b 5c 24 68       	mov    0x68(%rsp),%rbx
+  117464:	48 8b 6c 24 70       	mov    0x70(%rsp),%rbp
+  117469:	4c 8b 64 24 78       	mov    0x78(%rsp),%r12
+  11746e:	4c 8b ac 24 80 00 00 	mov    0x80(%rsp),%r13
+  117475:	00 
+  117476:	48 81 c4 88 00 00 00 	add    $0x88,%rsp
+  11747d:	c3                   	retq   
+  11747e:	66 90                	xchg   %ax,%ax
+  117480:	fc                   	cld    
+  117481:	31 c0                	xor    %eax,%eax
+  117483:	b9 08 00 00 00       	mov    $0x8,%ecx
+  117488:	48 89 e7             	mov    %rsp,%rdi
+  11748b:	f3 48 ab             	rep stos %rax,%es:(%rdi)
+  11748e:	4c 8b 2d d3 71 6f 00 	mov    0x6f71d3(%rip),%r13        # 80e668 <__isinff@plt+0x78e968> (File Offset: 0x80e668)
+  117495:	89 6c 24 50          	mov    %ebp,0x50(%rsp)
+  117499:	48 8d 6c 24 50       	lea    0x50(%rsp),%rbp
+  11749e:	41 8b 7d 00          	mov    0x0(%r13),%edi
+  1174a2:	e8 b9 03 4b 00       	callq  5c7860 <__isinff@plt+0x547b60> (File Offset: 0x5c7860)
+  1174a7:	4c 8d 1d 67 3c 4c 00 	lea    0x4c3c67(%rip),%r11        # 5db115 <__isinff@plt+0x55b415> (File Offset: 0x5db115)
+  1174ae:	48 89 c2             	mov    %rax,%rdx
+  1174b1:	48 89 04 24          	mov    %rax,(%rsp)
+  1174b5:	31 c0                	xor    %eax,%eax
+  1174b7:	48 85 d2             	test   %rdx,%rdx
+  1174ba:	48 c7 44 24 08 00 00 	movq   $0x0,0x8(%rsp)
+  1174c1:	00 00 
+  1174c3:	c7 44 24 10 1d 00 00 	movl   $0x1d,0x10(%rsp)
+  1174ca:	00 
+  1174cb:	4c 89 5c 24 18       	mov    %r11,0x18(%rsp)
+  1174d0:	48 89 6c 24 20       	mov    %rbp,0x20(%rsp)
+  1174d5:	74 07                	je     1174de <__isinff@plt+0x977de> (File Offset: 0x1174de)
+  1174d7:	48 8b 82 f0 03 00 00 	mov    0x3f0(%rdx),%rax
+  1174de:	48 8b 74 24 48       	mov    0x48(%rsp),%rsi
+  1174e3:	48 8b 3d 56 77 6f 00 	mov    0x6f7756(%rip),%rdi        # 80ec40 <__isinff@plt+0x78ef40> (File Offset: 0x80ec40)
+  1174ea:	48 89 44 24 28       	mov    %rax,0x28(%rsp)
+  1174ef:	44 89 64 24 38       	mov    %r12d,0x38(%rsp)
+  1174f4:	48 89 74 24 30       	mov    %rsi,0x30(%rsp)
+  1174f9:	48 89 e6             	mov    %rsp,%rsi
+  1174fc:	e8 df 47 fd ff       	callq  ebce0 <__isinff@plt+0x6bfe0> (File Offset: 0xebce0)
+  117501:	e9 56 ff ff ff       	jmpq   11745c <__isinff@plt+0x9775c> (File Offset: 0x11745c)
+  117506:	48 8d 3d cd 34 4c 00 	lea    0x4c34cd(%rip),%rdi        # 5da9da <__isinff@plt+0x55acda> (File Offset: 0x5da9da)
+  11750d:	e8 4e 7f f6 ff       	callq  7f460 <getenv@plt> (File Offset: 0x7f460)
+  117512:	48 85 c0             	test   %rax,%rax
+  117515:	74 17                	je     11752e <__isinff@plt+0x9782e> (File Offset: 0x11752e)
+  117517:	31 c9                	xor    %ecx,%ecx
+  117519:	ba 0a 00 00 00       	mov    $0xa,%edx
+  11751e:	31 f6                	xor    %esi,%esi
+  117520:	48 89 c7             	mov    %rax,%rdi
+  117523:	e8 08 84 f6 ff       	callq  7f930 <__strtol_internal@plt> (File Offset: 0x7f930)
+  117528:	89 05 ea 92 6f 00    	mov    %eax,0x6f92ea(%rip)        # 810818 <__isinff@plt+0x790b18> (File Offset: 0x810818)
+  11752e:	c7 05 dc 92 6f 00 01 	movl   $0x1,0x6f92dc(%rip)        # 810814 <__isinff@plt+0x790b14> (File Offset: 0x810814)
+  117535:	00 00 00 
+  117538:	e9 15 ff ff ff       	jmpq   117452 <__isinff@plt+0x97752> (File Offset: 0x117452)
+  11753d:	66 66 90             	xchg   %ax,%ax
+  117540:	48 8d 3d 93 34 4c 00 	lea    0x4c3493(%rip),%rdi        # 5da9da <__isinff@plt+0x55acda> (File Offset: 0x5da9da)
+  117547:	e8 14 7f f6 ff       	callq  7f460 <getenv@plt> (File Offset: 0x7f460)
+  11754c:	48 85 c0             	test   %rax,%rax
+  11754f:	74 17                	je     117568 <__isinff@plt+0x97868> (File Offset: 0x117568)
+  117551:	31 c9                	xor    %ecx,%ecx
+  117553:	ba 0a 00 00 00       	mov    $0xa,%edx
+  117558:	31 f6                	xor    %esi,%esi
+  11755a:	48 89 c7             	mov    %rax,%rdi
+  11755d:	e8 ce 83 f6 ff       	callq  7f930 <__strtol_internal@plt> (File Offset: 0x7f930)
+  117562:	89 05 b0 92 6f 00    	mov    %eax,0x6f92b0(%rip)        # 810818 <__isinff@plt+0x790b18> (File Offset: 0x810818)
+  117568:	c7 05 a2 92 6f 00 01 	movl   $0x1,0x6f92a2(%rip)        # 810814 <__isinff@plt+0x790b14> (File Offset: 0x810814)
+  11756f:	00 00 00 
+  117572:	e9 c1 fe ff ff       	jmpq   117438 <__isinff@plt+0x97738> (File Offset: 0x117438)
+  117577:	31 ff                	xor    %edi,%edi
+  117579:	e8 52 90 f7 ff       	callq  905d0 <__isinff@plt+0x108d0> (File Offset: 0x905d0)
+  11757e:	85 c0                	test   %eax,%eax
+  117580:	0f 85 9f fe ff ff    	jne    117425 <__isinff@plt+0x97725> (File Offset: 0x117425)
+  117586:	fc                   	cld    
+  117587:	31 c0                	xor    %eax,%eax
+  117589:	b9 07 00 00 00       	mov    $0x7,%ecx
+  11758e:	48 89 e7             	mov    %rsp,%rdi
+  117591:	f3 48 ab             	rep stos %rax,%es:(%rdi)
+  117594:	48 8b 05 cd 70 6f 00 	mov    0x6f70cd(%rip),%rax        # 80e668 <__isinff@plt+0x78e968> (File Offset: 0x80e668)
+  11759b:	89 6c 24 50          	mov    %ebp,0x50(%rsp)
+  11759f:	8b 38                	mov    (%rax),%edi
+  1175a1:	e8 ba 02 4b 00       	callq  5c7860 <__isinff@plt+0x547b60> (File Offset: 0x5c7860)
+  1175a6:	48 85 c0             	test   %rax,%rax
+  1175a9:	48 89 04 24          	mov    %rax,(%rsp)
+  1175ad:	74 69                	je     117618 <__isinff@plt+0x97918> (File Offset: 0x117618)
+  1175af:	48 ff 80 f0 03 00 00 	incq   0x3f0(%rax)
+  1175b6:	48 8d 54 24 50       	lea    0x50(%rsp),%rdx
+  1175bb:	48 8d 35 53 3b 4c 00 	lea    0x4c3b53(%rip),%rsi        # 5db115 <__isinff@plt+0x55b415> (File Offset: 0x5db115)
+  1175c2:	48 8b 04 24          	mov    (%rsp),%rax
+  1175c6:	48 c7 44 24 08 00 00 	movq   $0x0,0x8(%rsp)
+  1175cd:	00 00 
+  1175cf:	48 89 54 24 20       	mov    %rdx,0x20(%rsp)
+  1175d4:	31 d2                	xor    %edx,%edx
+  1175d6:	c7 44 24 10 1d 00 00 	movl   $0x1d,0x10(%rsp)
+  1175dd:	00 
+  1175de:	48 89 74 24 18       	mov    %rsi,0x18(%rsp)
+  1175e3:	48 85 c0             	test   %rax,%rax
+  1175e6:	74 07                	je     1175ef <__isinff@plt+0x978ef> (File Offset: 0x1175ef)
+  1175e8:	48 8b 90 f0 03 00 00 	mov    0x3f0(%rax),%rdx
+  1175ef:	48 8b 3d 2a 6a 6f 00 	mov    0x6f6a2a(%rip),%rdi        # 80e020 <__isinff@plt+0x78e320> (File Offset: 0x80e020)
+  1175f6:	4c 8d 44 24 48       	lea    0x48(%rsp),%r8
+  1175fb:	48 89 e6             	mov    %rsp,%rsi
+  1175fe:	41 bd 01 00 00 00    	mov    $0x1,%r13d
+  117604:	48 89 54 24 28       	mov    %rdx,0x28(%rsp)
+  117609:	4c 89 44 24 30       	mov    %r8,0x30(%rsp)
+  11760e:	e8 cd 46 fd ff       	callq  ebce0 <__isinff@plt+0x6bfe0> (File Offset: 0xebce0)
+  117613:	e9 10 fe ff ff       	jmpq   117428 <__isinff@plt+0x97728> (File Offset: 0x117428)
+  117618:	4c 8d 05 f6 3a 4c 00 	lea    0x4c3af6(%rip),%r8        # 5db115 <__isinff@plt+0x55b415> (File Offset: 0x5db115)
+  11761f:	4c 8d 64 24 50       	lea    0x50(%rsp),%r12
+  117624:	31 d2                	xor    %edx,%edx
+  117626:	48 c7 44 24 08 00 00 	movq   $0x0,0x8(%rsp)
+  11762d:	00 00 
+  11762f:	c7 44 24 10 1d 00 00 	movl   $0x1d,0x10(%rsp)
+  117636:	00 
+  117637:	4c 89 44 24 18       	mov    %r8,0x18(%rsp)
+  11763c:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
+  117641:	eb ac                	jmp    1175ef <__isinff@plt+0x978ef> (File Offset: 0x1175ef)

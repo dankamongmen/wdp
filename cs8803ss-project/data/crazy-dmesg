@@ -1,0 +1,1606 @@
+[    0.000000] Initializing cgroup subsys cpuset
+[    0.000000] Initializing cgroup subsys cpu
+[    0.000000] Linux version 2.6.34-rc2 (dank@hyperbox) (gcc version 4.4.3 (Debian 4.4.3-5) ) #1 SMP Tue Mar 30 04:32:37 EDT 2010
+[    0.000000] Command line: BOOT_IMAGE=/vmlinuz-2.6.34-rc2 root=/dev/sda5 ro
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009e800 (usable)
+[    0.000000]  BIOS-e820: 000000000009e800 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 00000000dbd8f000 (usable)
+[    0.000000]  BIOS-e820: 00000000dbd8f000 - 00000000dbde0000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000dbde0000 - 00000000dbdf7000 (reserved)
+[    0.000000]  BIOS-e820: 00000000dbdf7000 - 00000000dbdff000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000dbdff000 - 00000000dbe18000 (reserved)
+[    0.000000]  BIOS-e820: 00000000dbe18000 - 00000000dbe19000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000dbe19000 - 00000000dbe26000 (reserved)
+[    0.000000]  BIOS-e820: 00000000dbe26000 - 00000000dbe2b000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000dbe2b000 - 00000000dbe31000 (reserved)
+[    0.000000]  BIOS-e820: 00000000dbe31000 - 00000000dbe32000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000dbe32000 - 00000000dbe35000 (reserved)
+[    0.000000]  BIOS-e820: 00000000dbe35000 - 00000000dbe38000 (ACPI data)
+[    0.000000]  BIOS-e820: 00000000dbe38000 - 00000000dbe3c000 (reserved)
+[    0.000000]  BIOS-e820: 00000000dbe3c000 - 00000000dbe4b000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000dbe4b000 - 00000000dbe6a000 (reserved)
+[    0.000000]  BIOS-e820: 00000000dbe6a000 - 00000000dbe6b000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000dbe6b000 - 00000000e0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000f8000000 - 00000000fc000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed1b000 - 00000000fed20000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ffa00000 - 00000000ffc00000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
+[    0.000000]  BIOS-e820: 0000000100000000 - 0000000220000000 (usable)
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] DMI 2.6 present.
+[    0.000000] e820 update range: 0000000000000000 - 0000000000001000 (usable) ==> (reserved)
+[    0.000000] e820 remove range: 00000000000a0000 - 0000000000100000 (usable)
+[    0.000000] No AGP bridge found
+[    0.000000] last_pfn = 0x220000 max_arch_pfn = 0x400000000
+[    0.000000] MTRR default type: uncachable
+[    0.000000] MTRR fixed ranges enabled:
+[    0.000000]   00000-9FFFF write-back
+[    0.000000]   A0000-BFFFF uncachable
+[    0.000000]   C0000-CFFFF write-protect
+[    0.000000]   D0000-DFFFF uncachable
+[    0.000000]   E0000-FFFFF write-protect
+[    0.000000] MTRR variable ranges enabled:
+[    0.000000]   0 base 000000000 mask F80000000 write-back
+[    0.000000]   1 base 080000000 mask FC0000000 write-back
+[    0.000000]   2 base 0C0000000 mask FE0000000 write-back
+[    0.000000]   3 base 100000000 mask F00000000 write-back
+[    0.000000]   4 base 200000000 mask FE0000000 write-back
+[    0.000000]   5 base 0DC000000 mask FFC000000 uncachable
+[    0.000000]   6 base 0FFE00000 mask FFFE00000 write-protect
+[    0.000000]   7 base 0F1000000 mask FFF000000 write-combining
+[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+[    0.000000] last_pfn = 0xdbd8f max_arch_pfn = 0x400000000
+[    0.000000] initial memory mapped : 0 - 20000000
+[    0.000000] init_memory_mapping: 0000000000000000-00000000dbd8f000
+[    0.000000]  0000000000 - 00dbc00000 page 2M
+[    0.000000]  00dbc00000 - 00dbd8f000 page 4k
+[    0.000000] kernel direct mapping tables up to dbd8f000 @ 8000-e000
+[    0.000000] init_memory_mapping: 0000000100000000-0000000220000000
+[    0.000000]  0100000000 - 0220000000 page 2M
+[    0.000000] kernel direct mapping tables up to 220000000 @ c000-16000
+[    0.000000] ACPI: RSDP 00000000000f0410 00024 (v02   PEGA)
+[    0.000000] ACPI: XSDT 00000000dbe36e18 0005C (v01 _ASUS_ Notebook 00000001 MSFT 00010013)
+[    0.000000] ACPI: FACP 00000000dbe18c18 000F4 (v04   PEGA   PEGANB 00000001 MSFT 00010013)
+[    0.000000] ACPI Warning: 32/64 FACS address mismatch in FADT - two FACS tables! (20100121/tbfadt-369)
+[    0.000000] ACPI Warning: 32/64X FACS address mismatch in FADT - DBE47F40/00000000DBE4AD40, using 32 (20100121/tbfadt-486)
+[    0.000000] ACPI: DSDT 00000000dbdcf018 10AC9 (v01   PEGA   PEGANB 00000001 INTL 20051117)
+[    0.000000] ACPI: FACS 00000000dbe47f40 00040
+[    0.000000] ACPI: APIC 00000000dbe35f18 0008C (v02   PEGA   PEGANB 00000001 MSFT 00010013)
+[    0.000000] ACPI: ECDT 00000000dbe4ab18 000C1 (v01   PEGA   PEGANB 00000001 AMI. 00000003)
+[    0.000000] ACPI: SLIC 00000000dbe42c18 00176 (v01 _ASUS_ Notebook 00000001 MSFT 00000001)
+[    0.000000] ACPI: MCFG 00000000dbe49d18 0003C (v01   PEGA   PEGANB 00000001 MSFT 00000097)
+[    0.000000] ACPI: HPET 00000000dbe49c98 00038 (v01   PEGA   PEGANB 00000001 AMI. 00000003)
+[    0.000000] ACPI: SSDT 00000000dbe31018 009F1 (v01  PmRef    CpuPm 00003000 INTL 20051117)
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] No NUMA configuration found
+[    0.000000] Faking a node at 0000000000000000-0000000220000000
+[    0.000000] Initmem setup node 0 0000000000000000-0000000220000000
+[    0.000000]   NODE_DATA [0000000100000000 - 0000000100002fff]
+[    0.000000]  [ffffea0000000000-ffffea00077fffff] PMD -> [ffff880100200000-ffff8801073fffff] on node 0
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000001 -> 0x00001000
+[    0.000000]   DMA32    0x00001000 -> 0x00100000
+[    0.000000]   Normal   0x00100000 -> 0x00220000
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[3] active PFN ranges
+[    0.000000]     0: 0x00000001 -> 0x0000009e
+[    0.000000]     0: 0x00000100 -> 0x000dbd8f
+[    0.000000]     0: 0x00100000 -> 0x00220000
+[    0.000000] On node 0 totalpages: 2080044
+[    0.000000]   DMA zone: 56 pages used for memmap
+[    0.000000]   DMA zone: 0 pages reserved
+[    0.000000]   DMA zone: 3941 pages, LIFO batch:0
+[    0.000000]   DMA32 zone: 14280 pages used for memmap
+[    0.000000]   DMA32 zone: 882119 pages, LIFO batch:31
+[    0.000000]   Normal zone: 16128 pages used for memmap
+[    0.000000]   Normal zone: 1163520 pages, LIFO batch:31
+[    0.000000] ACPI: PM-Timer IO Port: 0x408
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x04] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x04] lapic_id[0x06] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x05] lapic_id[0x01] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x06] lapic_id[0x03] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x07] lapic_id[0x05] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x08] lapic_id[0x07] enabled)
+[    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+[    0.000000] IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.000000] ACPI: IRQ0 used by override.
+[    0.000000] ACPI: IRQ2 used by override.
+[    0.000000] ACPI: IRQ9 used by override.
+[    0.000000] Using ACPI (MADT) for SMP configuration information
+[    0.000000] ACPI: HPET id: 0x8086a701 base: 0xfed00000
+[    0.000000] SMP: Allowing 8 CPUs, 0 hotplug CPUs
+[    0.000000] nr_irqs_gsi: 24
+[    0.000000] early_res array is doubled to 64 at [7000 - 77ff]
+[    0.000000] PM: Registered nosave memory: 000000000009e000 - 000000000009f000
+[    0.000000] PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
+[    0.000000] PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
+[    0.000000] PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
+[    0.000000] PM: Registered nosave memory: 00000000dbd8f000 - 00000000dbde0000
+[    0.000000] PM: Registered nosave memory: 00000000dbde0000 - 00000000dbdf7000
+[    0.000000] PM: Registered nosave memory: 00000000dbdf7000 - 00000000dbdff000
+[    0.000000] PM: Registered nosave memory: 00000000dbdff000 - 00000000dbe18000
+[    0.000000] PM: Registered nosave memory: 00000000dbe18000 - 00000000dbe19000
+[    0.000000] PM: Registered nosave memory: 00000000dbe19000 - 00000000dbe26000
+[    0.000000] PM: Registered nosave memory: 00000000dbe26000 - 00000000dbe2b000
+[    0.000000] PM: Registered nosave memory: 00000000dbe2b000 - 00000000dbe31000
+[    0.000000] PM: Registered nosave memory: 00000000dbe31000 - 00000000dbe32000
+[    0.000000] PM: Registered nosave memory: 00000000dbe32000 - 00000000dbe35000
+[    0.000000] PM: Registered nosave memory: 00000000dbe35000 - 00000000dbe38000
+[    0.000000] PM: Registered nosave memory: 00000000dbe38000 - 00000000dbe3c000
+[    0.000000] PM: Registered nosave memory: 00000000dbe3c000 - 00000000dbe4b000
+[    0.000000] PM: Registered nosave memory: 00000000dbe4b000 - 00000000dbe6a000
+[    0.000000] PM: Registered nosave memory: 00000000dbe6a000 - 00000000dbe6b000
+[    0.000000] PM: Registered nosave memory: 00000000dbe6b000 - 00000000e0000000
+[    0.000000] PM: Registered nosave memory: 00000000e0000000 - 00000000f8000000
+[    0.000000] PM: Registered nosave memory: 00000000f8000000 - 00000000fc000000
+[    0.000000] PM: Registered nosave memory: 00000000fc000000 - 00000000fec00000
+[    0.000000] PM: Registered nosave memory: 00000000fec00000 - 00000000fec01000
+[    0.000000] PM: Registered nosave memory: 00000000fec01000 - 00000000fed1b000
+[    0.000000] PM: Registered nosave memory: 00000000fed1b000 - 00000000fed20000
+[    0.000000] PM: Registered nosave memory: 00000000fed20000 - 00000000fee00000
+[    0.000000] PM: Registered nosave memory: 00000000fee00000 - 00000000fee01000
+[    0.000000] PM: Registered nosave memory: 00000000fee01000 - 00000000ffa00000
+[    0.000000] PM: Registered nosave memory: 00000000ffa00000 - 00000000ffc00000
+[    0.000000] PM: Registered nosave memory: 00000000ffc00000 - 00000000ffe00000
+[    0.000000] PM: Registered nosave memory: 00000000ffe00000 - 0000000100000000
+[    0.000000] Allocating PCI resources starting at e0000000 (gap: e0000000:18000000)
+[    0.000000] Booting paravirtualized kernel on bare hardware
+[    0.000000] setup_percpu: NR_CPUS:16 nr_cpumask_bits:16 nr_cpu_ids:8 nr_node_ids:1
+[    0.000000] early_res array is doubled to 128 at [11000 - 11fff]
+[    0.000000] PERCPU: Embedded 27 pages/cpu @ffff880001800000 s81640 r8192 d20760 u262144
+[    0.000000] pcpu-alloc: s81640 r8192 d20760 u262144 alloc=1*2097152
+[    0.000000] pcpu-alloc: [0] 0 1 2 3 4 5 6 7 
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 2049580
+[    0.000000] Policy zone: Normal
+[    0.000000] Kernel command line: BOOT_IMAGE=/vmlinuz-2.6.34-rc2 root=/dev/sda5 ro
+[    0.000000] PID hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.000000] Checking aperture...
+[    0.000000] No AGP bridge found
+[    0.000000] Subtract (72 early reservations)
+[    0.000000]   #1 [0001000000 - 00017afc44]   TEXT DATA BSS
+[    0.000000]   #2 [000009e800 - 0000100000]   BIOS reserved
+[    0.000000]   #3 [00017b0000 - 00017b01e9]             BRK
+[    0.000000]   #4 [0000001000 - 0000003000]      TRAMPOLINE
+[    0.000000]   #5 [0000003000 - 0000007000]     ACPI WAKEUP
+[    0.000000]   #6 [0000008000 - 000000c000]         PGTABLE
+[    0.000000]   #7 [000000c000 - 0000011000]         PGTABLE
+[    0.000000]   #8 [0100000000 - 0100003000]       NODE_DATA
+[    0.000000]   #9 [00017b0200 - 00017b1200]         BOOTMEM
+[    0.000000]   #10 [0001bb1200 - 0001bb1800]         BOOTMEM
+[    0.000000]   #11 [0100003000 - 0100004000]         BOOTMEM
+[    0.000000]   #12 [0100004000 - 0100005000]         BOOTMEM
+[    0.000000]   #13 [0100200000 - 0107400000]        MEMMAP 0
+[    0.000000]   #14 [00017afc80 - 00017afe00]         BOOTMEM
+[    0.000000]   #15 [00017b1200 - 00017c9200]         BOOTMEM
+[    0.000000]   #16 [00017c9200 - 00017e1200]         BOOTMEM
+[    0.000000]   #17 [00017e2000 - 00017e3000]         BOOTMEM
+[    0.000000]   #18 [00017afe00 - 00017afe41]         BOOTMEM
+[    0.000000]   #19 [00017afe80 - 00017afec3]         BOOTMEM
+[    0.000000]   #20 [00017e1200 - 00017e1820]         BOOTMEM
+[    0.000000]   #21 [00017aff00 - 00017aff68]         BOOTMEM
+[    0.000000]   #22 [00017aff80 - 00017affe8]         BOOTMEM
+[    0.000000]   #23 [00017e1840 - 00017e18a8]         BOOTMEM
+[    0.000000]   #24 [00017e18c0 - 00017e1928]         BOOTMEM
+[    0.000000]   #25 [00017e1940 - 00017e19a8]         BOOTMEM
+[    0.000000]   #26 [00017e19c0 - 00017e1a28]         BOOTMEM
+[    0.000000]   #27 [00017e1a40 - 00017e1aa8]         BOOTMEM
+[    0.000000]   #28 [00017e1ac0 - 00017e1b28]         BOOTMEM
+[    0.000000]   #29 [00017e1b40 - 00017e1ba8]         BOOTMEM
+[    0.000000]   #30 [00017e1bc0 - 00017e1c28]         BOOTMEM
+[    0.000000]   #31 [00017e1c40 - 00017e1ca8]         BOOTMEM
+[    0.000000]   #32 [00017e1cc0 - 00017e1d28]         BOOTMEM
+[    0.000000]   #33 [00017e1d40 - 00017e1da8]         BOOTMEM
+[    0.000000]   #34 [00017e1dc0 - 00017e1e28]         BOOTMEM
+[    0.000000]   #35 [00017e1e40 - 00017e1ea8]         BOOTMEM
+[    0.000000]   #36 [00017e1ec0 - 00017e1f28]         BOOTMEM
+[    0.000000]   #37 [00017e1f40 - 00017e1fa8]         BOOTMEM
+[    0.000000]   #38 [00017e3000 - 00017e3068]         BOOTMEM
+[    0.000000]   #39 [00017e3080 - 00017e30e8]         BOOTMEM
+[    0.000000]   #40 [00017e3100 - 00017e3168]         BOOTMEM
+[    0.000000]   #41 [00017e3180 - 00017e31e8]         BOOTMEM
+[    0.000000]   #42 [00017e3200 - 00017e3268]         BOOTMEM
+[    0.000000]   #43 [00017e3280 - 00017e32e8]         BOOTMEM
+[    0.000000]   #44 [00017e3300 - 00017e3368]         BOOTMEM
+[    0.000000]   #45 [00017e3380 - 00017e33e8]         BOOTMEM
+[    0.000000]   #46 [00017e3400 - 00017e3468]         BOOTMEM
+[    0.000000]   #47 [00017e3480 - 00017e34e8]         BOOTMEM
+[    0.000000]   #48 [00017e1fc0 - 00017e1fe0]         BOOTMEM
+[    0.000000]   #49 [00017e3500 - 00017e3520]         BOOTMEM
+[    0.000000]   #50 [00017e3540 - 00017e3571]         BOOTMEM
+[    0.000000]   #51 [00017e3580 - 00017e35b1]         BOOTMEM
+[    0.000000]   #52 [0001800000 - 000181b000]         BOOTMEM
+[    0.000000]   #53 [0001840000 - 000185b000]         BOOTMEM
+[    0.000000]   #54 [0001880000 - 000189b000]         BOOTMEM
+[    0.000000]   #55 [00018c0000 - 00018db000]         BOOTMEM
+[    0.000000]   #56 [0001900000 - 000191b000]         BOOTMEM
+[    0.000000]   #57 [0001940000 - 000195b000]         BOOTMEM
+[    0.000000]   #58 [0001980000 - 000199b000]         BOOTMEM
+[    0.000000]   #59 [00019c0000 - 00019db000]         BOOTMEM
+[    0.000000]   #60 [00017e55c0 - 00017e55c8]         BOOTMEM
+[    0.000000]   #61 [00017e5600 - 00017e5608]         BOOTMEM
+[    0.000000]   #62 [00017e5640 - 00017e5660]         BOOTMEM
+[    0.000000]   #63 [00017e5680 - 00017e56c0]         BOOTMEM
+[    0.000000]   #64 [00017e56c0 - 00017e57e0]         BOOTMEM
+[    0.000000]   #65 [00017e5800 - 00017e5848]         BOOTMEM
+[    0.000000]   #66 [00017e5880 - 00017e58c8]         BOOTMEM
+[    0.000000]   #67 [00017e5900 - 00017ed900]         BOOTMEM
+[    0.000000]   #68 [0001bb2000 - 0005bb2000]         BOOTMEM
+[    0.000000]   #69 [000181b000 - 000183b000]         BOOTMEM
+[    0.000000]   #70 [00019db000 - 0001a1b000]         BOOTMEM
+[    0.000000]   #71 [0000012000 - 000001a000]         BOOTMEM
+[    0.000000]  7 - 8
+[    0.000000]  11 - 12
+[    0.000000]  1a 40 - 80 9e
+[    0.000000]  100 100 - 1000 1000
+[    0.000000]  17e4 - 17e5
+[    0.000000]  17ee - 1800
+[    0.000000]  183b - 1840
+[    0.000000]  185b - 1880
+[    0.000000]  189b - 18c0
+[    0.000000]  18db - 1900
+[    0.000000]  191b - 1940
+[    0.000000]  195b - 1980
+[    0.000000]  199b - 19c0
+[    0.000000]  1a1b 1a40 - 1b80 1bb1
+[    0.000000]  5bb2 5bc0 - dbd80 dbd8f
+[    0.000000]  100005 100040 - 100200 100200
+[    0.000000]  107400 107400 - 220000 220000
+[    0.000000] Memory: 8128424k/8912896k available (2707k kernel code, 592720k absent, 191752k reserved, 4021k data, 444k init)
+[    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=1
+[    0.000000] Hierarchical RCU implementation.
+[    0.000000] NR_IRQS:768
+[    0.000000] Extended CMOS year: 2000
+[    0.000000] Console: colour VGA+ 80x25
+[    0.000000] console [tty0] enabled
+[    0.000000] hpet clockevent registered
+[    0.000000] Fast TSC calibration using PIT
+[    0.004000] Detected 1600.228 MHz processor.
+[    0.000007] Calibrating delay loop (skipped), value calculated using timer frequency.. 3200.45 BogoMIPS (lpj=6400912)
+[    0.000916] Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
+[    0.002462] Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
+[    0.003175] Mount-cache hash table entries: 256
+[    0.003382] Initializing cgroup subsys ns
+[    0.003501] Initializing cgroup subsys cpuacct
+[    0.003623] Initializing cgroup subsys devices
+[    0.003744] Initializing cgroup subsys freezer
+[    0.003864] Initializing cgroup subsys net_cls
+[    0.003992] CPU: Physical Processor ID: 0
+[    0.004164] CPU: Processor Core ID: 0
+[    0.004295] mce: CPU supports 9 MCE banks
+[    0.004418] CPU0: Thermal monitoring enabled (TM1)
+[    0.004543] using mwait in idle threads.
+[    0.004658] Performance Events: Nehalem/Corei7 events, Intel PMU driver.
+[    0.004977] ... version:                3
+[    0.005097] ... bit width:              48
+[    0.005219] ... generic registers:      4
+[    0.005340] ... value mask:             0000ffffffffffff
+[    0.005464] ... max period:             000000007fffffff
+[    0.005586] ... fixed-purpose events:   3
+[    0.005710] ... event mask:             000000070000000f
+[    0.006412] ACPI: Core revision 20100121
+[    0.027855] Setting APIC routing to flat
+[    0.028386] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=0 pin2=0
+[    0.068134] CPU0: Intel(R) Core(TM) i7 CPU       Q 720  @ 1.60GHz stepping 05
+[    0.175890] Booting Node   0, Processors  #1 #2 #3 #4 #5 #6 #7 Ok.
+[    0.930685] Brought up 8 CPUs
+[    0.930810] Total of 8 processors activated (25599.80 BogoMIPS).
+[    0.934552] devtmpfs: initialized
+[    0.934949] NET: Registered protocol family 16
+[    0.935158] ACPI FADT declares the system doesn't support PCIe ASPM, so disable it
+[    0.935302] ACPI: bus type pci registered
+[    0.935504] PCI: MMCONFIG for domain 0000 [bus 00-3f] at [mem 0xf8000000-0xfbffffff] (base 0xf8000000)
+[    0.935656] PCI: MMCONFIG at [mem 0xf8000000-0xfbffffff] reserved in E820
+[    0.944694] PCI: Using configuration type 1 for base access
+[    0.945223] bio: create slab <bio-0> at 0
+[    0.947927] ACPI: EC: EC description table is found, configuring boot EC
+[    0.951008] ACPI: Executed 1 blocks of module-level executable AML code
+[    0.958973] ACPI: BIOS _OSI(Linux) query ignored
+[    1.105036] ACPI: SSDT 00000000dbe34a98 002E3 (v01  PmRef  Cpu0Ist 00003000 INTL 20051117)
+[    1.106269] ACPI: SSDT 00000000dbe33698 005EB (v01  PmRef  Cpu0Cst 00003001 INTL 20051117)
+[    1.107886] ACPI: SSDT 00000000dbe34718 00303 (v01  PmRef    ApIst 00003000 INTL 20051117)
+[    1.109134] ACPI: SSDT 00000000dbe32d98 00119 (v01  PmRef    ApCst 00003000 INTL 20051117)
+[    1.114253] ACPI: Interpreter enabled
+[    1.114380] ACPI: (supports S0 S3 S4 S5)
+[    1.114937] ACPI: Using IOAPIC for interrupt routing
+[    1.120508] ACPI: BIOS _OSI(Linux) query ignored
+[    1.121157] ACPI: BIOS _OSI(Linux) query ignored
+[    1.121807] ACPI: BIOS _OSI(Linux) query ignored
+[    1.123973] ACPI: BIOS _OSI(Linux) query ignored
+[    1.124625] ACPI: BIOS _OSI(Linux) query ignored
+[    1.125275] ACPI: BIOS _OSI(Linux) query ignored
+[    1.126501] ACPI: BIOS _OSI(Linux) query ignored
+[    1.127148] ACPI: BIOS _OSI(Linux) query ignored
+[    1.127799] ACPI: BIOS _OSI(Linux) query ignored
+[    1.129023] ACPI: BIOS _OSI(Linux) query ignored
+[    1.129675] ACPI: BIOS _OSI(Linux) query ignored
+[    1.130327] ACPI: BIOS _OSI(Linux) query ignored
+[    1.132177] ACPI: BIOS _OSI(Linux) query ignored
+[    1.132827] ACPI: BIOS _OSI(Linux) query ignored
+[    1.133479] ACPI: BIOS _OSI(Linux) query ignored
+[    1.134702] ACPI: BIOS _OSI(Linux) query ignored
+[    1.135355] ACPI: BIOS _OSI(Linux) query ignored
+[    1.136006] ACPI: BIOS _OSI(Linux) query ignored
+[    1.137231] ACPI: BIOS _OSI(Linux) query ignored
+[    1.137881] ACPI: BIOS _OSI(Linux) query ignored
+[    1.138538] ACPI: BIOS _OSI(Linux) query ignored
+[    1.146850] ACPI: EC: GPE = 0x1b, I/O: command/status = 0x66, data = 0x62
+[    1.147434] ACPI: No dock devices found.
+[    1.147562] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    1.149341] ACPI: PCI Root Bridge [PCI0] (0000:00)
+[    1.150798] pci_root PNP0A08:00: host bridge window [io  0x0000-0x0cf7]
+[    1.150930] pci_root PNP0A08:00: host bridge window [io  0x0d00-0xffff]
+[    1.151061] pci_root PNP0A08:00: host bridge window [mem 0x000a0000-0x000bffff]
+[    1.151206] pci_root PNP0A08:00: host bridge window [mem 0x000d0000-0x000d3fff]
+[    1.151350] pci_root PNP0A08:00: host bridge window [mem 0x000d4000-0x000d7fff]
+[    1.151493] pci_root PNP0A08:00: host bridge window [mem 0x000d8000-0x000dbfff]
+[    1.151638] pci_root PNP0A08:00: host bridge window [mem 0x000dc000-0x000dffff]
+[    1.151787] pci_root PNP0A08:00: host bridge window [mem 0xe0000000-0xfeafffff]
+[    1.152030] pci 0000:00:03.0: PME# supported from D0 D3hot D3cold
+[    1.152034] pci 0000:00:03.0: PME# disabled
+[    1.152348] pci 0000:00:16.0: reg 10: [mem 0xf490a000-0xf490a00f 64bit]
+[    1.152406] pci 0000:00:16.0: PME# supported from D0 D3hot D3cold
+[    1.152415] pci 0000:00:16.0: PME# disabled
+[    1.152478] pci 0000:00:1a.0: reg 10: [mem 0xf4908000-0xf49083ff]
+[    1.152537] pci 0000:00:1a.0: PME# supported from D0 D3hot D3cold
+[    1.152545] pci 0000:00:1a.0: PME# disabled
+[    1.152589] pci 0000:00:1b.0: reg 10: [mem 0xf4900000-0xf4903fff 64bit]
+[    1.152641] pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+[    1.152649] pci 0000:00:1b.0: PME# disabled
+[    1.152733] pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
+[    1.152742] pci 0000:00:1c.0: PME# disabled
+[    1.152827] pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
+[    1.152835] pci 0000:00:1c.1: PME# disabled
+[    1.152916] pci 0000:00:1c.2: PME# supported from D0 D3hot D3cold
+[    1.152925] pci 0000:00:1c.2: PME# disabled
+[    1.153011] pci 0000:00:1c.4: PME# supported from D0 D3hot D3cold
+[    1.153020] pci 0000:00:1c.4: PME# disabled
+[    1.153105] pci 0000:00:1c.5: PME# supported from D0 D3hot D3cold
+[    1.153114] pci 0000:00:1c.5: PME# disabled
+[    1.153174] pci 0000:00:1d.0: reg 10: [mem 0xf4907000-0xf49073ff]
+[    1.153234] pci 0000:00:1d.0: PME# supported from D0 D3hot D3cold
+[    1.153242] pci 0000:00:1d.0: PME# disabled
+[    1.153458] pci 0000:00:1f.2: reg 10: [io  0xe070-0xe077]
+[    1.153469] pci 0000:00:1f.2: reg 14: [io  0xe060-0xe063]
+[    1.153480] pci 0000:00:1f.2: reg 18: [io  0xe050-0xe057]
+[    1.153490] pci 0000:00:1f.2: reg 1c: [io  0xe040-0xe043]
+[    1.153501] pci 0000:00:1f.2: reg 20: [io  0xe020-0xe03f]
+[    1.153512] pci 0000:00:1f.2: reg 24: [mem 0xf4906000-0xf49067ff]
+[    1.153553] pci 0000:00:1f.2: PME# supported from D3hot
+[    1.153561] pci 0000:00:1f.2: PME# disabled
+[    1.153608] pci 0000:00:1f.3: reg 10: [mem 0xf4905000-0xf49050ff 64bit]
+[    1.153626] pci 0000:00:1f.3: reg 20: [io  0xe000-0xe01f]
+[    1.153710] pci 0000:01:00.0: reg 10: [mem 0xf2000000-0xf2ffffff]
+[    1.153719] pci 0000:01:00.0: reg 14: [mem 0xe0000000-0xefffffff 64bit pref]
+[    1.153727] pci 0000:01:00.0: reg 1c: [mem 0xf0000000-0xf1ffffff 64bit pref]
+[    1.153733] pci 0000:01:00.0: reg 24: [io  0xd000-0xd07f]
+[    1.153738] pci 0000:01:00.0: reg 30: [mem 0xf3000000-0xf307ffff pref]
+[    1.153785] pci 0000:01:00.1: reg 10: [mem 0xf3080000-0xf3083fff]
+[    1.153834] pci 0000:00:03.0: PCI bridge to [bus 01-01]
+[    1.153960] pci 0000:00:03.0:   bridge window [io  0xd000-0xdfff]
+[    1.153964] pci 0000:00:03.0:   bridge window [mem 0xe0000000-0xf30fffff]
+[    1.153969] pci 0000:00:03.0:   bridge window [mem 0xfff00000 - 000fffff pref] reg reading
+[    1.154020] pci 0000:00:1c.0: PCI bridge to [bus 02-02]
+[    1.154148] pci 0000:00:1c.0:   bridge window [io  f000 - 0000] reg reading
+[    1.154157] pci 0000:00:1c.0:   bridge window [mem 0xfff00000 - 0x000fffff] reg reading
+[    1.154168] pci 0000:00:1c.0:   bridge window [mem 0xfff00000 - 000fffff pref] reg reading
+[    1.154352] pci 0000:03:00.0: reg 10: [mem 0xf4800000-0xf4801fff 64bit]
+[    1.154608] pci 0000:03:00.0: PME# supported from D0 D3hot D3cold
+[    1.154622] pci 0000:03:00.0: PME# disabled
+[    1.154697] pci 0000:00:1c.1: PCI bridge to [bus 03-03]
+[    1.154826] pci 0000:00:1c.1:   bridge window [io  f000 - 0000] reg reading
+[    1.154836] pci 0000:00:1c.1:   bridge window [mem 0xf4800000-0xf48fffff]
+[    1.154847] pci 0000:00:1c.1:   bridge window [mem 0xfff00000 - 000fffff pref] reg reading
+[    1.154891] pci 0000:00:1c.2: PCI bridge to [bus 04-05]
+[    1.155016] pci 0000:00:1c.2:   bridge window [io  0xc000-0xcfff]
+[    1.155025] pci 0000:00:1c.2:   bridge window [mem 0xf3200000-0xf45fffff]
+[    1.155036] pci 0000:00:1c.2:   bridge window [mem 0xfff00000 - 000fffff pref] reg reading
+[    1.155133] pci 0000:06:00.0: reg 10: [mem 0xf4703000-0xf47030ff]
+[    1.155221] pci 0000:06:00.0: supports D1 D2
+[    1.155224] pci 0000:06:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    1.155229] pci 0000:06:00.0: PME# disabled
+[    1.155290] pci 0000:06:00.1: reg 10: [mem 0xf4702000-0xf47020ff]
+[    1.155378] pci 0000:06:00.1: supports D1 D2
+[    1.155380] pci 0000:06:00.1: PME# supported from D0 D1 D2 D3hot D3cold
+[    1.155389] pci 0000:06:00.1: PME# disabled
+[    1.155449] pci 0000:06:00.2: reg 10: [mem 0xf4701000-0xf47010ff]
+[    1.155537] pci 0000:06:00.2: supports D1 D2
+[    1.155539] pci 0000:06:00.2: PME# supported from D0 D1 D2 D3hot D3cold
+[    1.155549] pci 0000:06:00.2: PME# disabled
+[    1.155609] pci 0000:06:00.3: reg 10: [mem 0xf4700000-0xf47007ff]
+[    1.155696] pci 0000:06:00.3: supports D1 D2
+[    1.155698] pci 0000:06:00.3: PME# supported from D0 D1 D2 D3hot D3cold
+[    1.155708] pci 0000:06:00.3: PME# disabled
+[    1.155735] pci 0000:00:1c.4: PCI bridge to [bus 06-06]
+[    1.155864] pci 0000:00:1c.4:   bridge window [io  f000 - 0000] reg reading
+[    1.155873] pci 0000:00:1c.4:   bridge window [mem 0xf4700000-0xf47fffff]
+[    1.155884] pci 0000:00:1c.4:   bridge window [mem 0xfff00000 - 000fffff pref] reg reading
+[    1.155978] pci 0000:07:00.0: reg 10: [mem 0xf4600000-0xf463ffff 64bit]
+[    1.155991] pci 0000:07:00.0: reg 18: [io  0xb000-0xb07f]
+[    1.156061] pci 0000:07:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    1.156071] pci 0000:07:00.0: PME# disabled
+[    1.156097] pci 0000:00:1c.5: PCI bridge to [bus 07-07]
+[    1.156226] pci 0000:00:1c.5:   bridge window [io  0xb000-0xbfff]
+[    1.156235] pci 0000:00:1c.5:   bridge window [mem 0xf4600000-0xf46fffff]
+[    1.156246] pci 0000:00:1c.5:   bridge window [mem 0xfff00000 - 000fffff pref] reg reading
+[    1.156322] pci 0000:00:1e.0: PCI bridge to [bus 08-08] (subtractive decode)
+[    1.156455] pci 0000:00:1e.0:   bridge window [io  f000 - 0000] reg reading
+[    1.156464] pci 0000:00:1e.0:   bridge window [mem 0xfff00000 - 0x000fffff] reg reading
+[    1.156475] pci 0000:00:1e.0:   bridge window [mem 0xfff00000 - 000fffff pref] reg reading
+[    1.156478] pci 0000:00:1e.0:   bridge window [io  0x0000-0x0cf7] (subtractive decode)
+[    1.156481] pci 0000:00:1e.0:   bridge window [io  0x0d00-0xffff] (subtractive decode)
+[    1.156484] pci 0000:00:1e.0:   bridge window [mem 0x000a0000-0x000bffff] (subtractive decode)
+[    1.156487] pci 0000:00:1e.0:   bridge window [mem 0x000d0000-0x000d3fff] (subtractive decode)
+[    1.156490] pci 0000:00:1e.0:   bridge window [mem 0x000d4000-0x000d7fff] (subtractive decode)
+[    1.156493] pci 0000:00:1e.0:   bridge window [mem 0x000d8000-0x000dbfff] (subtractive decode)
+[    1.156496] pci 0000:00:1e.0:   bridge window [mem 0x000dc000-0x000dffff] (subtractive decode)
+[    1.156499] pci 0000:00:1e.0:   bridge window [mem 0xe0000000-0xfeafffff] (subtractive decode)
+[    1.156541] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[    1.157035] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP01._PRT]
+[    1.157160] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP02._PRT]
+[    1.157307] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP05._PRT]
+[    1.157429] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP06._PRT]
+[    1.157582] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEG3._PRT]
+[    1.157735] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP03._PRT]
+[    1.158893] ACPI: BIOS _OSI(Linux) query ignored
+[    1.159549] ACPI: BIOS _OSI(Linux) query ignored
+[    1.160199] ACPI: BIOS _OSI(Linux) query ignored
+[    1.160929] ACPI: BIOS _OSI(Linux) query ignored
+[    1.161579] ACPI: BIOS _OSI(Linux) query ignored
+[    1.162229] ACPI: BIOS _OSI(Linux) query ignored
+[    1.162963] ACPI: BIOS _OSI(Linux) query ignored
+[    1.163611] ACPI: BIOS _OSI(Linux) query ignored
+[    1.164262] ACPI: BIOS _OSI(Linux) query ignored
+[    1.164996] ACPI: BIOS _OSI(Linux) query ignored
+[    1.165646] ACPI: BIOS _OSI(Linux) query ignored
+[    1.166302] ACPI: BIOS _OSI(Linux) query ignored
+[    1.167046] ACPI: BIOS _OSI(Linux) query ignored
+[    1.167694] ACPI: BIOS _OSI(Linux) query ignored
+[    1.168341] ACPI: BIOS _OSI(Linux) query ignored
+[    1.169067] ACPI: BIOS _OSI(Linux) query ignored
+[    1.169716] ACPI: BIOS _OSI(Linux) query ignored
+[    1.170369] ACPI: BIOS _OSI(Linux) query ignored
+[    1.171098] ACPI: BIOS _OSI(Linux) query ignored
+[    1.171745] ACPI: BIOS _OSI(Linux) query ignored
+[    1.172395] ACPI: BIOS _OSI(Linux) query ignored
+[    1.173728] ACPI: BIOS _OSI(Linux) query ignored
+[    1.174378] ACPI: BIOS _OSI(Linux) query ignored
+[    1.175032] ACPI: BIOS _OSI(Linux) query ignored
+[    1.175763] ACPI: BIOS _OSI(Linux) query ignored
+[    1.176415] ACPI: BIOS _OSI(Linux) query ignored
+[    1.177065] ACPI: BIOS _OSI(Linux) query ignored
+[    1.177798] ACPI: BIOS _OSI(Linux) query ignored
+[    1.178455] ACPI: BIOS _OSI(Linux) query ignored
+[    1.179107] ACPI: BIOS _OSI(Linux) query ignored
+[    1.179837] ACPI: BIOS _OSI(Linux) query ignored
+[    1.180488] ACPI: BIOS _OSI(Linux) query ignored
+[    1.181142] ACPI: BIOS _OSI(Linux) query ignored
+[    1.181887] ACPI: BIOS _OSI(Linux) query ignored
+[    1.182539] ACPI: BIOS _OSI(Linux) query ignored
+[    1.183189] ACPI: BIOS _OSI(Linux) query ignored
+[    1.183920] ACPI: BIOS _OSI(Linux) query ignored
+[    1.184568] ACPI: BIOS _OSI(Linux) query ignored
+[    1.185217] ACPI: BIOS _OSI(Linux) query ignored
+[    1.185940] ACPI: BIOS _OSI(Linux) query ignored
+[    1.186595] ACPI: BIOS _OSI(Linux) query ignored
+[    1.187243] ACPI: BIOS _OSI(Linux) query ignored
+[    1.188583] ACPI: BIOS _OSI(Linux) query ignored
+[    1.189229] ACPI: BIOS _OSI(Linux) query ignored
+[    1.189883] ACPI: BIOS _OSI(Linux) query ignored
+[    1.190616] ACPI: BIOS _OSI(Linux) query ignored
+[    1.191267] ACPI: BIOS _OSI(Linux) query ignored
+[    1.191918] ACPI: BIOS _OSI(Linux) query ignored
+[    1.192650] ACPI: BIOS _OSI(Linux) query ignored
+[    1.193299] ACPI: BIOS _OSI(Linux) query ignored
+[    1.193950] ACPI: BIOS _OSI(Linux) query ignored
+[    1.194684] ACPI: BIOS _OSI(Linux) query ignored
+[    1.195330] ACPI: BIOS _OSI(Linux) query ignored
+[    1.203387] ACPI: BIOS _OSI(Linux) query ignored
+[    1.204128] ACPI: BIOS _OSI(Linux) query ignored
+[    1.204777] ACPI: BIOS _OSI(Linux) query ignored
+[    1.205426] ACPI: BIOS _OSI(Linux) query ignored
+[    1.206150] ACPI: BIOS _OSI(Linux) query ignored
+[    1.206801] ACPI: BIOS _OSI(Linux) query ignored
+[    1.207451] ACPI: BIOS _OSI(Linux) query ignored
+[    1.208182] ACPI: BIOS _OSI(Linux) query ignored
+[    1.208831] ACPI: BIOS _OSI(Linux) query ignored
+[    1.209483] ACPI: BIOS _OSI(Linux) query ignored
+[    1.210818] ACPI: BIOS _OSI(Linux) query ignored
+[    1.211472] ACPI: BIOS _OSI(Linux) query ignored
+[    1.212120] ACPI: BIOS _OSI(Linux) query ignored
+[    1.212851] ACPI: BIOS _OSI(Linux) query ignored
+[    1.213498] ACPI: BIOS _OSI(Linux) query ignored
+[    1.214148] ACPI: BIOS _OSI(Linux) query ignored
+[    1.214879] ACPI: BIOS _OSI(Linux) query ignored
+[    1.215529] ACPI: BIOS _OSI(Linux) query ignored
+[    1.216175] ACPI: BIOS _OSI(Linux) query ignored
+[    1.216906] ACPI: BIOS _OSI(Linux) query ignored
+[    1.217556] ACPI: BIOS _OSI(Linux) query ignored
+[    1.218211] ACPI: BIOS _OSI(Linux) query ignored
+[    1.218958] ACPI: BIOS _OSI(Linux) query ignored
+[    1.219604] ACPI: BIOS _OSI(Linux) query ignored
+[    1.220255] ACPI: BIOS _OSI(Linux) query ignored
+[    1.220984] ACPI: BIOS _OSI(Linux) query ignored
+[    1.221629] ACPI: BIOS _OSI(Linux) query ignored
+[    1.222281] ACPI: BIOS _OSI(Linux) query ignored
+[    1.223009] ACPI: BIOS _OSI(Linux) query ignored
+[    1.223658] ACPI: BIOS _OSI(Linux) query ignored
+[    1.224308] ACPI: BIOS _OSI(Linux) query ignored
+[    1.225647] ACPI: BIOS _OSI(Linux) query ignored
+[    1.226303] ACPI: BIOS _OSI(Linux) query ignored
+[    1.226957] ACPI: BIOS _OSI(Linux) query ignored
+[    1.227687] ACPI: BIOS _OSI(Linux) query ignored
+[    1.228337] ACPI: BIOS _OSI(Linux) query ignored
+[    1.228988] ACPI: BIOS _OSI(Linux) query ignored
+[    1.229718] ACPI: BIOS _OSI(Linux) query ignored
+[    1.230372] ACPI: BIOS _OSI(Linux) query ignored
+[    1.231020] ACPI: BIOS _OSI(Linux) query ignored
+[    1.231750] ACPI: BIOS _OSI(Linux) query ignored
+[    1.232400] ACPI: BIOS _OSI(Linux) query ignored
+[    1.233052] ACPI: BIOS _OSI(Linux) query ignored
+[    1.233795] ACPI: BIOS _OSI(Linux) query ignored
+[    1.234453] ACPI: BIOS _OSI(Linux) query ignored
+[    1.235104] ACPI: BIOS _OSI(Linux) query ignored
+[    1.235834] ACPI: BIOS _OSI(Linux) query ignored
+[    1.236484] ACPI: BIOS _OSI(Linux) query ignored
+[    1.237136] ACPI: BIOS _OSI(Linux) query ignored
+[    1.237863] ACPI: BIOS _OSI(Linux) query ignored
+[    1.238516] ACPI: BIOS _OSI(Linux) query ignored
+[    1.239166] ACPI: BIOS _OSI(Linux) query ignored
+[    1.240500] ACPI: BIOS _OSI(Linux) query ignored
+[    1.241151] ACPI: BIOS _OSI(Linux) query ignored
+[    1.241804] ACPI: BIOS _OSI(Linux) query ignored
+[    1.242540] ACPI: BIOS _OSI(Linux) query ignored
+[    1.243191] ACPI: BIOS _OSI(Linux) query ignored
+[    1.243838] ACPI: BIOS _OSI(Linux) query ignored
+[    1.244570] ACPI: BIOS _OSI(Linux) query ignored
+[    1.245218] ACPI: BIOS _OSI(Linux) query ignored
+[    1.245870] ACPI: BIOS _OSI(Linux) query ignored
+[    1.246604] ACPI: BIOS _OSI(Linux) query ignored
+[    1.247254] ACPI: BIOS _OSI(Linux) query ignored
+[    1.247910] ACPI: BIOS _OSI(Linux) query ignored
+[    1.248654] ACPI: BIOS _OSI(Linux) query ignored
+[    1.249302] ACPI: BIOS _OSI(Linux) query ignored
+[    1.249953] ACPI: BIOS _OSI(Linux) query ignored
+[    1.250689] ACPI: BIOS _OSI(Linux) query ignored
+[    1.251336] ACPI: BIOS _OSI(Linux) query ignored
+[    1.251982] ACPI: BIOS _OSI(Linux) query ignored
+[    1.252711] ACPI: BIOS _OSI(Linux) query ignored
+[    1.253361] ACPI: BIOS _OSI(Linux) query ignored
+[    1.254011] ACPI: BIOS _OSI(Linux) query ignored
+[    1.255346] ACPI: BIOS _OSI(Linux) query ignored
+[    1.255994] ACPI: BIOS _OSI(Linux) query ignored
+[    1.256648] ACPI: BIOS _OSI(Linux) query ignored
+[    1.257378] ACPI: BIOS _OSI(Linux) query ignored
+[    1.258030] ACPI: BIOS _OSI(Linux) query ignored
+[    1.258685] ACPI: BIOS _OSI(Linux) query ignored
+[    1.259420] ACPI: BIOS _OSI(Linux) query ignored
+[    1.260065] ACPI: BIOS _OSI(Linux) query ignored
+[    1.260714] ACPI: BIOS _OSI(Linux) query ignored
+[    1.261441] ACPI: BIOS _OSI(Linux) query ignored
+[    1.262089] ACPI: BIOS _OSI(Linux) query ignored
+[    1.262736] ACPI: BIOS _OSI(Linux) query ignored
+[    1.263483] ACPI: BIOS _OSI(Linux) query ignored
+[    1.264133] ACPI: BIOS _OSI(Linux) query ignored
+[    1.264781] ACPI: BIOS _OSI(Linux) query ignored
+[    1.265509] ACPI: BIOS _OSI(Linux) query ignored
+[    1.266161] ACPI: BIOS _OSI(Linux) query ignored
+[    1.266816] ACPI: BIOS _OSI(Linux) query ignored
+[    1.267542] ACPI: BIOS _OSI(Linux) query ignored
+[    1.268196] ACPI: BIOS _OSI(Linux) query ignored
+[    1.268846] ACPI: BIOS _OSI(Linux) query ignored
+[    1.270188] ACPI: BIOS _OSI(Linux) query ignored
+[    1.270841] ACPI: BIOS _OSI(Linux) query ignored
+[    1.271486] ACPI: BIOS _OSI(Linux) query ignored
+[    1.272219] ACPI: BIOS _OSI(Linux) query ignored
+[    1.272871] ACPI: BIOS _OSI(Linux) query ignored
+[    1.273519] ACPI: BIOS _OSI(Linux) query ignored
+[    1.274254] ACPI: BIOS _OSI(Linux) query ignored
+[    1.274901] ACPI: BIOS _OSI(Linux) query ignored
+[    1.275548] ACPI: BIOS _OSI(Linux) query ignored
+[    1.276276] ACPI: BIOS _OSI(Linux) query ignored
+[    1.276925] ACPI: BIOS _OSI(Linux) query ignored
+[    1.277577] ACPI: BIOS _OSI(Linux) query ignored
+[    1.278324] ACPI: BIOS _OSI(Linux) query ignored
+[    1.278970] ACPI: BIOS _OSI(Linux) query ignored
+[    1.279622] ACPI: BIOS _OSI(Linux) query ignored
+[    1.280353] ACPI: BIOS _OSI(Linux) query ignored
+[    1.281002] ACPI: BIOS _OSI(Linux) query ignored
+[    1.281653] ACPI: BIOS _OSI(Linux) query ignored
+[    1.282388] ACPI: BIOS _OSI(Linux) query ignored
+[    1.283038] ACPI: BIOS _OSI(Linux) query ignored
+[    1.283686] ACPI: BIOS _OSI(Linux) query ignored
+[    1.285015] ACPI: BIOS _OSI(Linux) query ignored
+[    1.285662] ACPI: BIOS _OSI(Linux) query ignored
+[    1.286312] ACPI: BIOS _OSI(Linux) query ignored
+[    1.287040] ACPI: BIOS _OSI(Linux) query ignored
+[    1.287689] ACPI: BIOS _OSI(Linux) query ignored
+[    1.288346] ACPI: BIOS _OSI(Linux) query ignored
+[    1.289075] ACPI: BIOS _OSI(Linux) query ignored
+[    1.289728] ACPI: BIOS _OSI(Linux) query ignored
+[    1.290383] ACPI: BIOS _OSI(Linux) query ignored
+[    1.291115] ACPI: BIOS _OSI(Linux) query ignored
+[    1.291761] ACPI: BIOS _OSI(Linux) query ignored
+[    1.292412] ACPI: BIOS _OSI(Linux) query ignored
+[    1.293156] ACPI: BIOS _OSI(Linux) query ignored
+[    1.293806] ACPI: BIOS _OSI(Linux) query ignored
+[    1.294466] ACPI: BIOS _OSI(Linux) query ignored
+[    1.295197] ACPI: BIOS _OSI(Linux) query ignored
+[    1.295850] ACPI: BIOS _OSI(Linux) query ignored
+[    1.296501] ACPI: BIOS _OSI(Linux) query ignored
+[    1.297232] ACPI: BIOS _OSI(Linux) query ignored
+[    1.297882] ACPI: BIOS _OSI(Linux) query ignored
+[    1.298536] ACPI: BIOS _OSI(Linux) query ignored
+[    1.299876] ACPI: BIOS _OSI(Linux) query ignored
+[    1.300526] ACPI: BIOS _OSI(Linux) query ignored
+[    1.301170] ACPI: BIOS _OSI(Linux) query ignored
+[    1.301899] ACPI: BIOS _OSI(Linux) query ignored
+[    1.302551] ACPI: BIOS _OSI(Linux) query ignored
+[    1.303202] ACPI: BIOS _OSI(Linux) query ignored
+[    1.303929] ACPI: BIOS _OSI(Linux) query ignored
+[    1.304580] ACPI: BIOS _OSI(Linux) query ignored
+[    1.305229] ACPI: BIOS _OSI(Linux) query ignored
+[    1.305959] ACPI: BIOS _OSI(Linux) query ignored
+[    1.306614] ACPI: BIOS _OSI(Linux) query ignored
+[    1.307265] ACPI: BIOS _OSI(Linux) query ignored
+[    1.308004] ACPI: BIOS _OSI(Linux) query ignored
+[    1.308655] ACPI: BIOS _OSI(Linux) query ignored
+[    1.309305] ACPI: BIOS _OSI(Linux) query ignored
+[    1.310039] ACPI: BIOS _OSI(Linux) query ignored
+[    1.310694] ACPI: BIOS _OSI(Linux) query ignored
+[    1.311345] ACPI: BIOS _OSI(Linux) query ignored
+[    1.312075] ACPI: BIOS _OSI(Linux) query ignored
+[    1.312725] ACPI: BIOS _OSI(Linux) query ignored
+[    1.313378] ACPI: BIOS _OSI(Linux) query ignored
+[    1.314711] ACPI: BIOS _OSI(Linux) query ignored
+[    1.315357] ACPI: BIOS _OSI(Linux) query ignored
+[    1.316007] ACPI: BIOS _OSI(Linux) query ignored
+[    1.316739] ACPI: BIOS _OSI(Linux) query ignored
+[    1.317387] ACPI: BIOS _OSI(Linux) query ignored
+[    1.318037] ACPI: BIOS _OSI(Linux) query ignored
+[    1.318773] ACPI: BIOS _OSI(Linux) query ignored
+[    1.319426] ACPI: BIOS _OSI(Linux) query ignored
+[    1.320074] ACPI: BIOS _OSI(Linux) query ignored
+[    1.320803] ACPI: BIOS _OSI(Linux) query ignored
+[    1.321454] ACPI: BIOS _OSI(Linux) query ignored
+[    1.322110] ACPI: BIOS _OSI(Linux) query ignored
+[    1.322855] ACPI: BIOS _OSI(Linux) query ignored
+[    1.323500] ACPI: BIOS _OSI(Linux) query ignored
+[    1.324151] ACPI: BIOS _OSI(Linux) query ignored
+[    1.324884] ACPI: BIOS _OSI(Linux) query ignored
+[    1.325536] ACPI: BIOS _OSI(Linux) query ignored
+[    1.326191] ACPI: BIOS _OSI(Linux) query ignored
+[    1.326924] ACPI: BIOS _OSI(Linux) query ignored
+[    1.327570] ACPI: BIOS _OSI(Linux) query ignored
+[    1.328220] ACPI: BIOS _OSI(Linux) query ignored
+[    1.329557] ACPI: BIOS _OSI(Linux) query ignored
+[    1.330215] ACPI: BIOS _OSI(Linux) query ignored
+[    1.338272] ACPI: BIOS _OSI(Linux) query ignored
+[    1.339002] ACPI: BIOS _OSI(Linux) query ignored
+[    1.339655] ACPI: BIOS _OSI(Linux) query ignored
+[    1.340303] ACPI: BIOS _OSI(Linux) query ignored
+[    1.341031] ACPI: BIOS _OSI(Linux) query ignored
+[    1.341681] ACPI: BIOS _OSI(Linux) query ignored
+[    1.342337] ACPI: BIOS _OSI(Linux) query ignored
+[    1.343067] ACPI: BIOS _OSI(Linux) query ignored
+[    1.343716] ACPI: BIOS _OSI(Linux) query ignored
+[    1.344366] ACPI: BIOS _OSI(Linux) query ignored
+[    1.345112] ACPI: BIOS _OSI(Linux) query ignored
+[    1.345765] ACPI: BIOS _OSI(Linux) query ignored
+[    1.346422] ACPI: BIOS _OSI(Linux) query ignored
+[    1.347155] ACPI: BIOS _OSI(Linux) query ignored
+[    1.347802] ACPI: BIOS _OSI(Linux) query ignored
+[    1.348453] ACPI: BIOS _OSI(Linux) query ignored
+[    1.349181] ACPI: BIOS _OSI(Linux) query ignored
+[    1.349827] ACPI: BIOS _OSI(Linux) query ignored
+[    1.350480] ACPI: BIOS _OSI(Linux) query ignored
+[    1.351814] ACPI: BIOS _OSI(Linux) query ignored
+[    1.352461] ACPI: BIOS _OSI(Linux) query ignored
+[    1.353113] ACPI: BIOS _OSI(Linux) query ignored
+[    1.353846] ACPI: BIOS _OSI(Linux) query ignored
+[    1.354504] ACPI: BIOS _OSI(Linux) query ignored
+[    1.355153] ACPI: BIOS _OSI(Linux) query ignored
+[    1.355878] ACPI: BIOS _OSI(Linux) query ignored
+[    1.356528] ACPI: BIOS _OSI(Linux) query ignored
+[    1.357177] ACPI: BIOS _OSI(Linux) query ignored
+[    1.357904] ACPI: BIOS _OSI(Linux) query ignored
+[    1.358559] ACPI: BIOS _OSI(Linux) query ignored
+[    1.359208] ACPI: BIOS _OSI(Linux) query ignored
+[    1.359955] ACPI: BIOS _OSI(Linux) query ignored
+[    1.360607] ACPI: BIOS _OSI(Linux) query ignored
+[    1.361258] ACPI: BIOS _OSI(Linux) query ignored
+[    1.361991] ACPI: BIOS _OSI(Linux) query ignored
+[    1.362644] ACPI: BIOS _OSI(Linux) query ignored
+[    1.363293] ACPI: BIOS _OSI(Linux) query ignored
+[    1.364026] ACPI: BIOS _OSI(Linux) query ignored
+[    1.364675] ACPI: BIOS _OSI(Linux) query ignored
+[    1.365326] ACPI: BIOS _OSI(Linux) query ignored
+[    1.366668] ACPI: BIOS _OSI(Linux) query ignored
+[    1.367321] ACPI: BIOS _OSI(Linux) query ignored
+[    1.367973] ACPI: BIOS _OSI(Linux) query ignored
+[    1.368700] ACPI: BIOS _OSI(Linux) query ignored
+[    1.369352] ACPI: BIOS _OSI(Linux) query ignored
+[    1.370007] ACPI: BIOS _OSI(Linux) query ignored
+[    1.370740] ACPI: BIOS _OSI(Linux) query ignored
+[    1.371387] ACPI: BIOS _OSI(Linux) query ignored
+[    1.372037] ACPI: BIOS _OSI(Linux) query ignored
+[    1.372761] ACPI: BIOS _OSI(Linux) query ignored
+[    1.373411] ACPI: BIOS _OSI(Linux) query ignored
+[    1.374063] ACPI: BIOS _OSI(Linux) query ignored
+[    1.374811] ACPI: BIOS _OSI(Linux) query ignored
+[    1.375462] ACPI: BIOS _OSI(Linux) query ignored
+[    1.376114] ACPI: BIOS _OSI(Linux) query ignored
+[    1.376836] ACPI: BIOS _OSI(Linux) query ignored
+[    1.377487] ACPI: BIOS _OSI(Linux) query ignored
+[    1.378139] ACPI: BIOS _OSI(Linux) query ignored
+[    1.378869] ACPI: BIOS _OSI(Linux) query ignored
+[    1.379517] ACPI: BIOS _OSI(Linux) query ignored
+[    1.380165] ACPI: BIOS _OSI(Linux) query ignored
+[    1.381495] ACPI: BIOS _OSI(Linux) query ignored
+[    1.382150] ACPI: BIOS _OSI(Linux) query ignored
+[    1.382800] ACPI: BIOS _OSI(Linux) query ignored
+[    1.383533] ACPI: BIOS _OSI(Linux) query ignored
+[    1.384179] ACPI: BIOS _OSI(Linux) query ignored
+[    1.384832] ACPI: BIOS _OSI(Linux) query ignored
+[    1.385562] ACPI: BIOS _OSI(Linux) query ignored
+[    1.386218] ACPI: BIOS _OSI(Linux) query ignored
+[    1.386868] ACPI: BIOS _OSI(Linux) query ignored
+[    1.387596] ACPI: BIOS _OSI(Linux) query ignored
+[    1.388242] ACPI: BIOS _OSI(Linux) query ignored
+[    1.388891] ACPI: BIOS _OSI(Linux) query ignored
+[    1.389633] ACPI: BIOS _OSI(Linux) query ignored
+[    1.390283] ACPI: BIOS _OSI(Linux) query ignored
+[    1.390936] ACPI: BIOS _OSI(Linux) query ignored
+[    1.391665] ACPI: BIOS _OSI(Linux) query ignored
+[    1.392317] ACPI: BIOS _OSI(Linux) query ignored
+[    1.392966] ACPI: BIOS _OSI(Linux) query ignored
+[    1.393693] ACPI: BIOS _OSI(Linux) query ignored
+[    1.394349] ACPI: BIOS _OSI(Linux) query ignored
+[    1.395002] ACPI: BIOS _OSI(Linux) query ignored
+[    1.396338] ACPI: BIOS _OSI(Linux) query ignored
+[    1.396988] ACPI: BIOS _OSI(Linux) query ignored
+[    1.397638] ACPI: BIOS _OSI(Linux) query ignored
+[    1.398368] ACPI: BIOS _OSI(Linux) query ignored
+[    1.399019] ACPI: BIOS _OSI(Linux) query ignored
+[    1.399672] ACPI: BIOS _OSI(Linux) query ignored
+[    1.400403] ACPI: BIOS _OSI(Linux) query ignored
+[    1.401055] ACPI: BIOS _OSI(Linux) query ignored
+[    1.401706] ACPI: BIOS _OSI(Linux) query ignored
+[    1.402439] ACPI: BIOS _OSI(Linux) query ignored
+[    1.403085] ACPI: BIOS _OSI(Linux) query ignored
+[    1.403734] ACPI: BIOS _OSI(Linux) query ignored
+[    1.404475] ACPI: BIOS _OSI(Linux) query ignored
+[    1.405123] ACPI: BIOS _OSI(Linux) query ignored
+[    1.405769] ACPI: BIOS _OSI(Linux) query ignored
+[    1.406507] ACPI: BIOS _OSI(Linux) query ignored
+[    1.407160] ACPI: BIOS _OSI(Linux) query ignored
+[    1.407806] ACPI: BIOS _OSI(Linux) query ignored
+[    1.408536] ACPI: BIOS _OSI(Linux) query ignored
+[    1.409185] ACPI: BIOS _OSI(Linux) query ignored
+[    1.409835] ACPI: BIOS _OSI(Linux) query ignored
+[    1.411171] ACPI: BIOS _OSI(Linux) query ignored
+[    1.411819] ACPI: BIOS _OSI(Linux) query ignored
+[    1.412469] ACPI: BIOS _OSI(Linux) query ignored
+[    1.413199] ACPI: BIOS _OSI(Linux) query ignored
+[    1.413851] ACPI: BIOS _OSI(Linux) query ignored
+[    1.414502] ACPI: BIOS _OSI(Linux) query ignored
+[    1.415235] ACPI: BIOS _OSI(Linux) query ignored
+[    1.415881] ACPI: BIOS _OSI(Linux) query ignored
+[    1.416534] ACPI: BIOS _OSI(Linux) query ignored
+[    1.417265] ACPI: BIOS _OSI(Linux) query ignored
+[    1.417920] ACPI: BIOS _OSI(Linux) query ignored
+[    1.418568] ACPI: BIOS _OSI(Linux) query ignored
+[    1.419308] ACPI: BIOS _OSI(Linux) query ignored
+[    1.419960] ACPI: BIOS _OSI(Linux) query ignored
+[    1.420609] ACPI: BIOS _OSI(Linux) query ignored
+[    1.421342] ACPI: BIOS _OSI(Linux) query ignored
+[    1.421993] ACPI: BIOS _OSI(Linux) query ignored
+[    1.422647] ACPI: BIOS _OSI(Linux) query ignored
+[    1.423376] ACPI: BIOS _OSI(Linux) query ignored
+[    1.424029] ACPI: BIOS _OSI(Linux) query ignored
+[    1.424680] ACPI: BIOS _OSI(Linux) query ignored
+[    1.426025] ACPI: BIOS _OSI(Linux) query ignored
+[    1.426675] ACPI: BIOS _OSI(Linux) query ignored
+[    1.427326] ACPI: BIOS _OSI(Linux) query ignored
+[    1.428058] ACPI: BIOS _OSI(Linux) query ignored
+[    1.428708] ACPI: BIOS _OSI(Linux) query ignored
+[    1.429359] ACPI: BIOS _OSI(Linux) query ignored
+[    1.430097] ACPI: BIOS _OSI(Linux) query ignored
+[    1.430751] ACPI: BIOS _OSI(Linux) query ignored
+[    1.431401] ACPI: BIOS _OSI(Linux) query ignored
+[    1.432132] ACPI: BIOS _OSI(Linux) query ignored
+[    1.432781] ACPI: BIOS _OSI(Linux) query ignored
+[    1.433431] ACPI: BIOS _OSI(Linux) query ignored
+[    1.434178] ACPI: BIOS _OSI(Linux) query ignored
+[    1.434826] ACPI: BIOS _OSI(Linux) query ignored
+[    1.435470] ACPI: BIOS _OSI(Linux) query ignored
+[    1.436203] ACPI: BIOS _OSI(Linux) query ignored
+[    1.436850] ACPI: BIOS _OSI(Linux) query ignored
+[    1.437505] ACPI: BIOS _OSI(Linux) query ignored
+[    1.438238] ACPI: BIOS _OSI(Linux) query ignored
+[    1.438885] ACPI: BIOS _OSI(Linux) query ignored
+[    1.439535] ACPI: BIOS _OSI(Linux) query ignored
+[    1.440865] ACPI: BIOS _OSI(Linux) query ignored
+[    1.441514] ACPI: BIOS _OSI(Linux) query ignored
+[    1.442170] ACPI: BIOS _OSI(Linux) query ignored
+[    1.442896] ACPI: BIOS _OSI(Linux) query ignored
+[    1.443545] ACPI: BIOS _OSI(Linux) query ignored
+[    1.444196] ACPI: BIOS _OSI(Linux) query ignored
+[    1.444924] ACPI: BIOS _OSI(Linux) query ignored
+[    1.445574] ACPI: BIOS _OSI(Linux) query ignored
+[    1.446233] ACPI: BIOS _OSI(Linux) query ignored
+[    1.446964] ACPI: BIOS _OSI(Linux) query ignored
+[    1.447616] ACPI: BIOS _OSI(Linux) query ignored
+[    1.448264] ACPI: BIOS _OSI(Linux) query ignored
+[    1.449009] ACPI: BIOS _OSI(Linux) query ignored
+[    1.449654] ACPI: BIOS _OSI(Linux) query ignored
+[    1.450312] ACPI: BIOS _OSI(Linux) query ignored
+[    1.451046] ACPI: BIOS _OSI(Linux) query ignored
+[    1.451693] ACPI: BIOS _OSI(Linux) query ignored
+[    1.452346] ACPI: BIOS _OSI(Linux) query ignored
+[    1.453072] ACPI: BIOS _OSI(Linux) query ignored
+[    1.453724] ACPI: BIOS _OSI(Linux) query ignored
+[    1.454377] ACPI: BIOS _OSI(Linux) query ignored
+[    1.455714] ACPI: BIOS _OSI(Linux) query ignored
+[    1.456362] ACPI: BIOS _OSI(Linux) query ignored
+[    1.457013] ACPI: BIOS _OSI(Linux) query ignored
+[    1.457743] ACPI: BIOS _OSI(Linux) query ignored
+[    1.458397] ACPI: BIOS _OSI(Linux) query ignored
+[    1.459044] ACPI: BIOS _OSI(Linux) query ignored
+[    1.459771] ACPI: BIOS _OSI(Linux) query ignored
+[    1.460422] ACPI: BIOS _OSI(Linux) query ignored
+[    1.461076] ACPI: BIOS _OSI(Linux) query ignored
+[    1.461806] ACPI: BIOS _OSI(Linux) query ignored
+[    1.462461] ACPI: BIOS _OSI(Linux) query ignored
+[    1.463112] ACPI: BIOS _OSI(Linux) query ignored
+[    1.463857] ACPI: BIOS _OSI(Linux) query ignored
+[    1.464505] ACPI: BIOS _OSI(Linux) query ignored
+[    1.472552] ACPI: BIOS _OSI(Linux) query ignored
+[    1.473282] ACPI: BIOS _OSI(Linux) query ignored
+[    1.473944] ACPI: BIOS _OSI(Linux) query ignored
+[    1.474591] ACPI: BIOS _OSI(Linux) query ignored
+[    1.475318] ACPI: BIOS _OSI(Linux) query ignored
+[    1.475968] ACPI: BIOS _OSI(Linux) query ignored
+[    1.476619] ACPI: BIOS _OSI(Linux) query ignored
+[    1.477956] ACPI: BIOS _OSI(Linux) query ignored
+[    1.478604] ACPI: BIOS _OSI(Linux) query ignored
+[    1.479255] ACPI: BIOS _OSI(Linux) query ignored
+[    1.479983] ACPI: BIOS _OSI(Linux) query ignored
+[    1.480633] ACPI: BIOS _OSI(Linux) query ignored
+[    1.481281] ACPI: BIOS _OSI(Linux) query ignored
+[    1.482017] ACPI: BIOS _OSI(Linux) query ignored
+[    1.482671] ACPI: BIOS _OSI(Linux) query ignored
+[    1.483318] ACPI: BIOS _OSI(Linux) query ignored
+[    1.484048] ACPI: BIOS _OSI(Linux) query ignored
+[    1.484698] ACPI: BIOS _OSI(Linux) query ignored
+[    1.485350] ACPI: BIOS _OSI(Linux) query ignored
+[    1.486094] ACPI: BIOS _OSI(Linux) query ignored
+[    1.486743] ACPI: BIOS _OSI(Linux) query ignored
+[    1.487389] ACPI: BIOS _OSI(Linux) query ignored
+[    1.488123] ACPI: BIOS _OSI(Linux) query ignored
+[    1.488769] ACPI: BIOS _OSI(Linux) query ignored
+[    1.489423] ACPI: BIOS _OSI(Linux) query ignored
+[    1.490161] ACPI: BIOS _OSI(Linux) query ignored
+[    1.490805] ACPI: BIOS _OSI(Linux) query ignored
+[    1.491452] ACPI: BIOS _OSI(Linux) query ignored
+[    1.492608] ACPI: PCI Root Bridge [CPBG] (0000:3f)
+[    1.493914] ACPI: PCI Interrupt Link [LNKA] (IRQs 1 3 4 5 6 7 10 12 14 15) *11
+[    1.495572] ACPI: PCI Interrupt Link [LNKB] (IRQs 1 3 4 5 6 7 11 12 14 15) *10
+[    1.497220] ACPI: PCI Interrupt Link [LNKC] (IRQs 1 3 *4 5 6 7 10 12 14 15)
+[    1.498752] ACPI: PCI Interrupt Link [LNKD] (IRQs 1 3 4 *5 6 7 11 12 14 15)
+[    1.500287] ACPI: PCI Interrupt Link [LNKE] (IRQs 1 3 4 5 6 7 10 12 14 15) *0, disabled.
+[    1.502025] ACPI: PCI Interrupt Link [LNKF] (IRQs 1 3 4 5 6 7 11 12 14 15) *0, disabled.
+[    1.503768] ACPI: PCI Interrupt Link [LNKG] (IRQs 1 *3 4 5 6 7 10 12 14 15)
+[    1.505309] ACPI: PCI Interrupt Link [LNKH] (IRQs 1 3 4 5 6 7 11 12 14 15) *10
+[    1.506916] vgaarb: device added: PCI:0000:01:00.0,decodes=io+mem,owns=io+mem,locks=none
+[    1.507063] vgaarb: loaded
+[    1.507246] SCSI subsystem initialized
+[    1.507498] libata version 3.00 loaded.
+[    1.507546] PCI: Using ACPI for IRQ routing
+[    1.507674] PCI: pci_cache_line_size set to 64 bytes
+[    1.507941] reserve RAM buffer: 000000000009e800 - 000000000009ffff 
+[    1.507944] reserve RAM buffer: 00000000dbd8f000 - 00000000dbffffff 
+[    1.508054] HPET: 8 timers in total, 5 timers will be used for per-cpu timer
+[    1.508189] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 24, 25, 26, 27, 28, 0
+[    1.509230] hpet0: 8 comparators, 64-bit 14.318180 MHz counter
+[    1.513710] hpet: hpet2 irq 24 for MSI
+[    1.513770] hpet: hpet3 irq 25 for MSI
+[    1.517815] hpet: hpet4 irq 26 for MSI
+[    1.521868] hpet: hpet5 irq 27 for MSI
+[    1.525800] hpet: hpet6 irq 28 for MSI
+[    1.533789] Switching to clocksource tsc
+[    1.535716] pnp: PnP ACPI init
+[    1.535848] ACPI: bus type pnp registered
+[    1.540778] pnp: PnP ACPI: found 16 devices
+[    1.540904] ACPI: ACPI bus type pnp unregistered
+[    1.541033] system 00:05: [io  0x0680-0x069f] has been reserved
+[    1.541160] system 00:05: [io  0xff00-0xff0f] has been reserved
+[    1.541284] system 00:05: [io  0xffff] has been reserved
+[    1.541409] system 00:05: [io  0xffff] has been reserved
+[    1.541533] system 00:05: [io  0x0400-0x047f] has been reserved
+[    1.541659] system 00:05: [io  0x0500-0x057f] has been reserved
+[    1.541784] system 00:05: [io  0x164e-0x164f] has been reserved
+[    1.541912] system 00:07: [io  0x025d] has been reserved
+[    1.542033] system 00:07: [io  0x025c] has been reserved
+[    1.542162] system 00:07: [mem 0xfec00000-0xfec00fff] could not be reserved
+[    1.542292] system 00:07: [mem 0xfee00000-0xfee00fff] has been reserved
+[    1.542427] system 00:07: [mem 0xfec10000-0xfec17fff] has been reserved
+[    1.542561] system 00:07: [mem 0xfec18000-0xfec1ffff] has been reserved
+[    1.542693] system 00:07: [mem 0xfec20000-0xfec27fff] has been reserved
+[    1.542834] system 00:07: [mem 0xfec30000-0xfec37fff] has been reserved
+[    1.542963] system 00:07: [mem 0xfec38000-0xfec3ffff] has been reserved
+[    1.543096] system 00:07: [mem 0xff000000-0xffffffff] could not be reserved
+[    1.543230] system 00:08: [io  0x0240-0x0259] has been reserved
+[    1.543361] system 00:0b: [io  0x04d0-0x04d1] has been reserved
+[    1.543490] system 00:0b: [io  0x0400-0x047f] has been reserved
+[    1.543619] system 00:0b: [io  0x0500-0x057f] has been reserved
+[    1.543748] system 00:0c: [mem 0xf8000000-0xfbffffff] has been reserved
+[    1.543880] system 00:0d: [mem 0xfed1c000-0xfed1ffff] has been reserved
+[    1.544007] system 00:0d: [mem 0xfed1b000-0xfed1bfff] has been reserved
+[    1.544137] system 00:0d: [mem 0xf8000000-0xfbffffff] has been reserved
+[    1.544263] system 00:0d: [mem 0xfed20000-0xfed3ffff] has been reserved
+[    1.544389] system 00:0d: [mem 0xfed90000-0xfed93fff] has been reserved
+[    1.544519] system 00:0d: [mem 0xfed45000-0xfed8ffff] has been reserved
+[    1.544648] system 00:0d: [mem 0xff000000-0xffffffff] could not be reserved
+[    1.544778] system 00:0d: [mem 0xfee00000-0xfeefffff] could not be reserved
+[    1.544907] system 00:0d: [mem 0xf490b000-0xf490bfff] has been reserved
+[    1.545042] system 00:0e: [mem 0x00000000-0x0009ffff] could not be reserved
+[    1.545177] system 00:0e: [mem 0x000c0000-0x000dffff] could not be reserved
+[    1.545310] system 00:0e: [mem 0x000e0000-0x000fffff] could not be reserved
+[    1.545443] system 00:0e: [mem 0x00100000-0xdfffffff] could not be reserved
+[    1.550341] PCI: max bus depth: 1 pci_try_num: 2
+[    1.550415] pci 0000:00:1c.2: BAR 15: assigned [mem 0xf4a00000-0xf4bfffff 64bit pref]
+[    1.550565] pci 0000:00:03.0: PCI bridge to [bus 01-01]
+[    1.550693] pci 0000:00:03.0:   bridge window [io  0xd000-0xdfff]
+[    1.550829] pci 0000:00:03.0:   bridge window [mem 0xe0000000-0xf30fffff]
+[    1.550959] pci 0000:00:03.0:   bridge window [mem pref disabled]
+[    1.551095] pci 0000:00:1c.0: PCI bridge to [bus 02-02]
+[    1.551221] pci 0000:00:1c.0:   bridge window [io  disabled]
+[    1.551347] pci 0000:00:1c.0:   bridge window [mem disabled]
+[    1.551472] pci 0000:00:1c.0:   bridge window [mem pref disabled]
+[    1.551600] pci 0000:00:1c.1: PCI bridge to [bus 03-03]
+[    1.551730] pci 0000:00:1c.1:   bridge window [io  disabled]
+[    1.551858] pci 0000:00:1c.1:   bridge window [mem 0xf4800000-0xf48fffff]
+[    1.551987] pci 0000:00:1c.1:   bridge window [mem pref disabled]
+[    1.552119] pci 0000:00:1c.2: PCI bridge to [bus 04-05]
+[    1.552246] pci 0000:00:1c.2:   bridge window [io  0xc000-0xcfff]
+[    1.552377] pci 0000:00:1c.2:   bridge window [mem 0xf3200000-0xf45fffff]
+[    1.552508] pci 0000:00:1c.2:   bridge window [mem 0xf4a00000-0xf4bfffff 64bit pref]
+[    1.552661] pci 0000:00:1c.4: PCI bridge to [bus 06-06]
+[    1.552790] pci 0000:00:1c.4:   bridge window [io  disabled]
+[    1.552920] pci 0000:00:1c.4:   bridge window [mem 0xf4700000-0xf47fffff]
+[    1.553054] pci 0000:00:1c.4:   bridge window [mem pref disabled]
+[    1.553186] pci 0000:00:1c.5: PCI bridge to [bus 07-07]
+[    1.553311] pci 0000:00:1c.5:   bridge window [io  0xb000-0xbfff]
+[    1.553441] pci 0000:00:1c.5:   bridge window [mem 0xf4600000-0xf46fffff]
+[    1.553571] pci 0000:00:1c.5:   bridge window [mem pref disabled]
+[    1.553702] pci 0000:00:1e.0: PCI bridge to [bus 08-08]
+[    1.553829] pci 0000:00:1e.0:   bridge window [io  disabled]
+[    1.553957] pci 0000:00:1e.0:   bridge window [mem disabled]
+[    1.554086] pci 0000:00:1e.0:   bridge window [mem pref disabled]
+[    1.554224] pci 0000:00:03.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    1.554357] pci 0000:00:03.0: setting latency timer to 64
+[    1.554369] pci 0000:00:1c.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    1.554498] pci 0000:00:1c.0: setting latency timer to 64
+[    1.554516] pci 0000:00:1c.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+[    1.554639] pci 0000:00:1c.1: setting latency timer to 64
+[    1.554657] pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[    1.554803] pci 0000:00:1c.2: setting latency timer to 64
+[    1.554820] pci 0000:00:1c.4: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    1.554952] pci 0000:00:1c.4: setting latency timer to 64
+[    1.554969] pci 0000:00:1c.5: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+[    1.555101] pci 0000:00:1c.5: setting latency timer to 64
+[    1.555116] pci 0000:00:1e.0: setting latency timer to 64
+[    1.555124] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7]
+[    1.555127] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff]
+[    1.555129] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff]
+[    1.555132] pci_bus 0000:00: resource 7 [mem 0x000d0000-0x000d3fff]
+[    1.555134] pci_bus 0000:00: resource 8 [mem 0x000d4000-0x000d7fff]
+[    1.555137] pci_bus 0000:00: resource 9 [mem 0x000d8000-0x000dbfff]
+[    1.555139] pci_bus 0000:00: resource 10 [mem 0x000dc000-0x000dffff]
+[    1.555142] pci_bus 0000:00: resource 11 [mem 0xe0000000-0xfeafffff]
+[    1.555144] pci_bus 0000:01: resource 0 [io  0xd000-0xdfff]
+[    1.555147] pci_bus 0000:01: resource 1 [mem 0xe0000000-0xf30fffff]
+[    1.555150] pci_bus 0000:03: resource 1 [mem 0xf4800000-0xf48fffff]
+[    1.555152] pci_bus 0000:04: resource 0 [io  0xc000-0xcfff]
+[    1.555154] pci_bus 0000:04: resource 1 [mem 0xf3200000-0xf45fffff]
+[    1.555157] pci_bus 0000:04: resource 2 [mem 0xf4a00000-0xf4bfffff 64bit pref]
+[    1.555160] pci_bus 0000:06: resource 1 [mem 0xf4700000-0xf47fffff]
+[    1.555162] pci_bus 0000:07: resource 0 [io  0xb000-0xbfff]
+[    1.555164] pci_bus 0000:07: resource 1 [mem 0xf4600000-0xf46fffff]
+[    1.555167] pci_bus 0000:08: resource 4 [io  0x0000-0x0cf7]
+[    1.555169] pci_bus 0000:08: resource 5 [io  0x0d00-0xffff]
+[    1.555172] pci_bus 0000:08: resource 6 [mem 0x000a0000-0x000bffff]
+[    1.555174] pci_bus 0000:08: resource 7 [mem 0x000d0000-0x000d3fff]
+[    1.555177] pci_bus 0000:08: resource 8 [mem 0x000d4000-0x000d7fff]
+[    1.555179] pci_bus 0000:08: resource 9 [mem 0x000d8000-0x000dbfff]
+[    1.555181] pci_bus 0000:08: resource 10 [mem 0x000dc000-0x000dffff]
+[    1.555184] pci_bus 0000:08: resource 11 [mem 0xe0000000-0xfeafffff]
+[    1.555209] NET: Registered protocol family 2
+[    1.555552] IP route cache hash table entries: 262144 (order: 9, 2097152 bytes)
+[    1.556727] TCP established hash table entries: 524288 (order: 11, 8388608 bytes)
+[    1.560398] TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
+[    1.560956] TCP: Hash tables configured (established 524288 bind 65536)
+[    1.561081] TCP reno registered
+[    1.561214] UDP hash table entries: 4096 (order: 5, 131072 bytes)
+[    1.561430] UDP-Lite hash table entries: 4096 (order: 5, 131072 bytes)
+[    1.561723] NET: Registered protocol family 1
+[    1.610783] pci 0000:01:00.0: Boot video device
+[    1.610856] PCI: CLS 64 bytes, default 64
+[    1.610873] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+[    1.611006] Placing 64MB software IO TLB between ffff880001bb2000 - ffff880005bb2000
+[    1.611154] software IO TLB at phys 0x1bb2000 - 0x5bb2000
+[    1.612617] HugeTLB registered 2 MB page size, pre-allocated 0 pages
+[    1.614441] msgmni has been set to 15875
+[    1.614848] alg: No test for stdrng (krng)
+[    1.614982] io scheduler noop registered
+[    1.615169] io scheduler cfq registered (default)
+[    1.615395] pcieport 0000:00:03.0: setting latency timer to 64
+[    1.615427] pcieport 0000:00:03.0: irq 29 for MSI/MSI-X
+[    1.615491] pcieport 0000:00:1c.0: setting latency timer to 64
+[    1.615536] pcieport 0000:00:1c.0: irq 30 for MSI/MSI-X
+[    1.615605] pcieport 0000:00:1c.1: setting latency timer to 64
+[    1.615650] pcieport 0000:00:1c.1: irq 31 for MSI/MSI-X
+[    1.615721] pcieport 0000:00:1c.2: setting latency timer to 64
+[    1.615766] pcieport 0000:00:1c.2: irq 32 for MSI/MSI-X
+[    1.615847] pcieport 0000:00:1c.4: setting latency timer to 64
+[    1.615892] pcieport 0000:00:1c.4: irq 33 for MSI/MSI-X
+[    1.615962] pcieport 0000:00:1c.5: setting latency timer to 64
+[    1.616006] pcieport 0000:00:1c.5: irq 34 for MSI/MSI-X
+[    1.616075] pcieport 0000:00:03.0: Requesting control of PCIe PME from ACPI BIOS
+[    1.616512] pcieport 0000:00:03.0: Signaling PME through PCIe PME interrupt
+[    1.616646] pci 0000:01:00.0: Signaling PME through PCIe PME interrupt
+[    1.616777] pci 0000:01:00.1: Signaling PME through PCIe PME interrupt
+[    1.616907] pcie_pme 0000:00:03.0:pcie01: service driver pcie_pme loaded
+[    1.616913] pcieport 0000:00:1c.0: Requesting control of PCIe PME from ACPI BIOS
+[    1.617085] pcieport 0000:00:1c.0: Signaling PME through PCIe PME interrupt
+[    1.617218] pcie_pme 0000:00:1c.0:pcie01: service driver pcie_pme loaded
+[    1.617222] pcieport 0000:00:1c.1: Requesting control of PCIe PME from ACPI BIOS
+[    1.617393] pcieport 0000:00:1c.1: Signaling PME through PCIe PME interrupt
+[    1.617526] pci 0000:03:00.0: Signaling PME through PCIe PME interrupt
+[    1.617657] pcie_pme 0000:00:1c.1:pcie01: service driver pcie_pme loaded
+[    1.617661] pcieport 0000:00:1c.2: Requesting control of PCIe PME from ACPI BIOS
+[    1.617831] pcieport 0000:00:1c.2: Signaling PME through PCIe PME interrupt
+[    1.617963] pcie_pme 0000:00:1c.2:pcie01: service driver pcie_pme loaded
+[    1.617967] pcieport 0000:00:1c.4: Requesting control of PCIe PME from ACPI BIOS
+[    1.618133] pcieport 0000:00:1c.4: Signaling PME through PCIe PME interrupt
+[    1.618267] pci 0000:06:00.0: Signaling PME through PCIe PME interrupt
+[    1.618397] pci 0000:06:00.1: Signaling PME through PCIe PME interrupt
+[    1.618528] pci 0000:06:00.2: Signaling PME through PCIe PME interrupt
+[    1.618657] pci 0000:06:00.3: Signaling PME through PCIe PME interrupt
+[    1.618806] pcie_pme 0000:00:1c.4:pcie01: service driver pcie_pme loaded
+[    1.618811] pcieport 0000:00:1c.5: Requesting control of PCIe PME from ACPI BIOS
+[    1.618980] pcieport 0000:00:1c.5: Signaling PME through PCIe PME interrupt
+[    1.619113] pci 0000:07:00.0: Signaling PME through PCIe PME interrupt
+[    1.619246] pcie_pme 0000:00:1c.5:pcie01: service driver pcie_pme loaded
+[    1.620682] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[    1.621273] ahci 0000:00:1f.2: version 3.0
+[    1.621292] ahci 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[    1.621468] ahci 0000:00:1f.2: irq 35 for MSI/MSI-X
+[    1.621540] ahci 0000:00:1f.2: AHCI 0001.0300 32 slots 4 ports 3 Gbps 0x23 impl SATA mode
+[    1.621692] ahci 0000:00:1f.2: flags: 64bit ncq sntf pm led clo pio slum part ems sxs apst 
+[    1.621845] ahci 0000:00:1f.2: setting latency timer to 64
+[    1.634761] scsi0 : ahci
+[    1.642369] scsi1 : ahci
+[    1.642553] scsi2 : ahci
+[    1.642742] scsi3 : ahci
+[    1.642921] scsi4 : ahci
+[    1.643102] scsi5 : ahci
+[    1.643699] ata1: SATA max UDMA/133 abar m2048@0xf4906000 port 0xf4906100 irq 35
+[    1.643846] ata2: SATA max UDMA/133 abar m2048@0xf4906000 port 0xf4906180 irq 35
+[    1.643994] ata3: DUMMY
+[    1.644115] ata4: DUMMY
+[    1.644235] ata5: DUMMY
+[    1.644357] ata6: SATA max UDMA/133 abar m2048@0xf4906000 port 0xf4906380 irq 35
+[    1.644571] PNP: PS/2 Controller [PNP0303:PS2K,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
+[    1.649687] i8042.c: Detected active multiplexing controller, rev 1.1.
+[    1.651169] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    1.651302] serio: i8042 AUX0 port at 0x60,0x64 irq 12
+[    1.651432] serio: i8042 AUX1 port at 0x60,0x64 irq 12
+[    1.651562] serio: i8042 AUX2 port at 0x60,0x64 irq 12
+[    1.651692] serio: i8042 AUX3 port at 0x60,0x64 irq 12
+[    1.651873] mice: PS/2 mouse device common for all mice
+[    1.652017] cpuidle: using governor ladder
+[    1.652158] cpuidle: using governor menu
+[    1.652491] TCP westwood registered
+[    1.652614] NET: Registered protocol family 17
+[    1.689025] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
+[    1.961472] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[    1.961633] ata6: SATA link down (SStatus 0 SControl 300)
+[    1.961787] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[    1.963406] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 (unknown) filtered out
+[    1.963720] ata1.00: ACPI cmd ef/10:06:00:00:00:a0 (unknown) succeeded
+[    1.963727] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 (unknown) filtered out
+[    1.980727] ata2.00: ACPI cmd ef/10:06:00:00:00:a0 (unknown) succeeded
+[    1.980734] ata2.00: ACPI cmd ef/10:03:00:00:00:a0 (unknown) filtered out
+[    1.982395] ata2.00: ACPI cmd ef/90:05:00:00:00:a0 (unknown) succeeded
+[    1.998590] ata2.00: ATAPI: TSSTcorp CDDVDW TS-L633C, AS01, max UDMA/100, ATAPI AN
+[    1.998758] ata2.00: applying bridge limits
+[    2.001719] ata1.00: ATA-8: ST9500420AS, 0002SDM1, max UDMA/133
+[    2.001861] ata1.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 31/32)
+[    2.004600] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 (unknown) filtered out
+[    2.005068] ata1.00: ACPI cmd ef/10:06:00:00:00:a0 (unknown) succeeded
+[    2.005075] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 (unknown) filtered out
+[    2.007137] ata1.00: configured for UDMA/133
+[    2.018355] ata2.00: ACPI cmd ef/10:06:00:00:00:a0 (unknown) succeeded
+[    2.018362] ata2.00: ACPI cmd ef/10:03:00:00:00:a0 (unknown) filtered out
+[    2.020014] ata2.00: ACPI cmd ef/90:05:00:00:00:a0 (unknown) succeeded
+[    2.022243] scsi 0:0:0:0: Direct-Access     ATA      ST9500420AS      0002 PQ: 0 ANSI: 5
+[    2.022517] sd 0:0:0:0: [sda] 976773168 512-byte logical blocks: (500 GB/465 GiB)
+[    2.022713] sd 0:0:0:0: [sda] Write Protect is off
+[    2.022844] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    2.022863] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    2.023136]  sda: sda1 sda2 sda3 <
+[    2.035950] ata2.00: configured for UDMA/100
+[    2.036932]  sda5 sda6
+[    2.055858] scsi 1:0:0:0: CD-ROM            TSSTcorp CDDVDW TS-L633C  AS01 PQ: 0 ANSI: 5
+[    2.061913]  sda7 >
+[    2.062561] sd 0:0:0:0: [sda] Attached SCSI disk
+[    2.065122] EXT4-fs (sda5): INFO: recovery required on readonly filesystem
+[    2.065462] EXT4-fs (sda5): write access will be enabled during recovery
+[    6.032635] EXT4-fs (sda5): orphan cleanup on readonly fs
+[    6.032978] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1056292
+[    6.033040] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1053676
+[    6.033089] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1053672
+[    6.033108] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1053671
+[    6.033137] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1053670
+[    6.033149] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1053597
+[    6.033162] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1051743
+[    6.033178] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1051363
+[    6.033193] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1050576
+[    6.033205] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1050574
+[    6.033218] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1049686
+[    6.033236] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1049684
+[    6.033253] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 1049676
+[    6.033267] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 802921
+[    6.033303] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 2360702
+[    6.140946] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 827436
+[    6.140978] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 806558
+[    6.161975] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 817494
+[    6.161996] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 817272
+[    6.162037] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 927842
+[    6.173225] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 818561
+[    6.191058] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 817387
+[    6.191121] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 790227
+[    6.191138] EXT4-fs (sda5): ext4_orphan_cleanup: deleting unreferenced inode 802722
+[    6.191185] EXT4-fs (sda5): 24 orphan inodes deleted
+[    6.191522] EXT4-fs (sda5): recovery complete
+[    6.408412] EXT4-fs (sda5): mounted filesystem with ordered data mode
+[    6.408769] VFS: Mounted root (ext3 filesystem) readonly on device 8:5.
+[    6.408915] Freeing unused kernel memory: 444k freed
+[    6.409104] Write protecting the kernel read-only data: 6144k
+[    6.409439] Freeing unused kernel memory: 1372k freed
+[    6.409840] Freeing unused kernel memory: 1004k freed
+[    8.819279] input: PC Speaker as /devices/platform/pcspkr/input/input1
+[    9.122265] nvidia: module license 'NVIDIA' taints kernel.
+[    9.122399] Disabling lock debugging due to kernel taint
+[    9.546672] input: Lid Switch as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0D:00/input/input2
+[    9.590722] cfg80211: Calling CRDA to update world regulatory domain
+[    9.594087] Monitor-Mwait will be used to enter C-1 state
+[    9.594110] Monitor-Mwait will be used to enter C-2 state
+[    9.599976] ------------[ cut here ]------------
+[    9.600132] WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x57/0x77()
+[    9.600291] Hardware name: G60JX
+[    9.600425] hpet: compare register read back failed.
+[    9.600566] Modules linked in: processor(+) cfg80211 snd_page_alloc nls_base backlight led_class thermal_sys output cdrom ac(+) psmouse button(+) rtc_lib battery serio_raw rfkill nvidia(P+) evdev pcspkr
+[    9.602943] Pid: 0, comm: swapper Tainted: P           2.6.34-rc2 #1
+[    9.603077] Call Trace:
+[    9.603202]  [<ffffffff8103a6bb>] ? warn_slowpath_common+0x76/0x8c
+[    9.603338]  [<ffffffff8103a723>] ? warn_slowpath_fmt+0x40/0x45
+[    9.603474]  [<ffffffff8100948a>] ? read_tsc+0x5/0x16
+[    9.603609]  [<ffffffff8101e8a2>] ? hpet_next_event+0x57/0x77
+[    9.603744]  [<ffffffff8105d2c9>] ? tick_dev_program_event+0x33/0x9e
+[    9.603878]  [<ffffffff8105cdc8>] ? tick_broadcast_oneshot_control+0x9c/0xf5
+[    9.604013]  [<ffffffff8100948a>] ? read_tsc+0x5/0x16
+[    9.604145]  [<ffffffff8105c7a7>] ? tick_notify+0x1fc/0x350
+[    9.604279]  [<ffffffff8100948a>] ? read_tsc+0x5/0x16
+[    9.604411]  [<ffffffff810594e8>] ? ktime_get+0x5f/0xb8
+[    9.604545]  [<ffffffff8100948a>] ? read_tsc+0x5/0x16
+[    9.604677]  [<ffffffff81055ce6>] ? notifier_call_chain+0x2e/0x5b
+[    9.604811]  [<ffffffff8105c1c6>] ? clockevents_notify+0x31/0x139
+[    9.604944]  [<ffffffff8100948a>] ? read_tsc+0x5/0x16
+[    9.605082]  [<ffffffffa0bd35ba>] ? acpi_idle_enter_simple+0x9f/0x147 [processor]
+[    9.605233]  [<ffffffff81217cc3>] ? menu_select+0x13a/0x1ee
+[    9.605365]  [<ffffffff81216fe6>] ? cpuidle_idle_call+0x91/0xeb
+[    9.605499]  [<ffffffff81001b60>] ? cpu_idle+0xa3/0xdd
+[    9.605634]  [<ffffffff8129e0c2>] ? start_secondary+0x1ed/0x1f3
+[    9.605768] ---[ end trace 299be8804da1491b ]---
+[    9.613653] usbcore: registered new interface driver usbfs
+[    9.613918] usbcore: registered new interface driver hub
+[    9.614098] usbcore: registered new device driver usb
+[    9.727691] ACPI: Lid Switch [LID]
+[    9.727942] input: Sleep Button as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0E:00/input/input3
+[    9.728180] ACPI: Sleep Button [SLPB]
+[    9.787785] nvidia 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    9.787946] nvidia 0000:01:00.0: setting latency timer to 64
+[    9.787949] vgaarb: device changed decodes: PCI:0000:01:00.0,olddecodes=io+mem,decodes=none:owns=io+mem
+[    9.788592] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input4
+[    9.788814] ACPI: Power Button [PWRF]
+[    9.788838] NVRM: loading NVIDIA UNIX x86_64 Kernel Module  195.36.15  Fri Mar 12 00:29:13 PST 2010
+[    9.794681] ACPI: Battery Slot [BAT0] (battery present)
+[    9.796160] ACPI: AC Adapter [AC0] (on-line)
+[    9.805147] thermal LNXTHERM:01: registered as thermal_zone0
+[    9.805302] ACPI: Thermal Zone [THRM] (60 C)
+[    9.888919] acpi device:42: registered as cooling_device8
+[    9.889158] sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
+[    9.889305] input: Video Bus as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:3f/LNXVIDEO:00/input/input5
+[    9.889377] ACPI: Video Device [VGA] (multi-head: yes  rom: no  post: no)
+[    9.889522] asus_laptop: Asus Laptop Support version 0.42
+[    9.889722] Uniform CD-ROM driver Revision: 3.20
+[    9.889959] sr 1:0:0:0: Attached scsi CD-ROM sr0
+[    9.894360] asus_laptop: BSTS called, 0xbc08 returned
+[    9.900057] asus_laptop: Backlight controlled by ACPI video driver
+[    9.900286] input: Asus Laptop extra buttons as /devices/platform/asus_laptop/input/input6
+[    9.900707] Registered led device: asus::touchpad
+[    9.900954] Registered led device: asus::kbd_backlight
+[    9.931528] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    9.931795] ehci_hcd 0000:00:1a.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    9.932097] ehci_hcd 0000:00:1a.0: setting latency timer to 64
+[    9.932107] ehci_hcd 0000:00:1a.0: EHCI Host Controller
+[    9.932255] ehci_hcd 0000:00:1a.0: new USB bus registered, assigned bus number 1
+[    9.932481] ehci_hcd 0000:00:1a.0: debug port 2
+[    9.936548] ehci_hcd 0000:00:1a.0: cache line size of 64 is not supported
+[    9.936595] ehci_hcd 0000:00:1a.0: irq 16, io mem 0xf4908000
+[    9.951853] ehci_hcd 0000:00:1a.0: USB 2.0 started, EHCI 1.00
+[    9.952027] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
+[    9.952191] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    9.952352] usb usb1: Product: EHCI Host Controller
+[    9.952482] usb usb1: Manufacturer: Linux 2.6.34-rc2 ehci_hcd
+[    9.952623] usb usb1: SerialNumber: 0000:00:1a.0
+[    9.952976] hub 1-0:1.0: USB hub found
+[    9.953114] hub 1-0:1.0: 2 ports detected
+[    9.953327] ehci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+[    9.953486] ehci_hcd 0000:00:1d.0: setting latency timer to 64
+[    9.953494] ehci_hcd 0000:00:1d.0: EHCI Host Controller
+[    9.953628] ehci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 2
+[    9.953810] ehci_hcd 0000:00:1d.0: debug port 2
+[    9.957831] ehci_hcd 0000:00:1d.0: cache line size of 64 is not supported
+[    9.957856] ehci_hcd 0000:00:1d.0: irq 23, io mem 0xf4907000
+[    9.971949] ehci_hcd 0000:00:1d.0: USB 2.0 started, EHCI 1.00
+[    9.972128] usb usb2: New USB device found, idVendor=1d6b, idProduct=0002
+[    9.972274] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    9.972432] usb usb2: Product: EHCI Host Controller
+[    9.972570] usb usb2: Manufacturer: Linux 2.6.34-rc2 ehci_hcd
+[    9.972711] usb usb2: SerialNumber: 0000:00:1d.0
+[    9.973011] hub 2-0:1.0: USB hub found
+[    9.973151] hub 2-0:1.0: 2 ports detected
+[   10.023000] rtc_cmos 00:06: RTC can wake from S4
+[   10.023181] rtc_cmos 00:06: rtc core: registered rtc_cmos as rtc0
+[   10.023351] rtc0: alarms up to one year, y3k, 242 bytes nvram, hpet irqs
+[   10.024356] sdhci: Secure Digital Host Controller Interface driver
+[   10.024497] sdhci: Copyright(c) Pierre Ossman
+[   10.033319] sdhci-pci 0000:06:00.0: SDHCI controller found [1180:e822] (rev 1)
+[   10.033522] sdhci-pci 0000:06:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   10.033811] sdhci-pci 0000:06:00.0: Will use DMA mode even though HW doesn't fully claim to support it.
+[   10.033985] sdhci-pci 0000:06:00.0: setting latency timer to 64
+[   10.034041] Registered led device: mmc0::
+[   10.034106] mmc0: SDHCI controller on PCI [0000:06:00.0] using DMA
+[   10.261719] usb 1-1: new high speed USB device using ehci_hcd and address 2
+[   10.299822] iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux, in-tree:
+[   10.299990] iwlagn: Copyright(c) 2003-2010 Intel Corporation
+[   10.300255] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[   10.300433] iwlagn 0000:03:00.0: setting latency timer to 64
+[   10.300608] iwlagn 0000:03:00.0: Detected Intel Wireless WiFi Link 6000 Series 3x3 AGN REV=0x74
+[   10.329816] iwlagn 0000:03:00.0: Tunable channels: 13 802.11bg, 24 802.11a channels
+[   10.330700] iwlagn 0000:03:00.0: irq 36 for MSI/MSI-X
+[   10.331408] iwlagn 0000:03:00.0: firmware: requesting iwlwifi-6000-4.ucode
+[   10.339268] Synaptics Touchpad, model: 1, fw: 7.0, id: 0x1c0b3, caps: 0xd04711/0xa00000
+[   10.375890] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
+[   10.376247] HDA Intel 0000:00:1b.0: irq 37 for MSI/MSI-X
+[   10.376283] HDA Intel 0000:00:1b.0: setting latency timer to 64
+[   10.381647] input: SynPS/2 Synaptics TouchPad as /devices/platform/i8042/serio4/input/input7
+[   10.398084] usb 1-1: New USB device found, idVendor=8087, idProduct=0020
+[   10.398212] usb 1-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+[   10.398633] hub 1-1:1.0: USB hub found
+[   10.398829] hub 1-1:1.0: 6 ports detected
+[   10.509413] usb 2-1: new high speed USB device using ehci_hcd and address 2
+[   10.641644] usb 2-1: New USB device found, idVendor=8087, idProduct=0020
+[   10.641771] usb 2-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+[   10.642144] hub 2-1:1.0: USB hub found
+[   10.642510] hub 2-1:1.0: 8 ports detected
+[   10.717425] usb 1-1.5: new full speed USB device using ehci_hcd and address 3
+[   10.796670] iwlagn 0000:03:00.0: loaded firmware version 9.176.4.1
+[   10.814771] usb 1-1.5: New USB device found, idVendor=0b05, idProduct=1751
+[   10.814905] usb 1-1.5: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[   10.815047] usb 1-1.5: Product: BT-253
+[   10.815159] usb 1-1.5: Manufacturer: Broadcom Corp
+[   10.815277] usb 1-1.5: SerialNumber: 0025D3ACB99E
+[   10.846037] HDA Intel 0000:01:00.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+[   10.846201] hda_intel: Disable MSI for Nvidia chipset
+[   10.846400] HDA Intel 0000:01:00.1: setting latency timer to 64
+[   10.872833] phy0: Selected rate control algorithm 'iwl-agn-rs'
+[   10.886678] usb 1-1.6: new high speed USB device using ehci_hcd and address 4
+[   11.038898] usb 1-1.6: New USB device found, idVendor=04f2, idProduct=b106
+[   11.039026] usb 1-1.6: New USB device strings: Mfr=2, Product=1, SerialNumber=0
+[   11.039167] usb 1-1.6: Product: USB2.0 2.0M UVC WebCam
+[   11.039283] usb 1-1.6: Manufacturer: Chicony Electronics Co., Ltd
+[   11.078472] Linux video capture interface: v2.00
+[   11.086673] uvcvideo: Found UVC 1.00 device USB2.0 2.0M UVC WebCam (04f2:b106)
+[   11.098992] input: USB2.0 2.0M UVC WebCam as /devices/pci0000:00/0000:00:1a.0/usb1/1-1/1-1.6/1-1.6:1.0/input/input8
+[   11.099241] usbcore: registered new interface driver uvcvideo
+[   11.099368] USB Video Class driver (v0.1.0)
+[   11.113481] usb 2-1.4: new high speed USB device using ehci_hcd and address 3
+[   11.206201] usb 2-1.4: New USB device found, idVendor=0fca, idProduct=8004
+[   11.206327] usb 2-1.4: New USB device strings: Mfr=1, Product=5, SerialNumber=3
+[   11.206467] usb 2-1.4: Product: RIM Composite Device
+[   11.206587] usb 2-1.4: Manufacturer: Research In Motion
+[   11.206712] usb 2-1.4: SerialNumber: 9F80EDE3AF914B2512B593E0ADA8051F00C7D3F8
+[   12.414897] usb 2-1.4: reset high speed USB device using ehci_hcd and address 3
+[   12.566881] Initializing USB Mass Storage driver...
+[   12.567707] scsi6 : usb-storage 2-1.4:1.1
+[   12.568204] usbcore: registered new interface driver usb-storage
+[   12.568347] USB Mass Storage support registered.
+[   13.015214] Adding 6835620k swap on /dev/sda6.  Priority:-1 extents:1 across:6835620k 
+[   13.438703] i2c /dev entries driver
+[   13.461699] coretemp coretemp.0: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.462090] coretemp coretemp.1: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.462459] coretemp coretemp.2: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.462970] coretemp coretemp.3: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.463477] coretemp coretemp.4: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.463869] coretemp coretemp.5: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.464252] coretemp coretemp.6: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.464629] coretemp coretemp.7: Unable to access MSR 0xEE, for Tjmax, left at default
+[   13.568494] scsi 6:0:0:0: Direct-Access     RIM      BlackBerry SD    0002 PQ: 0 ANSI: 0 CCS
+[   13.571392] sd 6:0:0:0: [sdb] Attached SCSI removable disk
+[   21.482407] FAT: IO charset 437 not found
+[   21.594944] EXT4-fs (sda7): mounted filesystem with ordered data mode
+[   22.443100] ip_tables: (C) 2000-2006 Netfilter Core Team
+[   22.463087] nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+[   23.396783] CE: hpet increasing min_delta_ns to 15000 nsec
+[   23.648248] fuse init (API version 7.13)
+[   23.676456] CE: hpet increasing min_delta_ns to 22500 nsec
+[   23.676814] CE: hpet increasing min_delta_ns to 33750 nsec
+[   24.429682] microcode: CPU0 sig=0x106e5, pf=0x10, revision=0x3
+[   24.429889] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.441380] microcode: CPU1 sig=0x106e5, pf=0x10, revision=0x3
+[   24.441534] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.444811] microcode: CPU2 sig=0x106e5, pf=0x10, revision=0x3
+[   24.444960] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.447999] microcode: CPU3 sig=0x106e5, pf=0x10, revision=0x3
+[   24.448147] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.451270] microcode: CPU4 sig=0x106e5, pf=0x10, revision=0x3
+[   24.451436] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.454225] microcode: CPU5 sig=0x106e5, pf=0x10, revision=0x3
+[   24.454377] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.457366] microcode: CPU6 sig=0x106e5, pf=0x10, revision=0x3
+[   24.457514] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.459202] microcode: CPU7 sig=0x106e5, pf=0x10, revision=0x3
+[   24.459343] platform microcode: firmware: requesting intel-ucode/06-1e-05
+[   24.461037] microcode: Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+[   26.551201] wlan0: authenticate with 00:16:b6:b2:5e:dd (try 1)
+[   26.555355] wlan0: authenticated
+[   26.560602] wlan0: associate with 00:16:b6:b2:5e:dd (try 1)
+[   26.576293] wlan0: RX AssocResp from 00:16:b6:b2:5e:dd (capab=0x431 status=0 aid=2)
+[   26.576301] wlan0: associated
+[   26.659247] Intel AES-NI instructions are not detected.
+[   26.706608] padlock: VIA PadLock not detected.
+[  176.851432] NVRM: Xid (0001:00): 13, 0002 00000000 000050c0 00000368 00000000 00000100
+[  197.979079] NVRM: Xid (0001:00): 13, 0004 00000000 000050c0 00000368 00000000 00000100
+[  511.671930] NVRM: Xid (0001:00): 13, 0002 00000000 000050c0 00000368 00000000 00000100
+[  593.659039] NVRM: Xid (0001:00): 13, 0002 00000000 000050c0 00000368 00000000 00000100
+[  646.864778] NVRM: Xid (0001:00): 13, 0002 00000000 000050c0 00000368 00000000 00000100
+[  667.694288] NVRM: Xid (0001:00): 13, 0002 00000000 000050c0 00000368 00000000 00000100
+[  701.501356] NVRM: Xid (0001:00): 13, 0002 00000000 000050c0 00000368 00000000 00000100
+[  794.917971] NVRM: Xid (0001:00): 13, 0002 00000000 000050c0 00000368 00000000 00000100
+[  809.044361] CE: hpet increasing min_delta_ns to 50624 nsec
+[ 1481.376847] CE: hpet increasing min_delta_ns to 75936 nsec
+[ 2005.071723] cudaranger[9136]: segfault at 160 ip 0000003aab608c64 sp 00007fff12b905a0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.081960] cudaranger[9137]: segfault at 160 ip 0000003aab608c64 sp 00007fff51e359c0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.092075] cudaranger[9139]: segfault at 160 ip 0000003aab608c64 sp 00007fffc823b470 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.102381] cudaranger[9140]: segfault at 160 ip 0000003aab608c64 sp 00007fff966b2b20 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.112598] cudaranger[9141]: segfault at 160 ip 0000003aab608c64 sp 00007ffff7317560 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.123040] cudaranger[9142]: segfault at 160 ip 0000003aab608c64 sp 00007fffc3c3c350 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.133307] cudaranger[9143]: segfault at 160 ip 0000003aab608c64 sp 00007fff749667f0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.143692] cudaranger[9144]: segfault at 160 ip 0000003aab608c64 sp 00007fff9a751070 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.154022] cudaranger[9145]: segfault at 160 ip 0000003aab608c64 sp 00007fff29c86400 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2005.164418] cudaranger[9146]: segfault at 160 ip 0000003aab608c64 sp 00007fffb8baf590 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.075663] show_signal_msg: 582 callbacks suppressed
+[ 2010.075812] cudaranger[9729]: segfault at 160 ip 0000003aab608c64 sp 00007fffc45a7ca0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.086647] cudaranger[9730]: segfault at 160 ip 0000003aab608c64 sp 00007fff827dc5d0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.096918] cudaranger[9731]: segfault at 160 ip 0000003aab608c64 sp 00007fff3e76c150 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.107476] cudaranger[9732]: segfault at 160 ip 0000003aab608c64 sp 00007fff876d2760 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.118723] cudaranger[9733]: segfault at 160 ip 0000003aab608c64 sp 00007fffadc17010 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.128889] cudaranger[9734]: segfault at 160 ip 0000003aab608c64 sp 00007fff129f5c40 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.139236] cudaranger[9735]: segfault at 160 ip 0000003aab608c64 sp 00007fff31fdcf30 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.149719] cudaranger[9736]: segfault at 160 ip 0000003aab608c64 sp 00007ffff4b58fd0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.160576] cudaranger[9737]: segfault at 160 ip 0000003aab608c64 sp 00007fff17712ec0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2010.170763] cudaranger[9738]: segfault at 160 ip 0000003aab608c64 sp 00007fffeda87970 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.484838] show_signal_msg: 273 callbacks suppressed
+[ 2072.484986] cudaranger[10212]: segfault at 160 ip 0000003aab608c64 sp 00007fff1b5b0570 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.489846] cudaranger[10213]: segfault at 160 ip 0000003aab608c64 sp 00007fffbb5e3a90 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.494324] cudaranger[10215]: segfault at 160 ip 0000003aab608c64 sp 00007fff43400ee0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.498902] cudaranger[10216]: segfault at 160 ip 0000003aab608c64 sp 00007fffcafaa2c0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.503342] cudaranger[10217]: segfault at 160 ip 0000003aab608c64 sp 00007fff4ffe3fc0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.508132] cudaranger[10218]: segfault at 160 ip 0000003aab608c64 sp 00007fff8eca81b0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.513051] cudaranger[10219]: segfault at 160 ip 0000003aab608c64 sp 00007fff943a8b20 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.517487] cudaranger[10220]: segfault at 160 ip 0000003aab608c64 sp 00007fff43125d90 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.521815] cudaranger[10221]: segfault at 160 ip 0000003aab608c64 sp 00007fff355bd800 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2072.526240] cudaranger[10222]: segfault at 160 ip 0000003aab608c64 sp 00007fff3b85a060 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.382938] show_signal_msg: 438 callbacks suppressed
+[ 2095.383090] cudaranger[10676]: segfault at 160 ip 0000003aab608c64 sp 00007fff99eaae10 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.387754] cudaranger[10677]: segfault at 160 ip 0000003aab608c64 sp 00007fff8d0a4290 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.392759] cudaranger[10678]: segfault at 160 ip 0000003aab608c64 sp 00007fff9b8c2940 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.397927] cudaranger[10679]: segfault at 160 ip 0000003aab608c64 sp 00007fff28ae06c0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.402459] cudaranger[10680]: segfault at 160 ip 0000003aab608c64 sp 00007fff316b5a90 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.406818] cudaranger[10681]: segfault at 160 ip 0000003aab608c64 sp 00007fff510785f0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.411398] cudaranger[10682]: segfault at 160 ip 0000003aab608c64 sp 00007fffa907e790 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.416175] cudaranger[10683]: segfault at 160 ip 0000003aab608c64 sp 00007fffe3ab85b0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.421080] cudaranger[10684]: segfault at 160 ip 0000003aab608c64 sp 00007fffe28faba0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2095.425583] cudaranger[10685]: segfault at 160 ip 0000003aab608c64 sp 00007fff884d1260 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.366256] show_signal_msg: 51 callbacks suppressed
+[ 2149.366418] cudaranger[10938]: segfault at 160 ip 0000003aab608c64 sp 00007fff895d9280 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.376747] cudaranger[10939]: segfault at 160 ip 0000003aab608c64 sp 00007fff1e798f00 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.386818] cudaranger[10940]: segfault at 160 ip 0000003aab608c64 sp 00007fffc21f2410 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.397113] cudaranger[10941]: segfault at 160 ip 0000003aab608c64 sp 00007fffbcc8d6c0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.407338] cudaranger[10942]: segfault at 160 ip 0000003aab608c64 sp 00007fffdf5768b0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.417447] cudaranger[10943]: segfault at 160 ip 0000003aab608c64 sp 00007fffa5b068c0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.427578] cudaranger[10944]: segfault at 160 ip 0000003aab608c64 sp 00007fffb6f0b440 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.437901] cudaranger[10945]: segfault at 160 ip 0000003aab608c64 sp 00007fffce82b410 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.448293] cudaranger[10946]: segfault at 160 ip 0000003aab608c64 sp 00007ffff6042cd0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2149.458420] cudaranger[10947]: segfault at 160 ip 0000003aab608c64 sp 00007fffcb259350 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.610053] show_signal_msg: 139 callbacks suppressed
+[ 2195.610184] cudaranger[11288]: segfault at 160 ip 0000003aab608c64 sp 00007fffb71909f0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.614955] cudaranger[11289]: segfault at 160 ip 0000003aab608c64 sp 00007fff51fa6620 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.619404] cudaranger[11290]: segfault at 160 ip 0000003aab608c64 sp 00007fffeb2eec70 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.623719] cudaranger[11291]: segfault at 160 ip 0000003aab608c64 sp 00007fffa5ac3cd0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.628547] cudaranger[11292]: segfault at 160 ip 0000003aab608c64 sp 00007fff48d87e40 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.633341] cudaranger[11293]: segfault at 160 ip 0000003aab608c64 sp 00007fff528e5230 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.637701] cudaranger[11294]: segfault at 160 ip 0000003aab608c64 sp 00007fffb494b3a0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.642215] cudaranger[11295]: segfault at 160 ip 0000003aab608c64 sp 00007fff63242f40 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.646705] cudaranger[11296]: segfault at 160 ip 0000003aab608c64 sp 00007fffdb05b020 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2195.651217] cudaranger[11297]: segfault at 160 ip 0000003aab608c64 sp 00007ffffac2ca60 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.610275] show_signal_msg: 538 callbacks suppressed
+[ 2200.610406] cudaranger[11836]: segfault at 160 ip 0000003aab608c64 sp 00007fff59558670 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.619501] cudaranger[11837]: segfault at 160 ip 0000003aab608c64 sp 00007fffe670db70 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.629629] cudaranger[11838]: segfault at 160 ip 0000003aab608c64 sp 00007fffef04efd0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.639633] cudaranger[11839]: segfault at 160 ip 0000003aab608c64 sp 00007fff24b01850 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.649000] cudaranger[11840]: segfault at 160 ip 0000003aab608c64 sp 00007fff5a150f00 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.654755] cudaranger[11841]: segfault at 160 ip 0000003aab608c64 sp 00007fff7f2b9e80 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.662672] cudaranger[11842]: segfault at 160 ip 0000003aab608c64 sp 00007fffc38d94a0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.673027] cudaranger[11843]: segfault at 160 ip 0000003aab608c64 sp 00007fffed6fbcb0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.684132] cudaranger[11844]: segfault at 160 ip 0000003aab608c64 sp 00007fffbf55c330 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2200.694106] cudaranger[11845]: segfault at 160 ip 0000003aab608c64 sp 00007fffe6319c30 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.621042] show_signal_msg: 498 callbacks suppressed
+[ 2205.621214] cudaranger[12344]: segfault at 160 ip 0000003aab608c64 sp 00007fff4e4dadb0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.631301] cudaranger[12345]: segfault at 160 ip 0000003aab608c64 sp 00007fffb61b9da0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.641290] cudaranger[12346]: segfault at 160 ip 0000003aab608c64 sp 00007fffa8ecc190 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.651276] cudaranger[12347]: segfault at 160 ip 0000003aab608c64 sp 00007fff3a43b290 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.661674] cudaranger[12348]: segfault at 160 ip 0000003aab608c64 sp 00007ffffe93ce00 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.672204] cudaranger[12349]: segfault at 160 ip 0000003aab608c64 sp 00007fff9a680c60 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.682189] cudaranger[12350]: segfault at 160 ip 0000003aab608c64 sp 00007fffff116ef0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.692582] cudaranger[12351]: segfault at 160 ip 0000003aab608c64 sp 00007fff072b56b0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.703428] cudaranger[12352]: segfault at 160 ip 0000003aab608c64 sp 00007fff3dc39fb0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2205.713630] cudaranger[12353]: segfault at 160 ip 0000003aab608c64 sp 00007fffe582c1b0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.415027] show_signal_msg: 45 callbacks suppressed
+[ 2231.415151] cudaranger[12605]: segfault at 160 ip 0000003aab608c64 sp 00007fff64d858e0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.420663] cudaranger[12606]: segfault at 160 ip 0000003aab608c64 sp 00007fffa18bf990 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.425821] cudaranger[12607]: segfault at 160 ip 0000003aab608c64 sp 00007fff3cb92020 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.431336] cudaranger[12608]: segfault at 160 ip 0000003aab608c64 sp 00007fff215f34f0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.436610] cudaranger[12609]: segfault at 160 ip 0000003aab608c64 sp 00007fff405d8f60 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.443381] cudaranger[12615]: segfault at 160 ip 0000003aab608c64 sp 00007fff340071e0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.448761] cudaranger[12618]: segfault at 160 ip 0000003aab608c64 sp 00007fff0f11dc70 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.455281] cudaranger[12619]: segfault at 160 ip 0000003aab608c64 sp 00007fff46b21d60 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.462440] cudaranger[12620]: segfault at 160 ip 0000003aab608c64 sp 00007fffcfa697b0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2231.467917] cudaranger[12621]: segfault at 160 ip 0000003aab608c64 sp 00007fff6d48fee0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.416572] show_signal_msg: 515 callbacks suppressed
+[ 2236.416723] cudaranger[13207]: segfault at 160 ip 0000003aab608c64 sp 00007fffc8412580 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.426889] cudaranger[13208]: segfault at 160 ip 0000003aab608c64 sp 00007fff4f834e50 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.437012] cudaranger[13209]: segfault at 160 ip 0000003aab608c64 sp 00007fff95ec9880 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.447239] cudaranger[13210]: segfault at 160 ip 0000003aab608c64 sp 00007fff049a8d30 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.457424] cudaranger[13211]: segfault at 160 ip 0000003aab608c64 sp 00007fffad1901a0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.467601] cudaranger[13212]: segfault at 160 ip 0000003aab608c64 sp 00007fff2bcef8d0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.477758] cudaranger[13213]: segfault at 160 ip 0000003aab608c64 sp 00007fffc49cbb50 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.487813] cudaranger[13214]: segfault at 160 ip 0000003aab608c64 sp 00007fff493336b0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.498039] cudaranger[13215]: segfault at 160 ip 0000003aab608c64 sp 00007fff7b4f4910 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2236.507999] cudaranger[13216]: segfault at 160 ip 0000003aab608c64 sp 00007fffdfef76d0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.429521] show_signal_msg: 507 callbacks suppressed
+[ 2241.429676] cudaranger[13799]: segfault at 160 ip 0000003aab608c64 sp 00007fff3d0fa2a0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.439057] cudaranger[13800]: segfault at 160 ip 0000003aab608c64 sp 00007fffd2a8c9e0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.445742] cudaranger[13801]: segfault at 160 ip 0000003aab608c64 sp 00007fff99dfa2f0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.452388] cudaranger[13802]: segfault at 160 ip 0000003aab608c64 sp 00007fff7d5171d0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.462750] cudaranger[13803]: segfault at 160 ip 0000003aab608c64 sp 00007fff7a5f0ec0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.472781] cudaranger[13804]: segfault at 160 ip 0000003aab608c64 sp 00007fffbfaaaed0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.482890] cudaranger[13805]: segfault at 160 ip 0000003aab608c64 sp 00007fffe8064300 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.492918] cudaranger[13806]: segfault at 160 ip 0000003aab608c64 sp 00007fffc6237270 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.503038] cudaranger[13807]: segfault at 160 ip 0000003aab608c64 sp 00007fff53b91ce0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2241.513033] cudaranger[13808]: segfault at 160 ip 0000003aab608c64 sp 00007fff1f86ba50 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.442591] show_signal_msg: 504 callbacks suppressed
+[ 2246.442754] cudaranger[14324]: segfault at 160 ip 0000003aab608c64 sp 00007fffbf36e220 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.452908] cudaranger[14325]: segfault at 160 ip 0000003aab608c64 sp 00007fffea45d690 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.462896] cudaranger[14326]: segfault at 160 ip 0000003aab608c64 sp 00007fffe9c91f70 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.472828] cudaranger[14327]: segfault at 160 ip 0000003aab608c64 sp 00007fffbc5febb0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.482829] cudaranger[14328]: segfault at 160 ip 0000003aab608c64 sp 00007fff96af8fe0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.492761] cudaranger[14329]: segfault at 160 ip 0000003aab608c64 sp 00007fff214b9b00 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.502834] cudaranger[14330]: segfault at 160 ip 0000003aab608c64 sp 00007fffeda7fdf0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.512831] cudaranger[14331]: segfault at 160 ip 0000003aab608c64 sp 00007fffbe15e120 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.522822] cudaranger[14332]: segfault at 160 ip 0000003aab608c64 sp 00007fffd0e581c0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2246.532798] cudaranger[14333]: segfault at 160 ip 0000003aab608c64 sp 00007fff18388020 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2414.407156] show_signal_msg: 398 callbacks suppressed
+[ 2414.407305] cudaranger[14939]: segfault at 160 ip 0000003aab608c64 sp 00007fff0b799640 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2451.102711] cudaranger[15152]: segfault at 160 ip 0000003aab608c64 sp 00007fffa20b2cd0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2465.640969] cudaranger[15159]: segfault at 160 ip 0000003aab608c64 sp 00007fff6e597e30 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2476.954681] cudaranger[15369]: segfault at 160 ip 0000003aab608c64 sp 00007fffbe137450 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2496.355513] cudaranger[15378]: segfault at 160 ip 0000003aab608c64 sp 00007fff45c5b0d0 error 4 in libpthread-2.10.2.so[3aab600000+16000]
+[ 2575.509951] NVRM: Xid (0001:00): 13, 0001 00000000 000050c0 00000368 00000000 00000100
+[ 2795.966850] NVRM: Xid (0001:00): 13, 0001 00000000 000050c0 00000368 00000000 00000100
+[ 2899.307386] iwlagn 0000:03:00.0: Microcode SW error detected.  Restarting 0x2000000.
+[ 2899.307666] iwlagn 0000:03:00.0: Start IWL Error Log Dump:
+[ 2899.307811] iwlagn 0000:03:00.0: Status: 0x000212E4, count: 5
+[ 2899.308786] iwlagn 0000:03:00.0: Desc                               Time       data1      data2      line
+[ 2899.308960] iwlagn 0000:03:00.0: NMI_INTERRUPT_TRM            (#22) 2098343124 0x00000040 0x07030000 72894
+[ 2899.309131] iwlagn 0000:03:00.0: blink1  blink2  ilink1  ilink2
+[ 2899.309278] iwlagn 0000:03:00.0: 0x00686 0x007C4 0x00996 0x0F836
+[ 2899.309424] iwlagn 0000:03:00.0: CSR values:
+[ 2899.309566] iwlagn 0000:03:00.0: (2nd byte of CSR_INT_COALESCING is CSR_INT_PERIODIC_REG)
+[ 2899.309762] iwlagn 0000:03:00.0:        CSR_HW_IF_CONFIG_REG: 0X00480303
+[ 2899.309938] iwlagn 0000:03:00.0:          CSR_INT_COALESCING: 0X00000040
+[ 2899.310114] iwlagn 0000:03:00.0:                     CSR_INT: 0X04000000
+[ 2899.310287] iwlagn 0000:03:00.0:                CSR_INT_MASK: 0X00000000
+[ 2899.310465] iwlagn 0000:03:00.0:           CSR_FH_INT_STATUS: 0X00000000
+[ 2899.310641] iwlagn 0000:03:00.0:                 CSR_GPIO_IN: 0X0000000f
+[ 2899.310816] iwlagn 0000:03:00.0:                   CSR_RESET: 0X00000000
+[ 2899.310992] iwlagn 0000:03:00.0:                CSR_GP_CNTRL: 0X080403c5
+[ 2899.311168] iwlagn 0000:03:00.0:                  CSR_HW_REV: 0X00000074
+[ 2899.311345] iwlagn 0000:03:00.0:              CSR_EEPROM_REG: 0Xbb990ffd
+[ 2899.311518] iwlagn 0000:03:00.0:               CSR_EEPROM_GP: 0X90000001
+[ 2899.311698] iwlagn 0000:03:00.0:              CSR_OTP_GP_REG: 0X00030001
+[ 2899.311874] iwlagn 0000:03:00.0:                 CSR_GIO_REG: 0X00080042
+[ 2899.312051] iwlagn 0000:03:00.0:            CSR_GP_UCODE_REG: 0X00007645
+[ 2899.312223] iwlagn 0000:03:00.0:           CSR_GP_DRIVER_REG: 0X00000000
+[ 2899.312401] iwlagn 0000:03:00.0:           CSR_UCODE_DRV_GP1: 0X00000000
+[ 2899.312577] iwlagn 0000:03:00.0:           CSR_UCODE_DRV_GP2: 0X00000000
+[ 2899.312750] iwlagn 0000:03:00.0:                 CSR_LED_REG: 0X00000058
+[ 2899.312926] iwlagn 0000:03:00.0:        CSR_DRAM_INT_TBL_REG: 0X88217666
+[ 2899.313100] iwlagn 0000:03:00.0:        CSR_GIO_CHICKEN_BITS: 0X27800200
+[ 2899.313277] iwlagn 0000:03:00.0:             CSR_ANA_PLL_CFG: 0X00000000
+[ 2899.313453] iwlagn 0000:03:00.0:           CSR_HW_REV_WA_REG: 0X0001001a
+[ 2899.313629] iwlagn 0000:03:00.0:        CSR_DBG_HPET_MEM_REG: 0Xffff0000
+[ 2899.313777] iwlagn 0000:03:00.0: FH register values:
+[ 2899.314030] iwlagn 0000:03:00.0:         FH_RSCSR_CHNL0_STTS_WPTR_REG: 0X216c3000
+[ 2899.314258] iwlagn 0000:03:00.0:        FH_RSCSR_CHNL0_RBDCB_BASE_REG: 0X0216ff20
+[ 2899.314534] iwlagn 0000:03:00.0:                  FH_RSCSR_CHNL0_WPTR: 0X000000d8
+[ 2899.314808] iwlagn 0000:03:00.0:         FH_MEM_RCSR_CHNL0_CONFIG_REG: 0X80819104
+[ 2899.315038] iwlagn 0000:03:00.0:          FH_MEM_RSSR_SHARED_CTRL_REG: 0X000000fc
+[ 2899.315310] iwlagn 0000:03:00.0:            FH_MEM_RSSR_RX_STATUS_REG: 0X07030000
+[ 2899.315585] iwlagn 0000:03:00.0:    FH_MEM_RSSR_RX_ENABLE_ERR_IRQ2DRV: 0X00000000
+[ 2899.315859] iwlagn 0000:03:00.0:                FH_TSSR_TX_STATUS_REG: 0X07ff0001
+[ 2899.316132] iwlagn 0000:03:00.0:                 FH_TSSR_TX_ERROR_REG: 0X00000000
+[ 2899.316726] iwlagn 0000:03:00.0: Start IWL Event Log Dump: display last 20 entries
+[ 2899.317029] iwlagn 0000:03:00.0: EVT_LOGT:2878847037:0x00000000:0304
+[ 2899.317254] iwlagn 0000:03:00.0: EVT_LOGT:2878847052:0x00000117:0106
+[ 2899.317484] iwlagn 0000:03:00.0: EVT_LOGT:2878847054:0x00000000:0302
+[ 2899.317688] iwlagn 0000:03:00.0: EVT_LOGT:2878847084:0x000000d4:0303
+[ 2899.317915] iwlagn 0000:03:00.0: EVT_LOGT:2878848589:0x00000117:0106
+[ 2899.318144] iwlagn 0000:03:00.0: EVT_LOGT:2878848591:0x00000000:0302
+[ 2899.318371] iwlagn 0000:03:00.0: EVT_LOGT:2878848603:0x00002000:0350
+[ 2899.318575] iwlagn 0000:03:00.0: EVT_LOGT:2878859342:0x00000117:0106
+[ 2899.318804] iwlagn 0000:03:00.0: EVT_LOGT:2878859344:0x00000000:0301
+[ 2899.319031] iwlagn 0000:03:00.0: EVT_LOGT:2878859426:0x000117a2:0353
+[ 2899.319260] iwlagn 0000:03:00.0: EVT_LOGT:2878871248:0x00000001:1332
+[ 2899.319489] iwlagn 0000:03:00.0: EVT_LOGT:2878871248:0x028e001c:0206
+[ 2899.319716] iwlagn 0000:03:00.0: EVT_LOGT:2878871250:0x00000001:0204
+[ 2899.319946] iwlagn 0000:03:00.0: EVT_LOGT:2878871255:0x00000001:0219
+[ 2899.320173] iwlagn 0000:03:00.0: EVT_LOGT:2878871255:0x01000110:0211
+[ 2899.320385] iwlagn 0000:03:00.0: EVT_LOGT:2878871296:0x00000000:0256
+[ 2899.320613] iwlagn 0000:03:00.0: EVT_LOGT:2878871296:0x00000000:0256
+[ 2899.320843] iwlagn 0000:03:00.0: EVT_LOGT:2878871297:0x01020084:0212
+[ 2899.321068] iwlagn 0000:03:00.0: EVT_LOGT:2878871422:0x000000e1:0123
+[ 2899.321297] iwlagn 0000:03:00.0: EVT_LOGT:2878871447:0x00000000:0125
+[ 2912.892657] NVRM: Xid (0001:00): 13, 0001 00000000 000050c0 00000368 00000000 00000100
+[ 2964.517137] NVRM: Xid (0001:00): 13, 0001 00000000 000050c0 00000368 00000000 00000100
+[ 3053.109440] NVRM: Xid (0001:00): 13, 0001 00000000 000050c0 00000368 00000000 00000100
+[ 3071.735182] nvidia 0000:01:00.0: setting latency timer to 64
+[ 3071.735195] vgaarb: device changed decodes: PCI:0000:01:00.0,olddecodes=none,decodes=none:owns=io+mem
+[ 3071.735948] NVRM: loading NVIDIA UNIX x86_64 Kernel Module  195.36.15  Fri Mar 12 00:29:13 PST 2010
+[ 3072.774216] NVRM: Xid (0001:00): 13, 0001 00000000 000050c0 00000368 00000000 00000100
+[ 3102.394328] nvidia 0000:01:00.0: setting latency timer to 64
+[ 3102.394339] vgaarb: device changed decodes: PCI:0000:01:00.0,olddecodes=none,decodes=none:owns=io+mem
+[ 3102.394813] NVRM: loading NVIDIA UNIX x86_64 Kernel Module  195.36.15  Fri Mar 12 00:29:13 PST 2010

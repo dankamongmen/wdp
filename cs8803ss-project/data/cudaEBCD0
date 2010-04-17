@@ -1,0 +1,254 @@
+
+/usr/lib/libcuda.so:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+00000000000ebcd0 <.text+0x6bfc0> (File Offset: 0xebcd0):
+   ebcd0:	31 c0                	xor    %eax,%eax
+   ebcd2:	83 3d 4b 49 72 00 00 	cmpl   $0x0,0x72494b(%rip)        # 810624 <__isinff@plt+0x790924> (File Offset: 0x810624)
+   ebcd9:	0f 95 c0             	setne  %al
+   ebcdc:	c3                   	retq   
+   ebcdd:	66 66 90             	xchg   %ax,%ax
+   ebce0:	41 55                	push   %r13
+   ebce2:	49 89 fd             	mov    %rdi,%r13
+   ebce5:	41 54                	push   %r12
+   ebce7:	49 89 f4             	mov    %rsi,%r12
+   ebcea:	55                   	push   %rbp
+   ebceb:	53                   	push   %rbx
+   ebcec:	48 83 ec 08          	sub    $0x8,%rsp
+   ebcf0:	8b 35 2a 49 72 00    	mov    0x72492a(%rip),%esi        # 810620 <__isinff@plt+0x790920> (File Offset: 0x810620)
+   ebcf6:	85 f6                	test   %esi,%esi
+   ebcf8:	0f 84 16 01 00 00    	je     ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebcfe:	8b 0d 2c 49 72 00    	mov    0x72492c(%rip),%ecx        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebd04:	85 c9                	test   %ecx,%ecx
+   ebd06:	0f 8e 08 01 00 00    	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebd0c:	48 8d 1d 0d 49 72 00 	lea    0x72490d(%rip),%rbx        # 810620 <__isinff@plt+0x790920> (File Offset: 0x810620)
+   ebd13:	31 ed                	xor    %ebp,%ebp
+   ebd15:	48 8b 7b 28          	mov    0x28(%rbx),%rdi
+   ebd19:	4c 89 e2             	mov    %r12,%rdx
+   ebd1c:	4c 89 ee             	mov    %r13,%rsi
+   ebd1f:	ff c5                	inc    %ebp
+   ebd21:	ff 53 20             	callq  *0x20(%rbx)
+   ebd24:	48 83 c3 18          	add    $0x18,%rbx
+   ebd28:	39 2d 02 49 72 00    	cmp    %ebp,0x724902(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebd2e:	0f 8e e0 00 00 00    	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebd34:	48 8b 7b 28          	mov    0x28(%rbx),%rdi
+   ebd38:	4c 89 e2             	mov    %r12,%rdx
+   ebd3b:	4c 89 ee             	mov    %r13,%rsi
+   ebd3e:	ff 53 20             	callq  *0x20(%rbx)
+   ebd41:	8d 45 01             	lea    0x1(%rbp),%eax
+   ebd44:	39 05 e6 48 72 00    	cmp    %eax,0x7248e6(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebd4a:	48 8d 4b 18          	lea    0x18(%rbx),%rcx
+   ebd4e:	0f 8e c0 00 00 00    	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebd54:	48 8b 79 28          	mov    0x28(%rcx),%rdi
+   ebd58:	4c 89 e2             	mov    %r12,%rdx
+   ebd5b:	4c 89 ee             	mov    %r13,%rsi
+   ebd5e:	ff 51 20             	callq  *0x20(%rcx)
+   ebd61:	8d 55 02             	lea    0x2(%rbp),%edx
+   ebd64:	39 15 c6 48 72 00    	cmp    %edx,0x7248c6(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebd6a:	48 8d 4b 30          	lea    0x30(%rbx),%rcx
+   ebd6e:	0f 8e a0 00 00 00    	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebd74:	48 8b 79 28          	mov    0x28(%rcx),%rdi
+   ebd78:	4c 89 e2             	mov    %r12,%rdx
+   ebd7b:	4c 89 ee             	mov    %r13,%rsi
+   ebd7e:	ff 51 20             	callq  *0x20(%rcx)
+   ebd81:	8d 7d 03             	lea    0x3(%rbp),%edi
+   ebd84:	39 3d a6 48 72 00    	cmp    %edi,0x7248a6(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebd8a:	48 8d 4b 48          	lea    0x48(%rbx),%rcx
+   ebd8e:	0f 8e 80 00 00 00    	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebd94:	48 8b 79 28          	mov    0x28(%rcx),%rdi
+   ebd98:	4c 89 e2             	mov    %r12,%rdx
+   ebd9b:	4c 89 ee             	mov    %r13,%rsi
+   ebd9e:	ff 51 20             	callq  *0x20(%rcx)
+   ebda1:	44 8d 45 04          	lea    0x4(%rbp),%r8d
+   ebda5:	44 39 05 84 48 72 00 	cmp    %r8d,0x724884(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebdac:	48 8d 4b 60          	lea    0x60(%rbx),%rcx
+   ebdb0:	7e 62                	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebdb2:	48 8b 79 28          	mov    0x28(%rcx),%rdi
+   ebdb6:	4c 89 e2             	mov    %r12,%rdx
+   ebdb9:	4c 89 ee             	mov    %r13,%rsi
+   ebdbc:	ff 51 20             	callq  *0x20(%rcx)
+   ebdbf:	44 8d 4d 05          	lea    0x5(%rbp),%r9d
+   ebdc3:	44 39 0d 66 48 72 00 	cmp    %r9d,0x724866(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebdca:	48 8d 4b 78          	lea    0x78(%rbx),%rcx
+   ebdce:	7e 44                	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebdd0:	48 8b 79 28          	mov    0x28(%rcx),%rdi
+   ebdd4:	4c 89 e2             	mov    %r12,%rdx
+   ebdd7:	4c 89 ee             	mov    %r13,%rsi
+   ebdda:	ff 51 20             	callq  *0x20(%rcx)
+   ebddd:	44 8d 55 06          	lea    0x6(%rbp),%r10d
+   ebde1:	44 39 15 48 48 72 00 	cmp    %r10d,0x724848(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebde8:	48 8d 8b 90 00 00 00 	lea    0x90(%rbx),%rcx
+   ebdef:	7e 23                	jle    ebe14 <__isinff@plt+0x6c114> (File Offset: 0xebe14)
+   ebdf1:	48 8b 79 28          	mov    0x28(%rcx),%rdi
+   ebdf5:	4c 89 e2             	mov    %r12,%rdx
+   ebdf8:	4c 89 ee             	mov    %r13,%rsi
+   ebdfb:	83 c5 07             	add    $0x7,%ebp
+   ebdfe:	48 81 c3 a8 00 00 00 	add    $0xa8,%rbx
+   ebe05:	ff 51 20             	callq  *0x20(%rcx)
+   ebe08:	39 2d 22 48 72 00    	cmp    %ebp,0x724822(%rip)        # 810630 <__isinff@plt+0x790930> (File Offset: 0x810630)
+   ebe0e:	0f 8f 01 ff ff ff    	jg     ebd15 <__isinff@plt+0x6c015> (File Offset: 0xebd15)
+   ebe14:	48 83 c4 08          	add    $0x8,%rsp
+   ebe18:	5b                   	pop    %rbx
+   ebe19:	5d                   	pop    %rbp
+   ebe1a:	41 5c                	pop    %r12
+   ebe1c:	41 5d                	pop    %r13
+   ebe1e:	c3                   	retq   
+   ebe1f:	90                   	nop
+   ebe20:	53                   	push   %rbx
+   ebe21:	31 f6                	xor    %esi,%esi
+   ebe23:	ba 01 04 00 00       	mov    $0x401,%edx
+   ebe28:	48 81 ec 10 04 00 00 	sub    $0x410,%rsp
+   ebe2f:	48 89 e7             	mov    %rsp,%rdi
+   ebe32:	e8 59 3b f9 ff       	callq  7f990 <memset@plt> (File Offset: 0x7f990)
+   ebe37:	48 8d 3d de ef 4d 00 	lea    0x4defde(%rip),%rdi        # 5cae1c <__isinff@plt+0x54b11c> (File Offset: 0x5cae1c)
+   ebe3e:	ba 00 04 00 00       	mov    $0x400,%edx
+   ebe43:	48 89 e6             	mov    %rsp,%rsi
+   ebe46:	e8 05 bb 4d 00       	callq  5c7950 <__isinff@plt+0x547c50> (File Offset: 0x5c7950)
+   ebe4b:	83 f8 ff             	cmp    $0xffffffffffffffff,%eax
+   ebe4e:	74 04                	je     ebe54 <__isinff@plt+0x6c154> (File Offset: 0xebe54)
+   ebe50:	85 c0                	test   %eax,%eax
+   ebe52:	7e 0d                	jle    ebe61 <__isinff@plt+0x6c161> (File Offset: 0xebe61)
+   ebe54:	48 81 c4 10 04 00 00 	add    $0x410,%rsp
+   ebe5b:	5b                   	pop    %rbx
+   ebe5c:	66 66 66 90          	xchg   %ax,%ax
+   ebe60:	c3                   	retq   
+   ebe61:	48 83 3d 3f 48 72 00 	cmpq   $0x0,0x72483f(%rip)        # 8106a8 <__isinff@plt+0x7909a8> (File Offset: 0x8106a8)
+   ebe68:	00 
+   ebe69:	75 e9                	jne    ebe54 <__isinff@plt+0x6c154> (File Offset: 0xebe54)
+   ebe6b:	48 89 e7             	mov    %rsp,%rdi
+   ebe6e:	e8 6d ba 4d 00       	callq  5c78e0 <__isinff@plt+0x547be0> (File Offset: 0x5c78e0)
+   ebe73:	48 85 c0             	test   %rax,%rax
+   ebe76:	48 89 05 2b 48 72 00 	mov    %rax,0x72482b(%rip)        # 8106a8 <__isinff@plt+0x7909a8> (File Offset: 0x8106a8)
+   ebe7d:	74 d5                	je     ebe54 <__isinff@plt+0x6c154> (File Offset: 0xebe54)
+   ebe7f:	48 8d 35 ac ef 4d 00 	lea    0x4defac(%rip),%rsi        # 5cae32 <__isinff@plt+0x54b132> (File Offset: 0x5cae32)
+   ebe86:	48 89 c7             	mov    %rax,%rdi
+   ebe89:	e8 22 ba 4d 00       	callq  5c78b0 <__isinff@plt+0x547bb0> (File Offset: 0x5c78b0)
+   ebe8e:	48 85 c0             	test   %rax,%rax
+   ebe91:	74 06                	je     ebe99 <__isinff@plt+0x6c199> (File Offset: 0xebe99)
+   ebe93:	ff d0                	callq  *%rax
+   ebe95:	85 c0                	test   %eax,%eax
+   ebe97:	75 bb                	jne    ebe54 <__isinff@plt+0x6c154> (File Offset: 0xebe54)
+   ebe99:	48 8b 3d 08 48 72 00 	mov    0x724808(%rip),%rdi        # 8106a8 <__isinff@plt+0x7909a8> (File Offset: 0x8106a8)
+   ebea0:	e8 1b ba 4d 00       	callq  5c78c0 <__isinff@plt+0x547bc0> (File Offset: 0x5c78c0)
+   ebea5:	48 c7 05 f8 47 72 00 	movq   $0x0,0x7247f8(%rip)        # 8106a8 <__isinff@plt+0x7909a8> (File Offset: 0x8106a8)
+   ebeac:	00 00 00 00 
+   ebeb0:	eb a2                	jmp    ebe54 <__isinff@plt+0x6c154> (File Offset: 0xebe54)
+   ebeb2:	90                   	nop
+   ebeb3:	90                   	nop
+   ebeb4:	90                   	nop
+   ebeb5:	90                   	nop
+   ebeb6:	90                   	nop
+   ebeb7:	90                   	nop
+   ebeb8:	90                   	nop
+   ebeb9:	90                   	nop
+   ebeba:	90                   	nop
+   ebebb:	90                   	nop
+   ebebc:	90                   	nop
+   ebebd:	90                   	nop
+   ebebe:	90                   	nop
+   ebebf:	90                   	nop
+   ebec0:	53                   	push   %rbx
+   ebec1:	48 89 fb             	mov    %rdi,%rbx
+   ebec4:	48 8b 3f             	mov    (%rdi),%rdi
+   ebec7:	48 85 ff             	test   %rdi,%rdi
+   ebeca:	74 16                	je     ebee2 <__isinff@plt+0x6c1e2> (File Offset: 0xebee2)
+   ebecc:	48 8d 35 6d 05 00 00 	lea    0x56d(%rip),%rsi        # ec440 <__isinff@plt+0x6c740> (File Offset: 0xec440)
+   ebed3:	31 d2                	xor    %edx,%edx
+   ebed5:	e8 16 e1 fa ff       	callq  99ff0 <__isinff@plt+0x1a2f0> (File Offset: 0x99ff0)
+   ebeda:	48 8b 3b             	mov    (%rbx),%rdi
+   ebedd:	e8 1e e2 fa ff       	callq  9a100 <__isinff@plt+0x1a400> (File Offset: 0x9a100)
+   ebee2:	48 8b 7b 08          	mov    0x8(%rbx),%rdi
+   ebee6:	48 85 ff             	test   %rdi,%rdi
+   ebee9:	74 05                	je     ebef0 <__isinff@plt+0x6c1f0> (File Offset: 0xebef0)
+   ebeeb:	e8 b0 36 f9 ff       	callq  7f5a0 <fclose@plt> (File Offset: 0x7f5a0)
+   ebef0:	c7 43 48 00 00 00 00 	movl   $0x0,0x48(%rbx)
+   ebef7:	31 c0                	xor    %eax,%eax
+   ebef9:	5b                   	pop    %rbx
+   ebefa:	c3                   	retq   
+   ebefb:	66 66 90             	xchg   %ax,%ax
+   ebefe:	66 90                	xchg   %ax,%ax
+   ebf00:	8b 46 08             	mov    0x8(%rsi),%eax
+   ebf03:	85 c0                	test   %eax,%eax
+   ebf05:	74 29                	je     ebf30 <__isinff@plt+0x6c230> (File Offset: 0xebf30)
+   ebf07:	48 8b 57 18          	mov    0x18(%rdi),%rdx
+   ebf0b:	48 85 d2             	test   %rdx,%rdx
+   ebf0e:	75 05                	jne    ebf15 <__isinff@plt+0x6c215> (File Offset: 0xebf15)
+   ebf10:	eb 20                	jmp    ebf32 <__isinff@plt+0x6c232> (File Offset: 0xebf32)
+   ebf12:	48 89 fa             	mov    %rdi,%rdx
+   ebf15:	48 8b 7a 08          	mov    0x8(%rdx),%rdi
+   ebf19:	48 85 ff             	test   %rdi,%rdi
+   ebf1c:	74 12                	je     ebf30 <__isinff@plt+0x6c230> (File Offset: 0xebf30)
+   ebf1e:	3b 07                	cmp    (%rdi),%eax
+   ebf20:	75 f0                	jne    ebf12 <__isinff@plt+0x6c212> (File Offset: 0xebf12)
+   ebf22:	48 8b 47 08          	mov    0x8(%rdi),%rax
+   ebf26:	48 89 42 08          	mov    %rax,0x8(%rdx)
+   ebf2a:	e9 c1 3c f9 ff       	jmpq   7fbf0 <free@plt> (File Offset: 0x7fbf0)
+   ebf2f:	90                   	nop
+   ebf30:	f3 c3                	repz retq 
+   ebf32:	f3 c3                	repz retq 
+   ebf34:	66 66 66 90          	xchg   %ax,%ax
+   ebf38:	66 66 66 90          	xchg   %ax,%ax
+   ebf3c:	66 66 66 90          	xchg   %ax,%ax
+   ebf40:	48 8b 3e             	mov    (%rsi),%rdi
+   ebf43:	53                   	push   %rbx
+   ebf44:	48 89 f3             	mov    %rsi,%rbx
+   ebf47:	e8 a4 3c f9 ff       	callq  7fbf0 <free@plt> (File Offset: 0x7fbf0)
+   ebf4c:	48 89 df             	mov    %rbx,%rdi
+   ebf4f:	5b                   	pop    %rbx
+   ebf50:	e9 9b 3c f9 ff       	jmpq   7fbf0 <free@plt> (File Offset: 0x7fbf0)
+   ebf55:	66 66 66 90          	xchg   %ax,%ax
+   ebf59:	66 66 66 90          	xchg   %ax,%ax
+   ebf5d:	66 66 90             	xchg   %ax,%ax
+   ebf60:	41 54                	push   %r12
+   ebf62:	4c 8b 66 10          	mov    0x10(%rsi),%r12
+   ebf66:	55                   	push   %rbp
+   ebf67:	8b 6e 08             	mov    0x8(%rsi),%ebp
+   ebf6a:	53                   	push   %rbx
+   ebf6b:	48 8b 5f 18          	mov    0x18(%rdi),%rbx
+   ebf6f:	48 8b 43 08          	mov    0x8(%rbx),%rax
+   ebf73:	48 85 c0             	test   %rax,%rax
+   ebf76:	74 60                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebf78:	48 89 c3             	mov    %rax,%rbx
+   ebf7b:	48 8b 40 08          	mov    0x8(%rax),%rax
+   ebf7f:	48 85 c0             	test   %rax,%rax
+   ebf82:	74 54                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebf84:	48 89 c3             	mov    %rax,%rbx
+   ebf87:	48 8b 40 08          	mov    0x8(%rax),%rax
+   ebf8b:	48 85 c0             	test   %rax,%rax
+   ebf8e:	74 48                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebf90:	48 89 c3             	mov    %rax,%rbx
+   ebf93:	48 8b 40 08          	mov    0x8(%rax),%rax
+   ebf97:	48 85 c0             	test   %rax,%rax
+   ebf9a:	74 3c                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebf9c:	48 89 c3             	mov    %rax,%rbx
+   ebf9f:	48 8b 40 08          	mov    0x8(%rax),%rax
+   ebfa3:	48 85 c0             	test   %rax,%rax
+   ebfa6:	74 30                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebfa8:	48 89 c3             	mov    %rax,%rbx
+   ebfab:	48 8b 40 08          	mov    0x8(%rax),%rax
+   ebfaf:	48 85 c0             	test   %rax,%rax
+   ebfb2:	74 24                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebfb4:	48 89 c3             	mov    %rax,%rbx
+   ebfb7:	48 8b 40 08          	mov    0x8(%rax),%rax
+   ebfbb:	48 85 c0             	test   %rax,%rax
+   ebfbe:	74 18                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebfc0:	48 89 c3             	mov    %rax,%rbx
+   ebfc3:	48 8b 40 08          	mov    0x8(%rax),%rax
+   ebfc7:	48 85 c0             	test   %rax,%rax
+   ebfca:	74 0c                	je     ebfd8 <__isinff@plt+0x6c2d8> (File Offset: 0xebfd8)
+   ebfcc:	48 89 c3             	mov    %rax,%rbx
+   ebfcf:	48 8b 43 08          	mov    0x8(%rbx),%rax
+   ebfd3:	48 85 c0             	test   %rax,%rax
+   ebfd6:	75 a0                	jne    ebf78 <__isinff@plt+0x6c278> (File Offset: 0xebf78)
+   ebfd8:	bf 10 00 00 00       	mov    $0x10,%edi
+   ebfdd:	e8 8e 34 f9 ff       	callq  7f470 <malloc@plt> (File Offset: 0x7f470)
+   ebfe2:	48 85 c0             	test   %rax,%rax
+   ebfe5:	48 89 c2             	mov    %rax,%rdx
+   ebfe8:	74 1d                	je     ec007 <__isinff@plt+0x6c307> (File Offset: 0xec007)
+   ebfea:	c7 40 0c 00 00 00 00 	movl   $0x0,0xc(%rax)
+   ebff1:	89 28                	mov    %ebp,(%rax)
+   ebff3:	42 8d 44 25 ff       	lea    -0x1(%rbp,%r12,1),%eax
+   ebff8:	48 c7 42 08 00 00 00 	movq   $0x0,0x8(%rdx)
+   ebfff:	00 
