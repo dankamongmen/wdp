@@ -25,9 +25,11 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem){
 	CUdevice c;
 
 	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
+		fprintf(stderr," Couldn't associative with device (%d)\n",cerr);
 		return cerr;
 	}
 	if((cerr = cudaGetDeviceProperties(&dprop,dev)) != CUDA_SUCCESS){
+		fprintf(stderr," Couldn't get device properties (%d)\n",cerr);
 		return cerr;
 	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
@@ -48,6 +50,7 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem){
 		goto err;
 	}
 	if((cerr = cuCtxCreate(&ctx,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
+		fprintf(stderr," Couldn't create context (%d)\n",cerr);
 		goto err;
 	}
 	if((cerr = cuMemGetInfo(mem,tmem)) != CUDA_SUCCESS){
@@ -194,32 +197,34 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	uintmax_t s;
 	void *ptr;
 
+	if(check_const_ram(CONSTWIN)){
+		return -1;
+	}
 	if((s = cuda_alloc_max(stdout,tmem / 2,&ptr,unit)) == 0){
+		return -1;
+	}
+	if(cudaFree(ptr)){
+		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
+				cudaGetErrorString(cudaGetLastError()));
 		return -1;
 	}
 	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
 			ptr,(uintmax_t)ptr + s);
-	if(cudaFree(ptr)){
-		fprintf(stderr,"  Error freeing CUDA memory (%s?)\n",
-				cudaGetErrorString(cudaGetLastError()));
-		return -1;
-	}
-	if(check_const_ram(CONSTWIN)){
-		return -1;
-	}
 	printf("  Verifying allocated region...\n");
 	if(divide_address_space(devno,(uintmax_t)ptr,(s / gran) * gran,unit,gran,results,&worked)){
 		fprintf(stderr,"  Sanity check failed!\n");
-		cudaFree(ptr);
 		return -1;
 	}
 	printf("  Readable: %jub\n",worked);
+	if(worked != (s / gran) * gran){
+		fprintf(stderr,"  Error probing allocated memory!\n");
+		return -1;
+	}
 	worked = 0;
-	printf("  Dumping %jub...\n",tmem - (uintptr_t)CONSTWIN);
-	if(divide_address_space(devno,(uintptr_t)CONSTWIN,
-			tmem - (uintptr_t)CONSTWIN,unit,gran,results,&worked)){
+	printf("  Dumping %jub...\n",tmem);
+	if(divide_address_space(devno,0,tmem,unit,gran,results,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
@@ -255,11 +260,8 @@ int main(void){
 
 		printf(" %03d ",z);
 		if(id_cuda(z,&mem,&tmem)){
-			cudaError_t err;
-
-			err = cudaGetLastError();
 			fprintf(stderr," Error probing CUDA device %d (%s?)\n",
-					z,cudaGetErrorString(err));
+				z,cudaGetErrorString(cudaGetLastError()));
 			return EXIT_FAILURE;
 		}
 		if(cudaMalloc(&resarr,sizeof(hostresarr)) || cudaMemset(resarr,0,sizeof(hostresarr))){
