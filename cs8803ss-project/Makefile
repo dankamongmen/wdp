@@ -85,6 +85,7 @@ preview: all
 test: all
 	./$(CUDARANGER) 0 0x110000 0x111000
 	./$(CUDASTUFFER) 0
+	./$(CUDASPAWNER) 0 0x100000
 	./$(CUDADUMP)
 	! ./$(CUDARANGER) 0 0 0x100000000
 
