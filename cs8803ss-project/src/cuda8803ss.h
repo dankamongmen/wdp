@@ -16,7 +16,8 @@ extern "C" {
 
 #define GRID_SIZE 1
 #define BLOCK_SIZE 128
-#define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
+
+#include <max.h>
 
 // Result codes. _CUDAFAIL means that the CUDA kernel raised an exception -- an
 // expected mode of failure. _ERROR means some other exception occurred (abort
@@ -91,38 +92,6 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 	printf("   elapsed time: %ju.%jus (%.3f %cB/s) res: %d\n",
 			usec / 1000000,usec % 1000000,bw,punit,cerr);
 	return CUDARANGER_EXIT_SUCCESS;
-}
-
-static uintmax_t
-cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
-	uintmax_t tmax = 1ul << ADDRESS_BITS;
-	uintmax_t min = 0,s = tmax;
-
-	if(o){ fprintf(o,"  Determining max allocation..."); }
-	do{
-		if(o) { fflush(o); }
-
-		if(cuMemAlloc(ptr,s)){
-			if((tmax = s) <= min + unit){
-				tmax = min;
-			}
-		}else if(s != tmax){
-			int cerr;
-
-			if(o){ fprintf(o,"%jub...",s); }
-			if((cerr = cuMemFree(*ptr)) ){
-				fprintf(stderr,"  Couldn't free %jub at %p (%d?)\n",
-					s,*ptr,cerr);
-				return 0;
-			}
-			min = s;
-		}else{
-			if(o) { fprintf(o,"%jub!\n",s); }
-			return s;
-		}
-	}while( (s = ((tmax + min) / 2 / unit * unit)) );
-	fprintf(stderr,"  All allocations failed.\n");
-	return 0;
 }
 
 #ifdef __cplusplus

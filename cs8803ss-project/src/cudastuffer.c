@@ -1,14 +1,13 @@
+#include <max.h>
 #include <cuda.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <driver_types.h>
-#include <cuda_runtime_api.h>
-#include "cuda8803ss.h"
 
 static int
 init_cuda(int devno){
@@ -58,10 +57,9 @@ get_devno(const char *argv0,const char *arg,unsigned long *zul){
 }
 
 int main(int argc,char **argv){
+	unsigned oldptr = 0,ptr;
 	uintmax_t total = 0,s;
-	char *oldptr = NULL;
 	unsigned long zul;
-	CUdeviceptr ptr;
 	int cerr;
 
 	if(argc != 2){
@@ -72,28 +70,26 @@ int main(int argc,char **argv){
 		exit(EXIT_FAILURE);
 	}
 	if((cerr = init_cuda(zul)) != CUDA_SUCCESS){
-		fprintf(stderr,"Error initializing CUDA device %d (%d, %s?)\n",
-				zul,cerr,cudaGetErrorString(cudaGetLastError()));
+		fprintf(stderr,"Error initializing CUDA device %lu (%d)\n",zul,cerr);
 		exit(EXIT_FAILURE);
 	}
 	if((s = cuda_alloc_max(stdout,&ptr,sizeof(unsigned))) == 0){
-		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
-			zul,cudaGetErrorString(cudaGetLastError()));
+		fprintf(stderr,"Error allocating max on device %lu\n",zul);
 		exit(EXIT_FAILURE);
 	}
 	zul = 0;
 	do{
-		if(printf("  Allocation at %p (expected %p)\n",ptr,oldptr) < 0){
+		if(printf("  Allocation at 0x%x (expected 0x%x)\n",ptr,oldptr) < 0){
 			exit(EXIT_FAILURE);
 		}
 		total += s;
-		if((char *)ptr != oldptr){
-			if(printf("  Memory hole: 0x%p->0x%p (%jub)\n",
-				oldptr,(char *)ptr - 1,(char *)ptr - oldptr) < 0){
+		if(ptr != oldptr){
+			if(printf("  Memory hole: 0x%x->0x%x (%xb)\n",
+				oldptr,ptr - 1,ptr - oldptr) < 0){
 				exit(EXIT_SUCCESS);
 			}
 		}
-		oldptr = (char *)ptr + s;
+		oldptr = ptr + s;
 		++zul;
 	}while( (s = cuda_alloc_max(stdout,&ptr,sizeof(unsigned))) );
 	printf(" Got %ju (0x%jx) total bytes in %lu allocations.\n",total,total,zul);
