@@ -41,7 +41,7 @@ bin: $(TAGS) $(BIN)
 	
 ptx: $(PTX)
 
-$(TAGS): $(SRC)/cudadump.cu $(SRC)/cudaminimal.cu $(SRC)/cudaranger.cu $(SRC)/cudaspawner.c $(SRC)/cudastuffer.c $(SRC)/cuda8803ss.h $(SRC)/max.h
+$(TAGS): $(CSRC) $(CUDASRC) $(SRC)/cuda8803ss.h $(SRC)/max.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
@@ -51,7 +51,7 @@ $(OUT)/cudadump: $(OUT)/cudadump.o
 
 $(OUT)/cudaminimal: $(OUT)/cudaminimal.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $< $(LFLAGS)
+	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
 
 $(OUT)/cudaranger: $(OUT)/cudaranger.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
