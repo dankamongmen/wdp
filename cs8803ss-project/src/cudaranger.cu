@@ -106,17 +106,25 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 
 static int
 dumpresults(const uint32_t *res,unsigned count){
-	unsigned z,y;
+	unsigned z,y,nonzero;
 
+	nonzero = 0;
 	for(z = 0 ; z < count ; z += 8){
 		for(y = 0 ; y < 8 ; ++y){
 			if(printf("%9x ",res[z + y]) < 0){
 				return -1;
 			}
+			if(res[z + y]){
+				++nonzero;
+			}
 		}
 		if(printf("\n") < 0){
 			return -1;
 		}
+	}
+	if(nonzero == 0){
+		fprintf(stderr,"  All-zero results. Kernel probably didn't run.\n");
+		return -1;
 	}
 	return 0;
 }
