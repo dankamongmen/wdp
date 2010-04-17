@@ -14,7 +14,7 @@ extern "C" {
 #include <sys/time.h>
 #include "cuda8803ss.h"
 
-#define GRID_SIZE 4
+#define GRID_SIZE 1
 #define BLOCK_SIZE 128
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
 
