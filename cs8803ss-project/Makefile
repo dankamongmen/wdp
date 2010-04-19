@@ -21,14 +21,17 @@ BIN:=$(addprefix out/,$(basename $(notdir $(CSRC) $(CUDASRC))))
 PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
-CUDA?=/usr/local/
+CUDA?=/usr/
 CUDAINC:=$(CUDA)/include/cuda
+CUDART?=$(HOME)/local/cuda/
+CUDARTLIB:=$(CUDART)/lib64
 
 NVCC?=$(CUDA)/bin/nvcc
 CFLAGS:=-O2 -Wall -W -Werror -march=native -mtune=native
 NCFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 NCFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda
+NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
 PTXFLAGS:=--ptx
 #CUBINFLAGS:=-deviceemu
 TAGS:=.tags
@@ -47,7 +50,7 @@ $(TAGS): $(CSRC) $(CUDASRC) $(SRC)/cuda8803ss.h $(SRC)/max.h
 
 $(OUT)/cudadump: $(OUT)/cudadump.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $< $(LFLAGS)
+	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $< $(NLFLAGS)
 
 $(OUT)/cudaminimal: $(OUT)/cudaminimal.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -55,7 +58,7 @@ $(OUT)/cudaminimal: $(OUT)/cudaminimal.o
 
 $(OUT)/cudaranger: $(OUT)/cudaranger.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $< $(LFLAGS)
+	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $< $(NLFLAGS)
 
 $(OUT)/cudaspawner: $(OUT)/cudaspawner.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
