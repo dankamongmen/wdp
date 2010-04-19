@@ -273,7 +273,7 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 }
 
 int main(void){
-	uintmax_t gran = 4 * 1024 * 1024;// Granularity of report / verification
+	uintmax_t gran = 64 * 1024;// Granularity of report / verification
 	unsigned unit = 4;		 // Minimum alignment of references
 	int z,count;
 
