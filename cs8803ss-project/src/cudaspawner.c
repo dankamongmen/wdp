@@ -109,8 +109,8 @@ int main(int argc,char **argv){
 		int err;
 
 		if( (err = pthread_create(&tid,NULL,thread,&marsh)) ){
-			fprintf(stderr,"Couldn't create thread (%s?)\n",
-					strerror(err));
+			fprintf(stderr,"Couldn't create thread %d (%s?)\n",
+					total,strerror(err));
 			exit(EXIT_SUCCESS);
 		}
 		pthread_mutex_lock(&lock);
@@ -120,6 +120,7 @@ int main(int argc,char **argv){
 		thrdone = 0;
 		if(!threadsmaintain){
 			pthread_mutex_unlock(&lock);
+			fprintf(stderr,"Thread %d exited with an error.\n",total);
 			break;
 		}
 		pthread_mutex_unlock(&lock);
