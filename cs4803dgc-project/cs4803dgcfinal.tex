@@ -1,0 +1,61 @@
+\documentclass[letterpaper,10pt]{article}
+\usepackage{fullpage}
+\usepackage{textcomp}
+\usepackage{times}
+\usepackage{cite}
+\usepackage{fancyvrb}
+\usepackage{moreverb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{multicol}
+
+\newcommand{\squishlist}{\begin{list}{$\bullet$}
+  {\setlength{\itemsep}{0pt}
+    \setlength{\parsep}{3pt}
+    \setlength{\topsep}{3pt}
+    \setlength{\partopsep}{0pt}
+    \setlength{\leftmargin}{1.5em}
+    \setlength{\labelwidth}{1em}
+    \setlength{\labelsep}{0.5em}
+  } }
+
+\newcommand{\squishend}{\end{list}}
+
+\title{Freeing CUDA}
+\author{Nick Black\\
+Project Proposal, CS4803DGC Spring 2010}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For several years, the \texttt{nouveau} project (\url{http://nouveau.freedesktop.org/wiki/})
+has heroically wrested an Open Source, cleanroom implementation of 2D drivers for
+NVIDIA cards\cite{nouveaustatus}. Early in 2010, RedHat Fedora Linux began driving
+NVIDIA devices with \texttt{nouveau}. Shortly thereafter, NVIDIA dropped
+support for their (feature-limited, shrouded-source) \texttt{nv} X.Org driver\footnote{The
+closed-source \texttt{nvidia} driver is still actively supported.}. \texttt{Nouveau} represents
+the clear and inevitable future of NVIDIA support on the Linux/X.Org system.
+
+The Nouveau Project's primary aim is to provide a high-quality rendering
+solution to the Linux desktop. Support for GPGPU has not been a priority, but
+the path to Open Source GPGPU undoubtedly lies through
+\texttt{Nouveau}'s advanced memory management infrastructure and well-designed hardware
+abstractions, especially if it is to coexist with hardware-accelerated desktops.
+As a believer in both the practical and ethical value of Open Source, I believe
+it high time Linux's GPGPU stack was Freed, and that replacing \texttt{libcuda.so}
+is the most immediately critical task.
+\end{abstract}
+
+\begin{multicols}{2}
+\section{Introduction}
+etc
+
+\bibliographystyle{acm}
+\bibliography{cs4803dgcfinal}
+\end{multicols}
+\appendix
+appendix
+\newpage
+\end{document}
