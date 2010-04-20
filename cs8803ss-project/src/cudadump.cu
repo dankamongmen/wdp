@@ -288,7 +288,7 @@ int main(int argc,char **argv){
 
 	if(argc > 2){
 		usage(argv[0],EXIT_FAILURE);
-	}else if(argc == 1){
+	}else if(argc == 2){
 		if(getzul(argv[1],&gran)){
 			usage(argv[0],EXIT_FAILURE);
 		}
