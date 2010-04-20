@@ -32,7 +32,7 @@ init_thread(CUcontext *pctx,CUdevice dev,size_t s){
 }
 
 typedef struct ctx {
-	size_t s;
+	unsigned long s;
 	CUdevice dev;
 	unsigned threadno;
 } ctx;
@@ -85,8 +85,8 @@ get_devno(const char *argv0,const char *arg,unsigned long *zul){
 }
 
 int main(int argc,char **argv){
-	unsigned long zul;
 	unsigned total = 0;
+	unsigned long zul;
 	ctx marsh;
 
 	if(argc != 3){
