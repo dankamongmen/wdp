@@ -1,7 +1,7 @@
 .DELETE_ON_ERROR:
 .PHONY: all test clean
 
-SUBDIRS:=cs8803ss-project cs7260-project cs4803dgc-project
+SUBDIRS:=cs7260-project cs4803dgc-project cs8803dc-project cs8803ss-project
 
 all:
 	for i in $(SUBDIRS) ; do cd $$i && make all && cd - ; done
