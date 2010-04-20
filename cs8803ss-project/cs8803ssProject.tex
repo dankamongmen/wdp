@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{multicol}
+\usepackage{verbatim}
 
 \newcommand{\squishlist}{\begin{list}{$\bullet$}
   {\setlength{\itemsep}{0pt}
@@ -21,7 +22,7 @@
 
 \newcommand{\squishend}{\end{list}}
 
-\title{System-Centric Threat Modeling of CUDA\footnote{CUDA\textsuperscript{\textregistered}
+\title{CUBAR: System-Centric Threat Modeling of CUDA\footnote{CUDA\textsuperscript{\textregistered}
 is a registered trademark of the NVIDIA Corporation.}}
 \author{Nick Black and Jason Rodzik\\
 CS8803SS Project, Spring 2010}
@@ -30,7 +31,20 @@ CS8803SS Project, Spring 2010}
 \begin{document}
 \maketitle
 
+\begin{multicols}{2}
 \begin{abstract}
+\textbf{Heterogeneous computing has definitely arrived, and graphics processing units (GPUs) in the millions are employed worldwide. Tradition has shown newly programmable domains to be rapidly subjected (and often found vulnerable) to attacks of the past; indeed, wherever processing goes, so does the possibility of automated attacks.  We describe one of the predominant general purpose architectures for GPUs today, nVidia's Compute Unified Device Architecture (CUDA), and examine possible attack vectors against this architecture.  Through our research we have discovered a number of possible attack avenues that have not been considered to date.  These vectors include spoofing, tampering and video manipulation, information disclosure, denial of service, and privilege escalation.}
+
+\textbf{We investigated methods of exploiting these possible vectors and developed a series of tools that succeed in this regard.  In cases where we were unable to specifically develop a tool to exploit a given vector, we state our view on whether or not we feel the vector is exploitable given more time and effort.  If we feel it's likely that the vector can be exploited we explain what we feel are possible methods of exploiting it, and if not we explain what defense mechanisms are in place that make it unlikely.  For all attack vectors we describe defense mechanisms against them, but note that in the high-performance world of graphics cards adding security mechanisms may be an extremely high burden.}
+
+\begin{comment}
+With high powered GPU's moving from the gamer's desktop to the laboratory's cluster, it's essential that the security issues surrounding their use be fleshed out earlier rather than later. Unfortunately, this is not the case; graphics card manufacturers have not publicized any of their own internal security studies (if any exist), and popular manufacturers are infamous for their
+hostility to open source and academia\footnote{See for instance Wikipedia's page on
+``\href{http://en.wikipedia.org/wiki/NVIDIA\_and\_FOSS}{Graphics hardware and FOSS}''.}
+\end{comment}
+
+\end{abstract}
+\section{Introduction}
 Within modern desktops, high-performance workstations, and even laptops there
 exist sources of tremendous computing power: programmable, massively parallel graphics cards\footnote{Also known as ``unified shaders'' and General-Purpose GPUs (GPGPUs).}.
 The hundreds of simple in-order cores found on recent NVIDIA and ATI hardware provide many more peak FLOPS than the x86 processor packages with
@@ -49,22 +63,15 @@ multiple threads or processes are primitive at best. When the GPU was limited to
 blitting, fogging and aliasing framebuffers, minimal isolation and
 assurance capabilities were tolerable. Compromises of scientific data,
 cryptographic materials and SCADA systems are rather more serious, yet these
-precise applications are driving GPGPU's adoption. We provide a system-centric threat
-model analysis of NVIDIA's CUDA system. We attack the system, drawing blood.
+precise applications are driving GPGPU's adoption. 
+
+Given CUDA's status as a relative newcomer we describe some of the keys to CUDA from a security perspective.  We begin by presenting an overview of nVidia's CUDA framework, describing the basics of CUDA kernels, memory management, its capabilities, and hardware details.
+
+We provide a system-centric threat model analysis of NVIDIA's CUDA system.
 We close with software-level defenses against our attacks, and their limitations.
 Our results suggest that, unless GPGPU systems add complexity related to security state (and thus devote
 less transistor budget to performance), they cannot provide a trusted computing
-base.
-
-\end{abstract}
-
-\begin{multicols}{2}
-\section{Introduction}
-Heterogeneous computing has definitely arrived, and graphics processing units (GPUs) in the millions are employed worldwide. Tradition has shown newly programmable domains to be rapidly subjected (and often found vulnerable) to attacks of the past; indeed, wherever processing goes, so does the possibility of automated attacks. With high powered GPU's moving from the gamer's desktop to the laboratory's cluster, it's essential that the security issues surrounding their use be fleshed out earlier rather than later. Unfortunately, this is not the case; graphics card manufacturers have not publicized any of their own internal security studies (if any exist), and popular manufacturers are infamous for their
-hostility to open source and academia\footnote{See for instance Wikipedia's page on
-``\href{http://en.wikipedia.org/wiki/NVIDIA\_and\_FOSS}{Graphics hardware and FOSS}''.}
-% This needs to be revised a bit and needs to have more added to it...
-We have identified a variety of attack paths on existing GPU platforms from NVIDIA and ATI in addition to methods for countering these attacks.
+base, and their mere presence may even compromise the existing TCB.
 
 \section{An overview of CUDA}
 CUDA is accessed via \texttt{open(2)}ing an appropriate device node and
@@ -121,11 +128,41 @@ from another?
 \subsection{Tampering}
 \squishlist
 \item Can one CUDA kernel manipulate another's data set?
-\item Is it possible to manipulate the system's video channel from an arbitrary
-CUDA kernel? If so, how might this be further leveraged (for instance, replacing
-a browser padlock icon or disabling system notifications)? What about textures?
 \item Is it possible to construct a debugging environment around other CUDA kernels?
 \squishend
+\subsection{Video Manipulation}
+One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
+to modify the system's video channel.  The threat model we considered was arbitrary code
+being able to manipulate the video channel.  
+
+In one case, this could consist of grabbing the current 
+framebuffer to obtain information from other programs.  In another case, this could consist of modifying the 
+current framebuffer in an effort to deceive the user into believing the system is in a different state than 
+it actually is.  For example, if one could replace the padlock icon
+commonly used on browsers to indicate a secure web connection, an attacker could fool a user into believing 
+that they have a secure and authentic connection when in fact they do not.
+
+The memory that CUDA code can access consists of three types: per-thread local memory, 
+per-block shared memory, and global memory.  However, this memory differs from the framebuffer 
+that is used by the graphics card to update the display.  We analyzed the possibility of both reading 
+and writing to the framebuffer in the case of CUDA applications.
+
+We first examined the case of reading the current framebuffer.  Not only is this necessary in order 
+to be able to modify it, but it can lead to information disclosure as well.  While CUDA provides several 
+methods for obtaining the current framebuffer, all of these methods rely on interfacing with OpenGL or Direct3D 
+through the provided interfaces.  
+
+In the case of OpenGL, glReadPixels() can be used to obtain the current framebuffer.  
+While this can be done within a CUDA program, it is not done using CUDA itself.  The data can be pulled into CUDA directly 
+via several methods, including the use of cudaGraphicsMapResources or cudaGLMapBufferObject\cite{cudaguide}\cite{cudareference}.
+
+%Add stuff here about writing to the framebuffer%
+
+%What about textures??%
+
+%Talk about accessing vRAM?%
+%WTF happened on my system - artifacting.  Could this be exploited somehow?%
+
 \subsection{Repudiation}
 \squishlist
 \item Can a CUDA kernel disassociate itself from the system process which spawned it?
@@ -224,7 +261,78 @@ Virtual addresses are extended to 64 bits, with 40 physical bits currently
 supported for up to 1TB of RAM.
 \section{Defending CUDA}
 
-\section{Conclusions} 
+\section{Related work}
+Our research in this area is focused on the possibility of security
+vulnerabilities against the GPU itself, an area which we were unable to find
+prior research for. However, our research is motivated in part by an increase
+in applications being developed for GPUs and also by GPUs being used as the
+processing unit for security related tasks.
+  
+\subsection{General applications}
+  
+  Dedicated graphical processing units (GPUs) have seen significant advancement
+in the past couple decades due to the insatiable demand that consumers have for
+ever-increasing advances in video game graphics. This development has led to
+recent GPUs reaching the point where they are powerful enough that there has
+been significant research invested into using them to execute tasks outside the
+realm of video games. One of the most popular examples of this is the
+Folding@Home project, which in recent years has developed a version of its
+application that runs on both ATI and nVidia brand GPUs
+\url{http://folding.stanford.edu/English/Guide#ntoc4}.
+  
+  In 2007, nVidia released an SDK for CUDA, their ``Compute Unified Device
+Architecture'', allowing for the GPU to be much more accessible to developers
+wishing to use the GPU for non-graphical applications. In the three years since
+then, a wide variety of applications for CUDA have been developed\footnote{\url{http://www.nvidia.com/object/what\_is\_cuda\_new.html}}.
+  
+  General Mills developed an application that used CUDA to model the optimal
+way to cook a frozen pizza in a microwave. SeismicCity used CUDA to improve the
+amount of time it takes to interpret seismic data to determine the optimal
+drilling locations for finding oil
+\url{http://www.nvidia.com/object/cuda\_in\_action.html}.
+  
+  Other companies are offering CUDA solutions for problems in the realms of
+electromagnetics, bioinformatics, finance, accelerator physics, aerodynamics,
+engine optimizations, image and video stream compression, healthcare and life
+sciences, medical imaging, defense, and more
+\squishlist
+\item \url{http://www.acceleware.com/default/index.cfm/professional-services/}
+\item \url{http://www.aneo.fr/index.php?option=com\_content&amp;view=article&amp;id=91&amp;Itemid=110}
+\item \url{http://www.parallel-compute.com/}
+\item \url{http://www.caps-entreprise.com/nvidia.html}
+\item \url{http://www.elegant-mathematics.com/index.html?NVGPU}
+\item \url{http://www.culatools.com/consulting}
+\item \url{http://www.fixstars.com/en/solutions/gpu/}
+\item \url{http://www.hoopoe-cloud.com/Services.aspx}
+\item \url{http://www.hpc-project.com/gpu2.htm}
+\item \url{http://www.sagivtech.com/21541.html}
+\item \url{http://www.stoneridgetechnology.com/services/visualcomputing.asp}
+\item \url{http://gpucomputing.txcorp.com/}.
+\squishend
+  
+\subsection{Security-related computation}
+  There are a few research areas where GPUs have been used in security applications, but all of these involve using the GPU as a faster processor than the CPU, and none of the research involves investigating the GPU itself or coding frameworks such as CUDA from a security standpoint.
+  
+  The most common security task that GPUs have been used for in prior work have been to use the GPU for performing cryptographic computations. Research has found that GPUs can perform some AES-related OpenSSL computations up to 20 times as fast as a typical implementation
+\url{http://www.manavski.com/downloads/PID505889.pdf}. Another aspect that is of importance, particularly to copyright groups such as the RIAA and MPAA, are the encryption techniques used with GPUs for the security of applications involving remote displays, such as for HDCP blu-ray implementations\url{http://www.amazon.com/CryptoGraphics-Exploiting-Graphics-Security-Information/dp/038729015X}.
+  
+  While GPUs can be used for improving the speed of cipher implementations, they can be used to speed up cryptographic attacks as well. In some cases, applications have been developed using CUDA to allow for WiFi keys to be broken up to 100 times as fast as in typical implementations \url{http://arstechnica.com/security/news/2008/10/company-puts-nvida-gpus-to-work-cracking-wireless-security.ars}.
+  
+  Intrusion detection systems can exhibit performance degradation under heavy
+  loads, and some of the proposed solutions to this problem have involved
+  offloading IDS computations to the GPU
+  \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.125.3302&amp;rep=rep1&amp;type=pdf}.
+  Additionally, some techniques in pattern-matching are difficult to perform
+  quickly enough to be useful, and GPUs have been proposed as a solution that
+  allow for significant decreases in computation time
+  \url{http://portal.acm.org/citation.cfm?id=1395492}.
+
+\subsection{GPU security}
+ There were a few instances of prior art that actually consider the idea of security on the GPU.  An implementation of a wrapper library for the CUDA SDK features the use of memory-scrubbing for the specific purpoes of wiping the GPU memory after use to provide security from subsequent users\cite{cudawrapper}.  This indicates that while it has not been a subject of much discussion in literature, there are some developers that are starting to consider the security implications of developing applications for GPUs.
+ 
+ During the course of our research we also found a debian bug report for a severe security problem in nvidia-kernel-common\cite{bugreport}.  The security implications of the bug were severe: each user registered with consolekit automatically receives read/write access for every device on the system.  As this applies to devices such as /dev/sda, it constituted a serious security problem.  While programming errors resulting in security vulnerabilities are nothing new, we believe this provides yet another example of how security must be on the forefront of designers' and developers' minds whenever new avenues are explored.
+
+ \section{Conclusions} 
 The recommendations of the Orange Book\cite{orangebook}, requirements of the Common Criteria\cite{ccrit},
 and Saltzer-Schroeder\cite{principles} have long provided general principles for
 security-conscious design. Any number of these principles have been ignored
@@ -279,72 +387,6 @@ mistakes or accidents can wreck undetected havoc. It ought be noted that memory
 protection could be implemented without the added complexity of
 hardware-supported virtual memory (provided some assistance from the OS); this
 would immediately address most issues.
-
-\section{Related work}
-Our research in this area is focused on the possibility of security
-vulnerabilities against the GPU itself, an area which we were unable to find
-prior research for. However, our research is motivated in part by an increase
-in applications being developed for GPUs and also by GPUs being used as the
-processing unit for security related tasks.
-  
-\subsection{General applications}
-  
-  Dedicated graphical processing units (GPUs) have seen significant advancement
-in the past couple decades due to the insatiable demand that consumers have for
-ever-increasing advances in video game graphics. This development has led to
-recent GPUs reaching the point where they are powerful enough that there has
-been significant research invested into using them to execute tasks outside the
-realm of video games. One of the most popular examples of this is the
-Folding@Home project, which in recent years has developed a version of its
-application that runs on both ATI and nVidia brand GPUs
-\url{http://folding.stanford.edu/English/Guide#ntoc4}.
-  
-  In 2007, nVidia released an SDK for CUDA, their ``Compute Unified Device
-Architecture'', allowing for the GPU to be much more accessible to developers
-wishing to use the GPU for non-graphical applications. In the three years since
-then, a wide variety of applications for CUDA have been developed\footnote{\url{http://www.nvidia.com/object/what\_is\_cuda\_new.html}}.
-  
-  General Mills developed an application that used CUDA to model the optimal
-way to cook a frozen pizza in a microwave. SeismicCity used CUDA to improve the
-amount of time it takes to interpret seismic data to determine the optimal
-drilling locations for finding oil
-\url{http://www.nvidia.com/object/cuda\_in\_action.html}.
-  
-  Other companies are offering CUDA solutions for problems in the realms of
-electromagnetics, bioinformatics, finance, accelerator physics, aerodynamics,
-engine optimizations, image and video stream compression, healthcare and life
-sciences, medical imaging, defense, and more
-\squishlist
-\item \url{http://www.acceleware.com/default/index.cfm/professional-services/}
-\item \url{http://www.aneo.fr/index.php?option=com\_content&amp;view=article&amp;id=91&amp;Itemid=110}
-\item \url{http://www.parallel-compute.com/}
-\item \url{http://www.caps-entreprise.com/nvidia.html}
-\item \url{http://www.elegant-mathematics.com/index.html?NVGPU}
-\item \url{http://www.culatools.com/consulting}
-\item \url{http://www.fixstars.com/en/solutions/gpu/}
-\item \url{http://www.hoopoe-cloud.com/Services.aspx}
-\item \url{http://www.hpc-project.com/gpu2.htm}
-\item \url{http://www.sagivtech.com/21541.html}
-\item \url{http://www.stoneridgetechnology.com/services/visualcomputing.asp}
-\item \url{http://gpucomputing.txcorp.com/}.
-\squishend
-  
-\subsection{Security applications}
-  There are a few research areas where GPUs have been used in security applications, but all of these involve using the GPU as a faster processor than the CPU, and none of the research involves investigating the GPU itself or coding frameworks such as CUDA from a security standpoint.
-  
-  The most common security task that GPUs have been used for in prior work have been to use the GPU for performing cryptographic computations. Research has found that GPUs can perform some AES-related OpenSSL computations up to 20 times as fast as a typical implementation
-\url{http://www.manavski.com/downloads/PID505889.pdf}. Another aspect that is of importance, particularly to copyright groups such as the RIAA and MPAA, are the encryption techniques used with GPUs for the security of applications involving remote displays, such as for HDCP blu-ray implementations\url{http://www.amazon.com/CryptoGraphics-Exploiting-Graphics-Security-Information/dp/038729015X}.
-  
-  While GPUs can be used for improving the speed of cipher implementations, they can be used to speed up cryptographic attacks as well. In some cases, applications have been developed using CUDA to allow for WiFi keys to be broken up to 100 times as fast as in typical implementations \url{http://arstechnica.com/security/news/2008/10/company-puts-nvida-gpus-to-work-cracking-wireless-security.ars}.
-  
-  Intrusion detection systems can exhibit performance degradation under heavy
-  loads, and some of the proposed solutions to this problem have involved
-  offloading IDS computations to the GPU
-  \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.125.3302&amp;rep=rep1&amp;type=pdf}.
-  Additionally, some techniques in pattern-matching are difficult to perform
-  quickly enough to be useful, and GPUs have been proposed as a solution that
-  allow for significant decreases in computation time
-  \url{http://portal.acm.org/citation.cfm?id=1395492}.
 
 \bibliographystyle{acm}
 \bibliography{cs8803ssProject}
