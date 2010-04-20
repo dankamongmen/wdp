@@ -67,7 +67,7 @@ uintmax_t cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
 			if(o) { fprintf(o,"%jub!\n",s); }
 			return s;
 		}
-	}while( (s = ((tmax + min + unit) / 2 / unit * unit)) );
+	}while( (s = ((tmax + min) * unit / 2 / unit)) );
 	fprintf(stderr,"  All allocations failed.\n");
 	return 0;
 }
