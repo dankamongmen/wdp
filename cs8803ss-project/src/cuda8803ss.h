@@ -9,6 +9,7 @@ extern "C" {
 
 int init_cuda(int,CUdevice *);
 int init_cuda_ctx(int,CUcontext *);
+int getzul(const char *,unsigned long *);
 uintmax_t cuda_alloc_max(FILE *,CUdeviceptr *,unsigned);
 
 #ifdef __CUDACC__

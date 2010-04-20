@@ -1,6 +1,8 @@
 #include <cuda.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdint.h>
+#include <limits.h>
 
 int init_cuda(int devno,CUdevice *c){
 	int attr,cerr;
@@ -51,7 +53,7 @@ uintmax_t cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
 			if((tmax = s) <= min + unit){
 				tmax = min;
 			}
-		}else if(s != tmax){
+		}else if(s < tmax){
 			int cerr;
 
 			if(o){ fprintf(o,"%jub...",s); }
@@ -65,7 +67,18 @@ uintmax_t cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
 			if(o) { fprintf(o,"%jub!\n",s); }
 			return s;
 		}
-	}while( (s = ((tmax + min) / 2 / unit * unit)) );
+	}while( (s = ((tmax + min + unit) / 2 / unit * unit)) );
 	fprintf(stderr,"  All allocations failed.\n");
+	return 0;
+}
+
+int getzul(const char *arg,unsigned long *zul){
+	char *eptr;
+
+	if(((*zul = strtoul(arg,&eptr,0)) == ULONG_MAX && errno == ERANGE)
+			|| eptr == arg || *eptr){
+		fprintf(stderr,"Expected an unsigned integer, got \"%s\"\n",arg);
+		return -1;
+	}
 	return 0;
 }

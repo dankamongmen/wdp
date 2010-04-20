@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <limits.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include "cuda8803ss.h"
@@ -71,19 +70,6 @@ usage(const char *a0){
 	fprintf(stderr,"usage: %s devno perthreadbytes\n",a0);
 }
 
-static int
-get_devno(const char *argv0,const char *arg,unsigned long *zul){
-	char *eptr;
-
-	if(((*zul = strtoul(arg,&eptr,0)) == ULONG_MAX && errno == ERANGE)
-			|| eptr == arg || *eptr){
-		fprintf(stderr,"Invalid device number: %s\n",arg);
-		usage(argv0);
-		return -1;
-	}
-	return 0;
-}
-
 int main(int argc,char **argv){
 	unsigned total = 0;
 	unsigned long zul;
@@ -93,11 +79,11 @@ int main(int argc,char **argv){
 		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
-	if(get_devno(argv[0],argv[1],&zul)){
+	if(getzul(argv[1],&zul)){
 		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
-	if(get_devno(argv[0],argv[2],&marsh.s)){
+	if(getzul(argv[2],&marsh.s)){
 		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
