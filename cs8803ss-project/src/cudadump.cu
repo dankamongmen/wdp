@@ -282,8 +282,8 @@ usage(const char *a0,int status){
 }
 
 int main(int argc,char **argv){
+	unsigned long gran;
 	unsigned unit = 4;		// Minimum alignment of references
-	uintmax_t gran;
 	int z,count;
 
 	if(argc > 2){
