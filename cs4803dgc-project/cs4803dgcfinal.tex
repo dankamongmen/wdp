@@ -74,7 +74,11 @@ existing NVIDIA \texttt{libcudart.so} is unfortunately closed source. Any
 application making correct use of the Driver API ought perform equivalently atop
 our infrastructure. Note that it is possible to compile \texttt{.cu} files down
 to C source and Driver API calls via the \texttt{--cuda} flag to \texttt{nvcc}\cite{nvcc}.
-
+\section{Related work}
+Albert Exojo's master's thesis implemented \texttt{libecuda}\cite{exojo}, a replacement for
+the CUDA Runtime API library mentioned above. The Ocelot\cite{ocelot} binary translation
+framework for PTX similarly replaces the Runtime API. The former replaces the NVIDIA
+hardware with an emulator; the latter recompiles PTX for NVIDIA and x86.
 \bibliographystyle{acm}
 \bibliography{cs4803dgcfinal}
 \end{multicols}

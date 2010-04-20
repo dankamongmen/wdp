@@ -13,7 +13,7 @@ extern "C" {
 
 static uintmax_t
 cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
-	uintmax_t tmax = 1ul << ADDRESS_BITS;
+	uintmax_t tmax = 1ull << ADDRESS_BITS;
 	uintmax_t min = 0,s = tmax;
 
 	if(o){ fprintf(o,"  Determining max allocation..."); }
