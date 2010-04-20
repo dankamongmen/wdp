@@ -84,8 +84,6 @@ $(OUT)/%.o: util/%.c $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) -I$(SRC) -I$(CUDAINC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
-$(SRC)/cuda8803ss.h: $(SRC)/max.h
-
 %.pdf: %.tex %.bib $(TEXOBJS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	pdflatex $<
