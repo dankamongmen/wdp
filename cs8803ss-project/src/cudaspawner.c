@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <pthread.h>
 #include <sys/types.h>
+#include "cuda8803ss.h"
 
 static unsigned thrdone,threadsmaintain = 1;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -81,28 +82,6 @@ get_devno(const char *argv0,const char *arg,unsigned long *zul){
 		return -1;
 	}
 	return 0;
-}
-
-static int
-init_cuda(int devno,CUdevice *c){
-	int attr,cerr;
-
-	if((cerr = cuInit(0)) != CUDA_SUCCESS){
-		fprintf(stderr,"Error (%d) initializing CUDA\n",cerr);
-		return cerr;
-	}
-	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if(CUDA_VERSION > attr){
-		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
-		return -1;
-	}
-	if((cerr = cuDeviceGet(c,devno)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't get device reference, exiting.\n");
-		return cerr;
-	}
-	return CUDA_SUCCESS;
 }
 
 int main(int argc,char **argv){

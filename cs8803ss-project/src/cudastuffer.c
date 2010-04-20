@@ -8,33 +8,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/mman.h>
-
-static int
-init_cuda(int devno){
-	int attr,cerr;
-	CUcontext ctx;
-	CUdevice c;
-
-	if((cerr = cuInit(0)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if(CUDA_VERSION > attr){
-		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
-		return -1;
-	}
-	if((cerr = cuDeviceGet(&c,devno)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't get device reference, exiting.\n");
-		return cerr;
-	}
-	if((cerr = cuCtxCreate(&ctx,0,c)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't create context, exiting.\n");
-		return cerr;
-	}
-	return CUDA_SUCCESS;
-}
+#include "cuda8803ss.h"
 
 // FIXME: we really ought take a bus specification rather than a device number,
 // since the latter are unsafe across hardware removal/additions.
@@ -60,6 +34,7 @@ int main(int argc,char **argv){
 	unsigned oldptr = 0,ptr;
 	uintmax_t total = 0,s;
 	unsigned long zul;
+	CUcontext ctx;
 	int cerr;
 
 	if(argc != 2){
@@ -69,7 +44,7 @@ int main(int argc,char **argv){
 	if(get_devno(argv[0],argv[1],&zul)){
 		exit(EXIT_FAILURE);
 	}
-	if((cerr = init_cuda(zul)) != CUDA_SUCCESS){
+	if((cerr = init_cuda_ctx(zul,&ctx)) != CUDA_SUCCESS){
 		fprintf(stderr,"Error initializing CUDA device %lu (%d)\n",zul,cerr);
 		exit(EXIT_FAILURE);
 	}

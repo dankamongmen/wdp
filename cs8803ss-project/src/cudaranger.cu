@@ -11,33 +11,6 @@
 #include "cuda8803ss.h"
 
 static int
-init_cuda(int devno){
-	int attr,cerr;
-	CUcontext ctx;
-	CUdevice c;
-
-	if((cerr = cuInit(0)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if(CUDA_VERSION > attr){
-		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
-		return -1;
-	}
-	if((cerr = cuDeviceGet(&c,devno)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't get device reference, exiting.\n");
-		return cerr;
-	}
-	if((cerr = cuCtxCreate(&ctx,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't create context, exiting.\n");
-		return cerr;
-	}
-	return CUDA_SUCCESS;
-}
-
-static int
 dumpresults(const uint32_t *res,unsigned count){
 	unsigned z,y,nonzero;
 
@@ -76,6 +49,7 @@ int main(int argc,char **argv){
 	unsigned long zul;
 	CUdeviceptr ptr;
 	cudadump_e res;
+	CUcontext ctx;
 	char *eptr;
 	int cerr;
 
@@ -107,7 +81,7 @@ int main(int argc,char **argv){
 		usage(*argv);
 		return CUDARANGER_EXIT_ERROR;
 	}
-	if((cerr = init_cuda(zul)) != CUDA_SUCCESS){
+	if((cerr = init_cuda_ctx(zul,&ctx)) != CUDA_SUCCESS){
 		fprintf(stderr,"Error initializing CUDA device %d (%d, %s?)\n",
 				zul,cerr,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;

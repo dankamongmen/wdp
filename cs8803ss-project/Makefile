@@ -44,7 +44,7 @@ bin: $(TAGS) $(BIN)
 	
 ptx: $(PTX)
 
-$(TAGS): $(CSRC) $(CUDASRC) $(SRC)/cuda8803ss.h $(SRC)/max.h
+$(TAGS): $(CSRC) $(CUDASRC) util/cuda8803ss.c $(SRC)/cuda8803ss.h $(SRC)/max.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
@@ -56,17 +56,17 @@ $(OUT)/cudaminimal: $(OUT)/cudaminimal.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
 
-$(OUT)/cudaranger: $(OUT)/cudaranger.o
+$(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $< $(NLFLAGS)
+	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
-$(OUT)/cudaspawner: $(OUT)/cudaspawner.o
+$(OUT)/cudaspawner: $(OUT)/cudaspawner.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudastuffer: $(OUT)/cudastuffer.o
+$(OUT)/cudastuffer: $(OUT)/cudastuffer.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(OUT)/%.ptx: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -76,7 +76,11 @@ $(OUT)/%.o: $(SRC)/%.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -c -o $@ $< $(LFLAGS)
 
-$(OUT)/%.o: $(SRC)/%.c $(SRC)/max.h
+$(OUT)/%.o: $(SRC)/%.c $(SRC)/cuda8803ss.h
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) -I$(SRC) -I$(CUDAINC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
+
+$(OUT)/%.o: util/%.c $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) -I$(SRC) -I$(CUDAINC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 

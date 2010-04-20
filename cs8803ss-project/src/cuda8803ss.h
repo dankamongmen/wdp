@@ -5,19 +5,23 @@
 extern "C" {
 #endif
 
+#include <cuda.h>
+
+int init_cuda(int,CUdevice *);
+int init_cuda_ctx(int,CUcontext *);
+
+#ifdef __CUDACC__
+
 	// this is some epic bullshit, done to work around issues in NVIDIA's
 	// nvcc compiler...apologies all around
-
-#include <cuda.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <sys/time.h>
-#include "cuda8803ss.h"
 
 #define GRID_SIZE 1
 #define BLOCK_SIZE 128
 
 #include <max.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <sys/time.h>
 
 // Result codes. _CUDAFAIL means that the CUDA kernel raised an exception -- an
 // expected mode of failure. _ERROR means some other exception occurred (abort
@@ -93,6 +97,7 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 			usec / 1000000,usec % 1000000,bw,punit,cerr);
 	return CUDARANGER_EXIT_SUCCESS;
 }
+#endif
 
 #ifdef __cplusplus
 };
