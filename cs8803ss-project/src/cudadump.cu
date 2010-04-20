@@ -178,7 +178,7 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 	if((size_t)snprintf(min,sizeof(min),"0x%jx",off) >= sizeof(min) ||
 			(size_t)snprintf(max,sizeof(max),"0x%jx",off + s) >= sizeof(max) ||
 			(size_t)snprintf(dev,sizeof(dev),"%d",devno) >= sizeof(dev)){
-		fprintf(stderr,"  Invalid arguments: %d %ju %ju\n",devno,min,max);
+		fprintf(stderr,"  Invalid arguments: %d 0x%jx 0x%jx\n",devno,off,off + s);
 		return -1;
 	}
 	//printf("CALL: %s %s %s\n",dev,min,max);
@@ -240,10 +240,10 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	if((s = cuda_alloc_max(stdout,&ptr,unit)) == 0){
 		return -1;
 	}
-	printf("  Allocated %ju of %ju MB at %p:0x%jx\n",
+	printf("  Allocated %ju of %ju MB at 0x%jx:0x%jx\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
-			ptr,(uintmax_t)ptr + s);
+			(uintmax_t)ptr,(uintmax_t)ptr + s);
 	printf("  Verifying allocated region...\n");
 	if(dump_cuda(ptr,ptr + (s / gran) * gran,unit,results)){
 		cuMemFree(ptr);
