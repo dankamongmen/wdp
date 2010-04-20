@@ -2,6 +2,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -12,19 +14,31 @@
 // since the latter are unsafe across hardware removal/additions.
 static void
 usage(const char *a0){
-	fprintf(stderr,"usage: %s devno\n",a0);
+	fprintf(stderr,"usage: %s devno [signal]\n",a0);
 }
 
 int main(int argc,char **argv){
 	unsigned oldptr = 0,ptr;
 	uintmax_t total = 0,s;
-	unsigned long zul;
+	unsigned long zul,sig;
 	CUcontext ctx;
 	int cerr;
 
-	if(argc != 2){
+	if(argc > 3 || argc < 2){
 		usage(*argv);
 		exit(EXIT_FAILURE);
+	}else if(argc == 3){
+		if(getzul(argv[2],&sig)){
+			usage(argv[0]);
+			exit(EXIT_FAILURE);
+		}
+		if(sig >= (unsigned)SIGRTMIN){
+			fprintf(stderr,"Invalid signal (%zu > %d)\n",sig,SIGRTMIN);
+			usage(argv[0]);
+			exit(EXIT_FAILURE);
+		}
+	}else{
+		sig = SIGRTMIN;
 	}
 	if(getzul(argv[1],&zul)){
 		usage(argv[0]);
@@ -54,5 +68,17 @@ int main(int argc,char **argv){
 		++zul;
 	}while( (s = cuda_alloc_max(stdout,&ptr,sizeof(unsigned))) );
 	printf(" Got %ju (0x%jx) total bytes in %lu allocations.\n",total,total,zul);
+	if(sig < (unsigned)SIGRTMIN){
+		sigset_t set;
+		int sigrx;
+
+		printf("Waiting on signal %zu...\n",sig);
+		if(sigemptyset(&set) || sigaddset(&set,sig) || sigwait(&set,&sigrx)){
+			fprintf(stderr,"Error waiting on signal %zu (%s?)\n",
+					sig,strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		printf("Received signal %d, exiting.\n",sigrx);
+	}
 	exit(EXIT_SUCCESS);
 }
