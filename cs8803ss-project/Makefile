@@ -44,7 +44,7 @@ bin: $(TAGS) $(BIN)
 	
 ptx: $(PTX)
 
-$(TAGS): $(CSRC) $(CUDASRC) util/cuda8803ss.c $(SRC)/cuda8803ss.h $(SRC)/max.h
+$(TAGS): $(CSRC) $(CUDASRC) util/cuda8803ss.c $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 

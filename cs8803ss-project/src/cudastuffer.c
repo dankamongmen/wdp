@@ -1,4 +1,3 @@
-#include <max.h>
 #include <cuda.h>
 #include <fcntl.h>
 #include <stdio.h>
