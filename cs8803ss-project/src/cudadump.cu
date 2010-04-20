@@ -272,12 +272,12 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	return 0;
 }
 
-#define GRAN_DEFAULT 4 * 1024 * 1024
+#define GRAN_DEFAULT 4ul * 1024ul * 1024ul
 
 static void
 usage(const char *a0,int status){
 	fprintf(stderr,"usage: %s [granularity]\n",a0);
-	fprintf(stderr," default granularity: %ju\n",GRAN_DEFAULT);
+	fprintf(stderr," default granularity: %lu\n",GRAN_DEFAULT);
 	exit(status);
 }
 
