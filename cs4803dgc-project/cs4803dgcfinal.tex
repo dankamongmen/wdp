@@ -35,12 +35,12 @@ has heroically assembled an Open Source, cleanroom implementation of 2D drivers 
 NVIDIA cards\cite{nouveaustatus}. Early in 2010, RedHat Fedora Linux began driving
 NVIDIA devices with \texttt{nouveau}. Shortly thereafter, NVIDIA dropped
 support for their (feature-limited, shrouded-source) \texttt{nv} X.Org driver\footnote{The
-closed-source \texttt{nvidia} driver is still actively supported.}. \texttt{Nouveau} represents
-the clear and inevitable future of NVIDIA support on the Linux/X.Org system.
+closed-source \texttt{nvidia} driver is still actively supported.}. \texttt{nouveau} represents
+the clear and inevitable future of NVIDIA support on the Linux/X.Org platform.
 
 The Nouveau Project's primary aim is to provide a high-quality rendering
 solution to the Linux desktop. Support for GPGPU has not been a priority, but
-the path to Open Source GPGPU undoubtedly lies through
+the path to open source GPGPU undoubtedly lies through
 \texttt{Nouveau}'s advanced memory management infrastructure and well-designed hardware
 abstractions, especially if it is to coexist with hardware-accelerated desktops.
 As a believer in both the practical and ethical value of Open Source, I believe
@@ -49,13 +49,33 @@ is the most immediately critical task.
 \end{abstract}
 
 \begin{multicols}{2}
-\section{Introduction}
-etc
+\section{Project objectives}
+The object of the project is to produce a practical, efficient, distributable
+CUDA middleware making use of the \texttt{nouveau} driver. This will involve,
+at minimum, a blackbox-equivalent source implementation of \texttt{libcuda.so}.
+Modifications to the \texttt{nouveau} driver itself will almost certainly also
+be required; any such modifications will require approval of the Nouveau Project.
+Changes to the driver must, therefore, not compromise Nouveau's primary goal of
+robust 2D performance on the Linux desktop. In this phase, it is essential that
+the documented CUDA API be reproduced faithfully; existing CUDA applications can
+then be harnessed to verify implementation correctness and efficiency.
+
+Toolchain and runtime dependencies should be a subset (that is, strictly less
+restrictive) than those of the \texttt{nouveau} driver itself. The library
+ought be implemented, ala \texttt{libdrm\_XXX}, with an eye towards being bundled
+with the driver itself (a distinct Linux kernel module is neither necessary nor
+desirable). At a minimum, an API/ABI version dependency will exist between
+\texttt{nouveau} and our userspace.
+
+This project does not seek to replace the CUDA Runtime API, a set of helper
+functions and subsystems designed to simplify CUDA programming. This API ought
+be implementable atop our CUDA ``Driver API'' library's support, though the
+existing NVIDIA \texttt{libcudart.so} is unfortunately closed source. Any
+application making correct use of the Driver API ought perform equivalently atop
+our infrastructure. Note that it is possible to compile \texttt{.cu} files down
+to C source and Driver API calls via the \texttt{--cuda} flag to \texttt{nvcc}\cite{nvcc}.
 
 \bibliographystyle{acm}
 \bibliography{cs4803dgcfinal}
 \end{multicols}
-\appendix
-appendix
-\newpage
 \end{document}
