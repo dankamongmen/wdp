@@ -21,8 +21,8 @@ BIN:=$(addprefix out/,$(basename $(notdir $(CSRC) $(CUDASRC))))
 PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
-CUDA?=/usr/
-CUDAINC:=$(CUDA)/include/cuda
+CUDA?=/usr/local/cuda/
+CUDAINC:=$(CUDA)/include/
 CUDART?=$(HOME)/local/cuda/
 CUDARTLIB:=$(CUDART)/lib64
 
