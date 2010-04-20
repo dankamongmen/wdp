@@ -2,6 +2,8 @@
 .PHONY: all bin doc ptx preview profile test fulltest clean
 .DEFAULT_GOAL:=test
 
+include Makefile.local
+
 VPDF:=evince
 
 SRC:=src
@@ -21,8 +23,8 @@ BIN:=$(addprefix out/,$(basename $(notdir $(CSRC) $(CUDASRC))))
 PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
-CUDA?=/usr/local/cuda/
-CUDAINC:=$(CUDA)/include/
+CUDA?=/usr/
+CUDAINC:=$(CUDA)/include/cuda
 CUDART?=$(HOME)/local/cuda/
 CUDARTLIB:=$(CUDART)/lib64
 

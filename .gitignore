@@ -5,4 +5,5 @@
 */*.out
 */*.pdf
 */.tags
+*/Makefile.local
 */out
