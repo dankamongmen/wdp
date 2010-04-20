@@ -9,6 +9,7 @@ extern "C" {
 
 int init_cuda(int,CUdevice *);
 int init_cuda_ctx(int,CUcontext *);
+uintmax_t cuda_alloc_max(FILE *,CUdeviceptr *,unsigned);
 
 #ifdef __CUDACC__
 
@@ -18,7 +19,6 @@ int init_cuda_ctx(int,CUcontext *);
 #define GRID_SIZE 1
 #define BLOCK_SIZE 128
 
-#include <max.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/time.h>

@@ -48,9 +48,9 @@ $(TAGS): $(CSRC) $(CUDASRC) util/cuda8803ss.c $(SRC)/cuda8803ss.h $(SRC)/max.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
-$(OUT)/cudadump: $(OUT)/cudadump.o
+$(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $< $(NLFLAGS)
+	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
 $(OUT)/cudaminimal: $(OUT)/cudaminimal.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
