@@ -2,7 +2,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
-#include <limits.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -16,19 +15,6 @@ usage(const char *a0){
 	fprintf(stderr,"usage: %s devno\n",a0);
 }
 
-static int
-get_devno(const char *argv0,const char *arg,unsigned long *zul){
-	char *eptr;
-
-	if(((*zul = strtoul(arg,&eptr,0)) == ULONG_MAX && errno == ERANGE)
-			|| eptr == arg || *eptr){
-		fprintf(stderr,"Invalid device number: %s\n",arg);
-		usage(argv0);
-		return -1;
-	}
-	return 0;
-}
-
 int main(int argc,char **argv){
 	unsigned oldptr = 0,ptr;
 	uintmax_t total = 0,s;
@@ -40,7 +26,8 @@ int main(int argc,char **argv){
 		usage(*argv);
 		exit(EXIT_FAILURE);
 	}
-	if(get_devno(argv[0],argv[1],&zul)){
+	if(getzul(argv[1],&zul)){
+		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	if((cerr = init_cuda_ctx(zul,&ctx)) != CUDA_SUCCESS){

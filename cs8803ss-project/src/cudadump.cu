@@ -272,11 +272,29 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	return 0;
 }
 
-int main(void){
-	uintmax_t gran = 4 * 1024 * 1024;// Granularity of report / verification
-	unsigned unit = 4;		 // Minimum alignment of references
+#define GRAN_DEFAULT 4 * 1024 * 1024
+
+static void
+usage(const char *a0,int status){
+	fprintf(stderr,"usage: %s [granularity]\n",a0);
+	fprintf(stderr," default granularity: %ju\n",GRAN_DEFAULT);
+	exit(status);
+}
+
+int main(int argc,char **argv){
+	unsigned unit = 4;		// Minimum alignment of references
+	uintmax_t gran;
 	int z,count;
 
+	if(argc > 2){
+		usage(argv[0],EXIT_FAILURE);
+	}else if(argc == 1){
+		if(getzul(argv[1],&gran)){
+			usage(argv[0],EXIT_FAILURE);
+		}
+	}else{
+		gran = GRAN_DEFAULT;
+	}
 	if(init_cuda(&count)){
 		cudaError_t err;
 
