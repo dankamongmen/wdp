@@ -1,5 +1,5 @@
 .DELETE_ON_ERROR:
-.PHONY: all bin doc ptx preview profile test clean
+.PHONY: all bin doc ptx preview profile test fulltest clean
 .DEFAULT_GOAL:=test
 
 VPDF:=evince
@@ -27,8 +27,8 @@ CUDART?=$(HOME)/local/cuda/
 CUDARTLIB:=$(CUDART)/lib64
 
 NVCC?=$(CUDA)/bin/nvcc
-CFLAGS:=-O2 -Wall -W -Werror -march=native -mtune=native
-NCFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
+CFLAGS:=-g -ggdb -Wall -W -Werror -march=native -mtune=native
+NCFLAGS:=-g -G --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 NCFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda
 NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
@@ -108,6 +108,9 @@ test: bin
 	./$(CUDARANGER) 0 0x110000 0x111000
 	./$(CUDASTUFFER) 0
 	./$(CUDASPAWNER) 0 0x100000
+	! ./$(CUDARANGER) 0 0 0x100000000
+
+fulltest: test
 	./$(CUDADUMP)
 	! ./$(CUDARANGER) 0 0 0x100000000
 
