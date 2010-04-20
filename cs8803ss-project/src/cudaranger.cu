@@ -82,17 +82,17 @@ int main(int argc,char **argv){
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if((cerr = init_cuda_ctx(zul,&ctx)) != CUDA_SUCCESS){
-		fprintf(stderr,"Error initializing CUDA device %d (%d, %s?)\n",
+		fprintf(stderr,"Error initializing CUDA device %lu (%d, %s?)\n",
 				zul,cerr,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0x00,sizeof(hostres))){
-		fprintf(stderr,"Error allocating %zu on device %d (%s?)\n",
+		fprintf(stderr,"Error allocating %zu on device %lu (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if(cuda_alloc_max(NULL,&ptr,sizeof(unsigned)) == 0){
-		fprintf(stderr,"Error allocating max on device %d (%s?)\n",
+		fprintf(stderr,"Error allocating max on device %lu (%s?)\n",
 			zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
@@ -106,12 +106,12 @@ int main(int argc,char **argv){
 		fprintf(stderr,"Warning: couldn't free memory\n");
 	}
 	if(cudaMemcpy(hostres,resarr,sizeof(hostres),cudaMemcpyDeviceToHost)){
-		fprintf(stderr,"Error copying %zu from device %d (%s?)\n",
+		fprintf(stderr,"Error copying %zu from device %lu (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if(cudaFree(resarr)){
-		fprintf(stderr,"Couldn't free %zu on device %d (%s?)\n",
+		fprintf(stderr,"Couldn't free %zu on device %lu (%s?)\n",
 			sizeof(hostres),zul,cudaGetErrorString(cudaGetLastError()));
 		return CUDARANGER_EXIT_ERROR;
 	}
