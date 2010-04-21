@@ -59,7 +59,7 @@ int main(int argc,char **argv){
 		}
 		total += s;
 		if(ptr != oldptr){
-			if(printf("  Memory hole: 0x%x->0x%x (%xb)\n",
+			if(printf("  Memory hole: 0x%x->0x%x (0x%xb)\n",
 				oldptr,ptr - 1,ptr - oldptr) < 0){
 				exit(EXIT_SUCCESS);
 			}
