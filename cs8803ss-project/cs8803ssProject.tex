@@ -154,14 +154,17 @@ through the provided interfaces.
 
 In the case of OpenGL, glReadPixels() can be used to obtain the current framebuffer.  
 While this can be done within a CUDA program, it is not done using CUDA itself.  The data can be pulled into CUDA directly 
-via several methods, including the use of cudaGraphicsMapResources or cudaGLMapBufferObject\cite{cudaguide}\cite{cudareference}.
+via several methods, including the use of cudaGraphicsMapResources or cudaGLMapBufferObject\cite{cudaguide}\cite{cudareference}.  In this instance, CUDA provides no added benefit or significant difference over existing programs.
 
-%Add stuff here about writing to the framebuffer%
+Similarly, writing to the framebuffer is not explicitely possible in CUDA, and similar methods must be used as to read from it (i.e. using OpenGL or Direct3D within CUDA).
 
-%What about textures??%
+However, CUDA provides both read and write access to video memory, and the framebuffer is contained within memory.  Unfortunately, our tests were unsuccessful at locating the location of the framebuffer in memory.  This indicates either that the CUDA API disallows access to the region of memory containing the framebuffer or that there is a system in place that provides a hardware barrier between the framebuffer and the rest of VRAM for this purpose.
 
-%Talk about accessing vRAM?%
 %WTF happened on my system - artifacting.  Could this be exploited somehow?%
+While we were unable to specifically locate the framebuffer in memory, during our tests we did encounter several cases of video artifacting on our displays.  This led us to believe that there must be some method of accessing the framebuffer by using CUDA in a way that it was not intended for.  As of the writing of this paper we have been unable to isolate the circumstances that led to the artifacting and to reproduce them in a controlled manner, but we believe there is promise in future work being done in this area.
+
+%Hopefully the above section can be updated, but as of now I have no clue what happened on my system to produce the artifacting.  I'll take another look at it but it'll probably have to wait until after my take-home final is done%
+
 
 \subsection{Repudiation}
 \squishlist
