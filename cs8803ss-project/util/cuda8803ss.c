@@ -32,7 +32,7 @@ int init_cuda_ctx(int devno,CUcontext *cu){
 	if((cerr = init_cuda(devno,&c)) != CUDA_SUCCESS){
 		return cerr;
 	}
-	if((cerr = cuCtxCreate(cu,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
+	if((cerr = cuCtxCreate(cu,CU_CTX_SCHED_YIELD| CU_CTX_MAP_HOST,c)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't create context (%d), exiting.\n",cerr);
 		return cerr;
 	}
@@ -40,6 +40,37 @@ int init_cuda_ctx(int devno,CUcontext *cu){
 }
 
 #define ADDRESS_BITS 32u // FIXME 40 on compute capability 2.0!
+
+uintmax_t cuda_hostalloc_max(FILE *o,void **ptr,unsigned unit,unsigned flags){
+	uintmax_t tmax = 1ull << ADDRESS_BITS;
+	uintmax_t min = 0,s = tmax;
+
+	if(o){ fprintf(o,"  Determining max allocation..."); }
+	do{
+		if(o) { fflush(o); }
+
+		if(cuMemHostAlloc(ptr,s,flags)){
+			if((tmax = s) <= min + unit){
+				tmax = min;
+			}
+		}else if(s < tmax){
+			int cerr;
+
+			if(o){ fprintf(o,"%jub...",s); }
+			if((cerr = cuMemFreeHost(*ptr)) ){
+				fprintf(stderr,"  Couldn't free %jub at %p (%d?)\n",
+					s,*ptr,cerr);
+				return 0;
+			}
+			min = s;
+		}else{
+			if(o) { fprintf(o,"%jub!\n",s); }
+			return s;
+		}
+	}while( (s = ((tmax + min) * unit / 2 / unit)) );
+	fprintf(stderr,"  All allocations failed.\n");
+	return 0;
+}
 
 uintmax_t cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
 	uintmax_t tmax = 1ull << ADDRESS_BITS;
