@@ -1,13 +1,28 @@
 #include "cudest.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 
 #define NVCTLDEV "/dev/nvidiactl"
+
+// Reverse-engineered from strace and binary analysis.
+typedef enum {
+	NV_PREPARE_FIFO	= 0xc04846d2,
+} nvioctls;
 
 // FIXME we'll almost certainly need a rwlock protecting this
 static int nvctl = -1;
 
+static CUresult
+init_ctlfd(int fd){
+	if(ioctl(fd,NV_PREPARE_FIFO,0)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	return CUDA_SUCCESS;
+}
+
 CUresult cuInit(unsigned flags){
+	CUresult r;
 	int fd;
 
 	if(flags){
@@ -15,6 +30,10 @@ CUresult cuInit(unsigned flags){
 	}
 	if((fd = open(NVCTLDEV,O_RDWR)) < 0){
 		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if((r = init_ctlfd(fd)) != CUDA_SUCCESS){
+		close(fd);
+		return r;
 	}
 	if(nvctl >= 0){
 		close(nvctl);

@@ -19,6 +19,8 @@ TAGBIN:=ctags
 IFLAGS:=-Isrc
 CFLAGS:=-pipe $(IFLAGS) -fPIC -O2 -Wall -W -Werror -march=native -mtune=native
 
+BIN:=$(OUT)/cudaminimal
+
 all: $(LIB) $(PDF)
 
 $(TAGS): $(addprefix src/,$(SRC)) $(INC)
@@ -43,8 +45,11 @@ $(OUT)/%.o: src/%.c $(INC) $(TAGS)
 preview: test
 	$(VPDF) $(PDF)
 
-test: all
-	# FIXME no binaries yet
+$(OUT)/cudaminimal: ../cs8803ss-project/src/cudaminimal.c $(LIB)
+	$(CC) $(CFLAGS) -o $@ $< -L$(dir $(LIB)) -Wl,-R$(dir $(LIB)) -lcudest
+
+test: all $(BIN)
+	./$(BIN)
 
 clean:
 	rm -rf $(OUT) $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
