@@ -8,16 +8,17 @@ OUT:=out
 PRO:=cs4803dgcfinal
 TEX:=$(PRO).tex
 PDF:=$(PRO).pdf
-LIB:=$(OUT)/libcudest.so
 INC:=$(wildcard src/*.h)
 TEXOBJS:=$(wildcard texobjs/*)
 SRC:=$(notdir $(wildcard src/*.c))
 OBJ:=$(addsuffix .o,$(addprefix $(OUT)/,$(basename $(SRC))))
-TAGS:=.tags
+LIB:=$(OUT)/libcudest.so $(OUT)/ioctlshimmer.so
 TAGBIN:=ctags
+TAGS:=.tags
 
+CC?=gcc
 IFLAGS:=-Isrc
-CFLAGS:=-pipe $(IFLAGS) -fPIC -O2 -Wall -W -Werror -march=native -mtune=native
+CFLAGS:=-pipe -D_GNU_SOURCE -std=gnu99 $(IFLAGS) -fpic -O2 -Wall -W -Werror -march=native -mtune=native
 
 BIN:=$(OUT)/cudaminimal
 
@@ -30,6 +31,10 @@ $(TAGS): $(addprefix src/,$(SRC)) $(INC)
 $(OUT)/libcudest.so: $(OBJ)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LFLAGS)
+
+$(OUT)/ioctlshimmer.so: ioctlshimmer.c
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CFLAGS) -shared -o $@ $^ -Wl,--wrap,ioctl -ldl
 	
 $(OUT)/%.o: src/%.c $(INC) $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -46,7 +51,7 @@ preview: test
 	$(VPDF) $(PDF)
 
 $(OUT)/cudaminimal: ../cs8803ss-project/src/cudaminimal.c $(LIB)
-	$(CC) $(CFLAGS) -o $@ $< -L$(dir $(LIB)) -Wl,-R$(dir $(LIB)) -lcudest
+	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest
 
 test: all $(BIN)
 	./$(BIN)

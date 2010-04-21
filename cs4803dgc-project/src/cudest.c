@@ -13,9 +13,15 @@ typedef enum {
 // FIXME we'll almost certainly need a rwlock protecting this
 static int nvctl = -1;
 
+typedef struct nvfifo { // FIXME just a placeholding guess
+	void *fifo;
+} nvfifo;
+
 static CUresult
 init_ctlfd(int fd){
-	if(ioctl(fd,NV_PREPARE_FIFO,0)){
+	nvfifo fifodesc;
+
+	if(ioctl(fd,NV_PREPARE_FIFO,&fifodesc)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	return CUDA_SUCCESS;
