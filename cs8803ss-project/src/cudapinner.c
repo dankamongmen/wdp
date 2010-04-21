@@ -20,11 +20,13 @@ usage(const char *a0){
 static const unsigned flags =
 	CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
 
+static unsigned oldptr;
+
 int main(int argc,char **argv){
-	unsigned oldptr = 0,ptr;
 	uintmax_t total = 0,s;
 	unsigned long zul,sig;
 	CUcontext ctx;
+	unsigned ptr;
 	int cerr;
 
 	if(argc > 3 || argc < 2){

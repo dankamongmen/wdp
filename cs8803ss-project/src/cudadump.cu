@@ -48,7 +48,7 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,int *state){
 	if((cerr = cuDeviceGetName((char *)str,CUDASTRLEN,c)) != CUDA_SUCCESS){
 		goto err;
 	}
-	if((cerr = cuCtxCreate(&ctx,CU_CTX_BLOCKING_SYNC|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
+	if((cerr = cuCtxCreate(&ctx,CU_CTX_MAP_HOST|CU_CTX_SCHED_YIELD,c)) != CUDA_SUCCESS){
 		fprintf(stderr," Couldn't create context (%d)\n",cerr);
 		goto err;
 	}
