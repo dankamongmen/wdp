@@ -14,6 +14,7 @@ TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
 CUDADUMP:=out/cudadump
 CUDAMINIMAL:=out/cudaminimal
+CUDAPINNER:=out/cudapinner
 CUDARANGER:=out/cudaranger
 CUDASPAWNER:=out/cudaspawner
 CUDASTUFFER:=out/cudastuffer
@@ -56,7 +57,11 @@ $(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cuda8803ss.o
 
 $(OUT)/cudaminimal: $(OUT)/cudaminimal.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $< $(LFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+
+$(OUT)/cudapinner: $(OUT)/cudapinner.o $(OUT)/cuda8803ss.o
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -104,17 +109,17 @@ $(PROFDATA): test
 preview: doc
 	$(VPDF) $(PDF)
 
+CUDADEVNO?=0
 test: bin
-	./$(CUDARANGER) 0 0x110000 0x111000
+	./$(CUDARANGER) $(CUDADEVNO) 0x110000 0x111000
 	./$(CUDASTUFFER) 0
-	./$(CUDASPAWNER) 0 0x100000
-	! ./$(CUDARANGER) 0 0 0x100000000
+	./$(CUDASPAWNER) $(CUDADEVNO) 0x100000
+	./$(CUDAPINNER) 0
+	! ./$(CUDARANGER) $(CUDADEVNO) 0 0x100000000
 
 fulltest: test
 	./$(CUDADUMP)
-	! ./$(CUDARANGER) 0 0 0x100000000
+	! ./$(CUDARANGER) $(CUDADEVNO) 0 0x100000000
 
 clean:
-	rm -rf out $(TAGS) $(wildcard *.dump)
-	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg)
-	rm -f $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
+	rm -rf out $(TAGS) $(wildcard *.dump) $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
