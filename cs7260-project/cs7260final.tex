@@ -21,7 +21,7 @@
 
 \newcommand{\squishend}{\end{list}}
 
-\title{30 Helens Agree: We Need a Title}
+\title{LRUMAP: $O(1)$ LRU for Classifying Network Probes}
 \author{Nick Black and Jolene Tarosky\\
 CS7260 Project, Spring 2010}
 \date{}
@@ -30,17 +30,33 @@ CS7260 Project, Spring 2010}
 \maketitle
 
 \begin{abstract}
-abstract\cite{sample}
+Network administrators, particularly in proactively secure environments such
+as military installations, banks and SCADA sites, seek to discriminate standard
+network accesses from reconnaissance. In both host-based intrusion prevention
+systems (such as Solar Designer's \texttt{scanlogd}\footnote{\url{http://www.openwall.com/scanlogd/}})
+and network-level applications (such as the open source Snort\footnote{\url{http://www.snort.org/}} IDS),
+this is accomplished via comparing against some threshold the ratio of a remote
+host's successful accesses of the network to unsuccessful accesses. While a
+successful access will almost inevitably elicit some response packet, a
+reconnaissance may well receive no reply. Classification ought thus not be performed
+at reply time, but only upon a potential probe's ingress.
+
+First-packet classification requires predicting the success of a network access.
+Especially among environments heterogeneous in ownership or architecture (data centers, research facilities,
+development firms, etc), the likelihood of a given service (identified by host
+and transport addresses, and network protocol) existing can vary widely from
+host to host. Tracking these services dynamically is a natural fit for LRU, but
+traditional $O(N)$ or even $O(lgN)$ LRU implementations are too slow for
+backbone routers and IPS devices. We introduce LRUSET, a $O(1)$ true LRU scheme
+which becomes more space-efficient as the number of monitored hosts increases.
+We then illustrate several other counting problems from networking algorithmics
+which could be benefited by this novel data structure.
 \end{abstract}
 
-\begin{multicols}{2}
-\section{Introduction}
-etc
+%\begin{multicols}{2} \section{Introduction} etc
 
-\bibliographystyle{acm}
-\bibliography{cs7260final}
-\end{multicols}
-\appendix
-appendix
-\newpage
+%\bibliographystyle{acm}
+%\bibliography{cs7260final}
+%\end{multicols}
+%\newpage
 \end{document}
