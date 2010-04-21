@@ -33,7 +33,7 @@ CS8803SS Project, Spring 2010}
 
 \begin{multicols}{2}
 \begin{abstract}
-\textbf{Heterogeneous computing has definitely arrived, and graphics processing units (GPUs) in the millions are employed worldwide. Tradition has shown newly programmable domains to be rapidly subjected (and often found vulnerable) to attacks of the past; indeed, wherever processing goes, so does the possibility of automated attacks.  We describe one of the predominant general purpose architectures for GPUs today, nVidia's Compute Unified Device Architecture (CUDA), and examine possible attack vectors against this architecture.  Through our research we have discovered a number of possible attack avenues that have not been considered to date.  These vectors include spoofing, tampering and video manipulation, information disclosure, denial of service, and privilege escalation.}
+\textbf{Heterogeneous computing has definitely arrived, and graphics processing units (GPUs) in the millions are employed worldwide. Tradition has shown newly programmable domains to be rapidly subjected (and often found vulnerable) to attacks of the past; indeed, wherever processing goes, so does the possibility of automated attacks.  We describe one of the predominant general purpose architectures for GPUs today, NVIDIA's Compute Unified Device Architecture (CUDA), and examine possible attack vectors against this architecture.  Through our research we have discovered a number of possible attack avenues that have not been considered to date.  These vectors include spoofing, tampering and video manipulation, information disclosure, denial of service, and privilege escalation.}
 
 \textbf{We investigated methods of exploiting these possible vectors and developed a series of tools that succeed in this regard.  In cases where we were unable to specifically develop a tool to exploit a given vector, we state our view on whether or not we feel the vector is exploitable given more time and effort.  If we feel it's likely that the vector can be exploited we explain what we feel are possible methods of exploiting it, and if not we explain what defense mechanisms are in place that make it unlikely.  For all attack vectors we describe defense mechanisms against them, but note that in the high-performance world of graphics cards adding security mechanisms may be an extremely high burden.}
 
@@ -65,7 +65,7 @@ assurance capabilities were tolerable. Compromises of scientific data,
 cryptographic materials and SCADA systems are rather more serious, yet these
 precise applications are driving GPGPU's adoption. 
 
-Given CUDA's status as a relative newcomer we describe some of the keys to CUDA from a security perspective.  We begin by presenting an overview of nVidia's CUDA framework, describing the basics of CUDA kernels, memory management, its capabilities, and hardware details.
+Given CUDA's status as a relative newcomer we describe some of the keys to CUDA from a security perspective.  We begin by presenting an overview of NVIDIA's CUDA framework, describing the basics of CUDA kernels, memory management, its capabilities, and hardware details.
 
 We provide a system-centric threat model analysis of NVIDIA's CUDA system.
 We close with software-level defenses against our attacks, and their limitations.
@@ -261,6 +261,9 @@ Virtual addresses are extended to 64 bits, with 40 physical bits currently
 supported for up to 1TB of RAM.
 \section{Defending CUDA}
 
+\section{Other Vendors}
+Examining graphics architectures of other vendors was outside the scope of our research.  NVIDIA's leading competitor, ATI, provides a similar framework, ATI Stream\footnote{\url{http://www.amd.com/US/PRODUCTS/TECHNOLOGIES/STREAM-TECHNOLOGY/Pages/stream-technology.aspx}}.  We feel that similar security issues have been overlooked in ATI's model as well given the lack of security discussion in this area.  Additionally, the high-performance and cut-throat nature of the graphics card market has likely precluded any thoughts on security implementations.  We believe that if ATI Stream was examined with the same threat model in mind it is certainly possible that similar security concerns would come to light.
+
 \section{Related work}
 Our research in this area is focused on the possibility of security
 vulnerabilities against the GPU itself, an area which we were unable to find
@@ -277,10 +280,9 @@ recent GPUs reaching the point where they are powerful enough that there has
 been significant research invested into using them to execute tasks outside the
 realm of video games. One of the most popular examples of this is the
 Folding@Home project, which in recent years has developed a version of its
-application that runs on both ATI and nVidia brand GPUs
-\url{http://folding.stanford.edu/English/Guide#ntoc4}.
+application that runs on both ATI and NVIDIA brand GPUs\cite{foldingathome}.
   
-  In 2007, nVidia released an SDK for CUDA, their ``Compute Unified Device
+  In 2007, NVIDIA released an SDK for CUDA, their ``Compute Unified Device
 Architecture'', allowing for the GPU to be much more accessible to developers
 wishing to use the GPU for non-graphical applications. In the three years since
 then, a wide variety of applications for CUDA have been developed\footnote{\url{http://www.nvidia.com/object/what\_is\_cuda\_new.html}}.
@@ -288,44 +290,29 @@ then, a wide variety of applications for CUDA have been developed\footnote{\url{
   General Mills developed an application that used CUDA to model the optimal
 way to cook a frozen pizza in a microwave. SeismicCity used CUDA to improve the
 amount of time it takes to interpret seismic data to determine the optimal
-drilling locations for finding oil
-\url{http://www.nvidia.com/object/cuda\_in\_action.html}.
+drilling locations for finding oil\cite{cudainaction}.
   
   Other companies are offering CUDA solutions for problems in the realms of
 electromagnetics, bioinformatics, finance, accelerator physics, aerodynamics,
 engine optimizations, image and video stream compression, healthcare and life
-sciences, medical imaging, defense, and more
-\squishlist
-\item \url{http://www.acceleware.com/default/index.cfm/professional-services/}
-\item \url{http://www.aneo.fr/index.php?option=com\_content&amp;view=article&amp;id=91&amp;Itemid=110}
-\item \url{http://www.parallel-compute.com/}
-\item \url{http://www.caps-entreprise.com/nvidia.html}
-\item \url{http://www.elegant-mathematics.com/index.html?NVGPU}
-\item \url{http://www.culatools.com/consulting}
-\item \url{http://www.fixstars.com/en/solutions/gpu/}
-\item \url{http://www.hoopoe-cloud.com/Services.aspx}
-\item \url{http://www.hpc-project.com/gpu2.htm}
-\item \url{http://www.sagivtech.com/21541.html}
-\item \url{http://www.stoneridgetechnology.com/services/visualcomputing.asp}
-\item \url{http://gpucomputing.txcorp.com/}.
-\squishend
+sciences, medical imaging, defense, and more\footnote{For a full list, see \url{http://www.nvidia.com/object/cuda\_in\_action.html}}.
   
 \subsection{Security-related computation}
   There are a few research areas where GPUs have been used in security applications, but all of these involve using the GPU as a faster processor than the CPU, and none of the research involves investigating the GPU itself or coding frameworks such as CUDA from a security standpoint.
   
   The most common security task that GPUs have been used for in prior work have been to use the GPU for performing cryptographic computations. Research has found that GPUs can perform some AES-related OpenSSL computations up to 20 times as fast as a typical implementation
-\url{http://www.manavski.com/downloads/PID505889.pdf}. Another aspect that is of importance, particularly to copyright groups such as the RIAA and MPAA, are the encryption techniques used with GPUs for the security of applications involving remote displays, such as for HDCP blu-ray implementations\url{http://www.amazon.com/CryptoGraphics-Exploiting-Graphics-Security-Information/dp/038729015X}.
+\cite{cudaaes}. Another aspect that is of importance, particularly to copyright groups such as the RIAA and MPAA, are the encryption techniques used with GPUs for the security of applications involving remote displays, such as for HDCP blu-ray implementations\cite{cryptographics}.
   
-  While GPUs can be used for improving the speed of cipher implementations, they can be used to speed up cryptographic attacks as well. In some cases, applications have been developed using CUDA to allow for WiFi keys to be broken up to 100 times as fast as in typical implementations \url{http://arstechnica.com/security/news/2008/10/company-puts-nvida-gpus-to-work-cracking-wireless-security.ars}.
+  While GPUs can be used for improving the speed of cipher implementations, they can be used to speed up cryptographic attacks as well. In some cases, applications have been developed using CUDA to allow for WiFi keys to be broken up to 100 times as fast as in typical implementations \cite{gpuwireless}.
   
   Intrusion detection systems can exhibit performance degradation under heavy
   loads, and some of the proposed solutions to this problem have involved
   offloading IDS computations to the GPU
-  \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.125.3302&amp;rep=rep1&amp;type=pdf}.
+  \cite{offloadids}.
   Additionally, some techniques in pattern-matching are difficult to perform
   quickly enough to be useful, and GPUs have been proposed as a solution that
   allow for significant decreases in computation time
-  \url{http://portal.acm.org/citation.cfm?id=1395492}.
+  \cite{gpuids}.
 
 \subsection{GPU security}
  There were a few instances of prior art that actually consider the idea of security on the GPU.  An implementation of a wrapper library for the CUDA SDK features the use of memory-scrubbing for the specific purpoes of wiping the GPU memory after use to provide security from subsequent users\cite{cudawrapper}.  This indicates that while it has not been a subject of much discussion in literature, there are some developers that are starting to consider the security implications of developing applications for GPUs.
