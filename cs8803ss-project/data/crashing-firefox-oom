@@ -1,0 +1,151 @@
+[41561.362741] NVRM: Xid (0001:00): 13, 0006 00000000 000050c0 00000368 00000000 00000100
+[41592.776280] NVRM: Xid (0001:00): 13, 0006 00000000 000050c0 00000368 00000000 00000100
+[42842.683531] firefox-bin invoked oom-killer: gfp_mask=0x201da, order=0, oom_adj=0
+[42842.683536] firefox-bin cpuset=/ mems_allowed=0
+[42842.683538] Pid: 16771, comm: firefox-bin Tainted: P        W  2.6.34-rc2 #1
+[42842.683540] Call Trace:
+[42842.683547]  [<ffffffff81098a11>] ? T.492+0x5f/0x16f
+[42842.683550]  [<ffffffff8109be60>] ? get_page_from_freelist+0x6ea/0x72d
+[42842.683553]  [<ffffffff8109895d>] ? badness+0x1d2/0x227
+[42842.683555]  [<ffffffff81098b58>] ? T.491+0x37/0xfe
+[42842.683558]  [<ffffffff81098d5f>] ? __out_of_memory+0x140/0x157
+[42842.683561]  [<ffffffff81098ed1>] ? out_of_memory+0x15b/0x18d
+[42842.683563]  [<ffffffff8109c57a>] ? __alloc_pages_nodemask+0x4a0/0x5d5
+[42842.683567]  [<ffffffff8109de57>] ? __do_page_cache_readahead+0x93/0x1b3
+[42842.683569]  [<ffffffff8109df93>] ? ra_submit+0x1c/0x20
+[42842.683572]  [<ffffffff81097807>] ? filemap_fault+0x17e/0x2f3
+[42842.683575]  [<ffffffff810adb86>] ? __do_fault+0x52/0x3ba
+[42842.683578]  [<ffffffff810ae9bc>] ? handle_mm_fault+0x3ed/0x7aa
+[42842.683582]  [<ffffffff81051f21>] ? autoremove_wake_function+0x0/0x2a
+[42842.683586]  [<ffffffff81022417>] ? do_page_fault+0x27e/0x29a
+[42842.683589]  [<ffffffff812a2945>] ? page_fault+0x25/0x30
+[42842.683591] Mem-Info:
+[42842.683592] Node 0 DMA per-cpu:
+[42842.683594] CPU    0: hi:    0, btch:   1 usd:   0
+[42842.683596] CPU    1: hi:    0, btch:   1 usd:   0
+[42842.683597] CPU    2: hi:    0, btch:   1 usd:   0
+[42842.683599] CPU    3: hi:    0, btch:   1 usd:   0
+[42842.683601] CPU    4: hi:    0, btch:   1 usd:   0
+[42842.683602] CPU    5: hi:    0, btch:   1 usd:   0
+[42842.683604] CPU    6: hi:    0, btch:   1 usd:   0
+[42842.683606] CPU    7: hi:    0, btch:   1 usd:   0
+[42842.683607] Node 0 DMA32 per-cpu:
+[42842.683609] CPU    0: hi:  186, btch:  31 usd: 172
+[42842.683611] CPU    1: hi:  186, btch:  31 usd: 183
+[42842.683612] CPU    2: hi:  186, btch:  31 usd: 170
+[42842.683614] CPU    3: hi:  186, btch:  31 usd: 133
+[42842.683615] CPU    4: hi:  186, btch:  31 usd:  65
+[42842.683617] CPU    5: hi:  186, btch:  31 usd:  74
+[42842.683619] CPU    6: hi:  186, btch:  31 usd: 164
+[42842.683620] CPU    7: hi:  186, btch:  31 usd: 184
+[42842.683622] Node 0 Normal per-cpu:
+[42842.683623] CPU    0: hi:  186, btch:  31 usd: 169
+[42842.683625] CPU    1: hi:  186, btch:  31 usd: 149
+[42842.683627] CPU    2: hi:  186, btch:  31 usd: 170
+[42842.683628] CPU    3: hi:  186, btch:  31 usd: 146
+[42842.683630] CPU    4: hi:  186, btch:  31 usd: 122
+[42842.683632] CPU    5: hi:  186, btch:  31 usd:  96
+[42842.683633] CPU    6: hi:  186, btch:  31 usd: 167
+[42842.683635] CPU    7: hi:  186, btch:  31 usd: 153
+[42842.683639] active_anon:64781 inactive_anon:11419 isolated_anon:32
+[42842.683640]  active_file:166 inactive_file:472 isolated_file:0
+[42842.683640]  unevictable:0 dirty:0 writeback:11229 unstable:0
+[42842.683641]  free:11299 slab_reclaimable:3152 slab_unreclaimable:21764
+[42842.683642]  mapped:1053702 shmem:493 pagetables:7058 bounce:0
+[42842.683644] Node 0 DMA free:15896kB min:20kB low:24kB high:28kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15764kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? yes
+[42842.683652] lowmem_reserve[]: 0 3445 7990 7990
+[42842.683655] Node 0 DMA32 free:22812kB min:4928kB low:6160kB high:7392kB active_anon:64216kB inactive_anon:12900kB active_file:0kB inactive_file:256kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:3528476kB mlocked:0kB dirty:0kB writeback:12608kB mapped:2087152kB shmem:684kB slab_reclaimable:872kB slab_unreclaimable:35480kB kernel_stack:128kB pagetables:9884kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:115904 all_unreclaimable? yes
+[42842.683664] lowmem_reserve[]: 0 0 4545 4545
+[42842.683666] Node 0 Normal free:6488kB min:6500kB low:8124kB high:9748kB active_anon:194908kB inactive_anon:32776kB active_file:664kB inactive_file:1632kB unevictable:0kB isolated(anon):128kB isolated(file):0kB present:4654080kB mlocked:0kB dirty:0kB writeback:32308kB mapped:2127656kB shmem:1288kB slab_reclaimable:11736kB slab_unreclaimable:51576kB kernel_stack:2328kB pagetables:18348kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:345024 all_unreclaimable? yes
+[42842.683675] lowmem_reserve[]: 0 0 0 0
+[42842.683678] Node 0 DMA: 2*4kB 2*8kB 2*16kB 1*32kB 1*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 3*4096kB = 15896kB
+[42842.683685] Node 0 DMA32: 4687*4kB 0*8kB 2*16kB 2*32kB 0*64kB 1*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 22812kB
+[42842.683691] Node 0 Normal: 634*4kB 16*8kB 1*16kB 5*32kB 1*64kB 2*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 6488kB
+[42842.683698] 12609 total pagecache pages
+[42842.683699] 11387 pages in swap cache
+[42842.683701] Swap cache stats: add 22707, delete 11320, find 2/2
+[42842.683703] Free swap  = 6744792kB
+[42842.683704] Total swap = 6835620kB
+[42842.707808] 2097151 pages RAM
+[42842.707810] 64340 pages reserved
+[42842.707812] 1056384 pages shared
+[42842.707813] 964448 pages non-shared
+[42842.707816] Out of memory: kill process 8555 (cudapinner) score 1057549 or a child
+[42842.707820] Killed process 8555 (cudapinner) vsz:4230196kB, anon-rss:744kB, file-rss:15432kB
+[42842.718544] NVRM: VM: nv_vm_malloc_pages: failed to allocate a page
+[42891.026550] firefox-bin invoked oom-killer: gfp_mask=0x201da, order=0, oom_adj=0
+[42891.026559] firefox-bin cpuset=/ mems_allowed=0
+[42891.026565] Pid: 16520, comm: firefox-bin Tainted: P        W  2.6.34-rc2 #1
+[42891.026569] Call Trace:
+[42891.026582]  [<ffffffff81098a11>] ? T.492+0x5f/0x16f
+[42891.026588]  [<ffffffff8109be60>] ? get_page_from_freelist+0x6ea/0x72d
+[42891.026595]  [<ffffffff8109895d>] ? badness+0x1d2/0x227
+[42891.026602]  [<ffffffff81098b58>] ? T.491+0x37/0xfe
+[42891.026611]  [<ffffffff81098d5f>] ? __out_of_memory+0x140/0x157
+[42891.026614]  [<ffffffff81098ed1>] ? out_of_memory+0x15b/0x18d
+[42891.026616]  [<ffffffff8109c57a>] ? __alloc_pages_nodemask+0x4a0/0x5d5
+[42891.026619]  [<ffffffff8111d910>] ? ext4_get_block+0x0/0xe1
+[42891.026622]  [<ffffffff8109de57>] ? __do_page_cache_readahead+0x93/0x1b3
+[42891.026624]  [<ffffffff8109df93>] ? ra_submit+0x1c/0x20
+[42891.026626]  [<ffffffff81097807>] ? filemap_fault+0x17e/0x2f3
+[42891.026629]  [<ffffffff810adb86>] ? __do_fault+0x52/0x3ba
+[42891.026632]  [<ffffffff810ae9bc>] ? handle_mm_fault+0x3ed/0x7aa
+[42891.026635]  [<ffffffff810034ce>] ? call_function_interrupt+0xe/0x20
+[42891.026638]  [<ffffffff8100948a>] ? read_tsc+0x5/0x16
+[42891.026641]  [<ffffffff81022417>] ? do_page_fault+0x27e/0x29a
+[42891.026645]  [<ffffffff812a2945>] ? page_fault+0x25/0x30
+[42891.026646] Mem-Info:
+[42891.026647] Node 0 DMA per-cpu:
+[42891.026649] CPU    0: hi:    0, btch:   1 usd:   0
+[42891.026650] CPU    1: hi:    0, btch:   1 usd:   0
+[42891.026652] CPU    2: hi:    0, btch:   1 usd:   0
+[42891.026653] CPU    3: hi:    0, btch:   1 usd:   0
+[42891.026655] CPU    4: hi:    0, btch:   1 usd:   0
+[42891.026656] CPU    5: hi:    0, btch:   1 usd:   0
+[42891.026658] CPU    6: hi:    0, btch:   1 usd:   0
+[42891.026659] CPU    7: hi:    0, btch:   1 usd:   0
+[42891.026660] Node 0 DMA32 per-cpu:
+[42891.026662] CPU    0: hi:  186, btch:  31 usd: 178
+[42891.026663] CPU    1: hi:  186, btch:  31 usd:   0
+[42891.026665] CPU    2: hi:  186, btch:  31 usd: 173
+[42891.026666] CPU    3: hi:  186, btch:  31 usd:  60
+[42891.026667] CPU    4: hi:  186, btch:  31 usd:   0
+[42891.026669] CPU    5: hi:  186, btch:  31 usd:   0
+[42891.026670] CPU    6: hi:  186, btch:  31 usd:   0
+[42891.026671] CPU    7: hi:  186, btch:  31 usd:  57
+[42891.026672] Node 0 Normal per-cpu:
+[42891.026674] CPU    0: hi:  186, btch:  31 usd: 171
+[42891.026676] CPU    1: hi:  186, btch:  31 usd:   0
+[42891.026677] CPU    2: hi:  186, btch:  31 usd: 176
+[42891.026678] CPU    3: hi:  186, btch:  31 usd: 145
+[42891.026680] CPU    4: hi:  186, btch:  31 usd:   0
+[42891.026681] CPU    5: hi:  186, btch:  31 usd:   0
+[42891.026683] CPU    6: hi:  186, btch:  31 usd:   6
+[42891.026684] CPU    7: hi:  186, btch:  31 usd: 136
+[42891.026688] active_anon:45494 inactive_anon:8079 isolated_anon:17
+[42891.026688]  active_file:264 inactive_file:470 isolated_file:0
+[42891.026689]  unevictable:0 dirty:0 writeback:6579 unstable:0
+[42891.026690]  free:11235 slab_reclaimable:2986 slab_unreclaimable:21615
+[42891.026690]  mapped:1053541 shmem:200 pagetables:7107 bounce:0
+[42891.026692] Node 0 DMA free:15896kB min:20kB low:24kB high:28kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15764kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? yes
+[42891.026699] lowmem_reserve[]: 0 3445 7990 7990
+[42891.026702] Node 0 DMA32 free:22784kB min:4928kB low:6160kB high:7392kB active_anon:52436kB inactive_anon:10560kB active_file:92kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:3528476kB mlocked:0kB dirty:0kB writeback:4876kB mapped:81792kB shmem:500kB slab_reclaimable:776kB slab_unreclaimable:35472kB kernel_stack:128kB pagetables:7824kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:95754 all_unreclaimable? yes
+[42891.026710] lowmem_reserve[]: 0 0 4545 4545
+[42891.026712] Node 0 Normal free:6260kB min:6500kB low:8124kB high:9748kB active_anon:129540kB inactive_anon:21756kB active_file:964kB inactive_file:1900kB unevictable:0kB isolated(anon):68kB isolated(file):0kB present:4654080kB mlocked:0kB dirty:0kB writeback:21440kB mapped:4132372kB shmem:300kB slab_reclaimable:11168kB slab_unreclaimable:50988kB kernel_stack:2352kB pagetables:20604kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:232768 all_unreclaimable? yes
+[42891.026720] lowmem_reserve[]: 0 0 0 0
+[42891.026722] Node 0 DMA: 2*4kB 2*8kB 2*16kB 1*32kB 1*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 3*4096kB = 15896kB
+[42891.026728] Node 0 DMA32: 765*4kB 386*8kB 204*16kB 139*32kB 56*64kB 13*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 22948kB
+[42891.026734] Node 0 Normal: 315*4kB 54*8kB 56*16kB 5*32kB 2*64kB 2*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 6460kB
+[42891.026740] 9590 total pagecache pages
+[42891.026741] 8676 pages in swap cache
+[42891.026742] Swap cache stats: add 44073, delete 35397, find 892/1022
+[42891.026743] Free swap  = 6664808kB
+[42891.026744] Total swap = 6835620kB
+[42891.056305] 2097151 pages RAM
+[42891.056308] 64340 pages reserved
+[42891.056309] 1057095 pages shared
+[42891.056311] 965272 pages non-shared
+[42891.056313] Out of memory: kill process 8614 (cudapinner) score 1057549 or a child
+[42891.056316] Killed process 8614 (cudapinner) vsz:4230196kB, anon-rss:748kB, file-rss:15560kB
+[42891.073527] NVRM: VM: nv_vm_malloc_pages: failed to allocate a page
+[hyperbox](0) $ 
