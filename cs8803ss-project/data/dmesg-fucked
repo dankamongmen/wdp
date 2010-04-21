@@ -1,0 +1,54 @@
+[64629.001991] 16917 total pagecache pages
+[64629.001994] 15992 pages in swap cache
+[64629.001999] Swap cache stats: add 220068, delete 204076, find 55853/67705
+[64629.002003] Free swap  = 6624212kB
+[64629.002006] Total swap = 6835620kB
+[64629.051328] 2097151 pages RAM
+[64629.051333] 64340 pages reserved
+[64629.051337] 1057845 pages shared
+[64629.051340] 962287 pages non-shared
+[64629.051346] Out of memory: kill process 20559 (cudapinner) score 1057548 or a child
+[64629.051353] Killed process 20559 (cudapinner) vsz:4230192kB, anon-rss:740kB, file-rss:15384kB
+[64629.067556] NVRM: VM: nv_vm_malloc_pages: failed to allocate a page
+[64662.433686] NVRM: Xid (0001:00): 8, Channel 00000001
+[64737.694980] NVRM: Xid (0001:00): 8, Channel 00000001
+[66375.243917] NVRM: failed to copyin ioctl data!
+[66375.243926] NVRM: failed to copyout ioctl data
+[66518.559212] NVRM: failed to copyin ioctl data!
+[66518.559217] NVRM: failed to copyout ioctl data
+[66523.287905] NVRM: failed to copyin ioctl data!
+[66523.287910] NVRM: failed to copyout ioctl data
+[66534.547023] NVRM: failed to copyin ioctl data!
+[66534.547027] NVRM: failed to copyout ioctl data
+[66555.710674] NVRM: failed to copyin ioctl data!
+[66555.710683] NVRM: failed to copyout ioctl data
+[66804.808071] NVRM: API mismatch: the client has the version , but
+[66804.808072] NVRM: this kernel module has the version 195.36.15.  Please
+[66804.808073] NVRM: make sure that this kernel module and all NVIDIA driver
+[66804.808074] NVRM: components have the same version.
+[66809.987010] NVRM: API mismatch: the client has the version , but
+[66809.987014] NVRM: this kernel module has the version 195.36.15.  Please
+[66809.987017] NVRM: make sure that this kernel module and all NVIDIA driver
+[66809.987019] NVRM: components have the same version.
+��(, but97110] NVRM: API mismatch: the client has the version =���s�H�
+[67880.797114] NVRM: this kernel module has the version 195.36.15.  Please
+[67880.797116] NVRM: make sure that this kernel module and all NVIDIA driver
+[67880.797119] NVRM: components have the same version.
+[67880.797130] NVRM: failed to copyout ioctl data
+��(, but62265] NVRM: API mismatch: the client has the version =���s�H�
+[67888.962267] NVRM: this kernel module has the version 195.36.15.  Please
+[67888.962267] NVRM: make sure that this kernel module and all NVIDIA driver
+[67888.962268] NVRM: components have the same version.
+[67888.962273] NVRM: failed to copyout ioctl data
+[68063.049689] NVRM: API mismatch: the client has the version , but
+[68063.049691] NVRM: this kernel module has the version 195.36.15.  Please
+[68063.049692] NVRM: make sure that this kernel module and all NVIDIA driver
+[68063.049693] NVRM: components have the same version.
+[68071.924557] NVRM: API mismatch: the client has the version , but
+[68071.924561] NVRM: this kernel module has the version 195.36.15.  Please
+[68071.924564] NVRM: make sure that this kernel module and all NVIDIA driver
+[68071.924567] NVRM: components have the same version.
+[68233.697019] NVRM: API mismatch: the client has the version , but
+[68233.697023] NVRM: this kernel module has the version 195.36.15.  Please
+[68233.697026] NVRM: make sure that this kernel module and all NVIDIA driver
+[68233.697028] NVRM: components have the same version.
