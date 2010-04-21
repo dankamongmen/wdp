@@ -26,5 +26,4 @@ test: all
 	# FIXME no binaries yet
 
 clean:
-	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg)
-	rm -f $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
+	rm -f $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
