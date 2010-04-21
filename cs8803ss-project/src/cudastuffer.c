@@ -33,7 +33,7 @@ int main(int argc,char **argv){
 			exit(EXIT_FAILURE);
 		}
 		if(sig >= (unsigned)SIGRTMIN){
-			fprintf(stderr,"Invalid signal (%zu > %d)\n",sig,SIGRTMIN);
+			fprintf(stderr,"Invalid signal (%lu > %d)\n",sig,SIGRTMIN);
 			usage(argv[0]);
 			exit(EXIT_FAILURE);
 		}
@@ -72,9 +72,9 @@ int main(int argc,char **argv){
 		sigset_t set;
 		int sigrx;
 
-		printf("Waiting on signal %zu...\n",sig);
+		printf("Waiting on signal %lu...\n",sig);
 		if(sigemptyset(&set) || sigaddset(&set,sig) || sigwait(&set,&sigrx)){
-			fprintf(stderr,"Error waiting on signal %zu (%s?)\n",
+			fprintf(stderr,"Error waiting on signal %lu (%s?)\n",
 					sig,strerror(errno));
 			exit(EXIT_FAILURE);
 		}
