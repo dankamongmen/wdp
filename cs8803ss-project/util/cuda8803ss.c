@@ -6,6 +6,7 @@
 
 int init_cuda(int devno,CUdevice *c){
 	int attr,cerr;
+	CUdevice tmp;
 
 	if((cerr = cuInit(0)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't initialize CUDA (%d), exiting.\n",cerr);
@@ -17,6 +18,9 @@ int init_cuda(int devno,CUdevice *c){
 	if(CUDA_VERSION > attr){
 		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
 		return -1;
+	}
+	if(c == NULL){
+		c = &tmp; // won't be passed pack, but allows device binding
 	}
 	if((cerr = cuDeviceGet(c,devno)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't get device reference (%d), exiting.\n",cerr);
@@ -56,7 +60,7 @@ uintmax_t cuda_hostalloc_max(FILE *o,void **ptr,unsigned unit,unsigned flags){
 		}else if(s < tmax){
 			int cerr;
 
-			if(o){ fprintf(o,"%jub...",s); }
+			if(o){ fprintf(o,"%jub @ %p...",s,*ptr); }
 			if((cerr = cuMemFreeHost(*ptr)) ){
 				fprintf(stderr,"  Couldn't free %jub at %p (%d?)\n",
 					s,*ptr,cerr);
@@ -87,7 +91,7 @@ uintmax_t cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
 		}else if(s < tmax){
 			int cerr;
 
-			if(o){ fprintf(o,"%jub...",s); }
+			if(o){ fprintf(o,"%jub @ 0x%x...",s,*ptr); }
 			if((cerr = cuMemFree(*ptr)) ){
 				fprintf(stderr,"  Couldn't free %jub at 0x%x (%d?)\n",
 					s,*ptr,cerr);
