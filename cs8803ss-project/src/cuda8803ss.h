@@ -6,6 +6,8 @@ extern "C" {
 #endif
 
 #include <cuda.h>
+#include <stdio.h>
+#include <stdint.h>
 
 int init_cuda(int,CUdevice *);
 int init_cuda_ctx(int,CUcontext *);
@@ -21,8 +23,6 @@ uintmax_t cuda_hostalloc_max(FILE *,CUdeviceptr *,unsigned,unsigned);
 #define GRID_SIZE 1
 #define BLOCK_SIZE 128
 
-#include <stdio.h>
-#include <stdint.h>
 #include <sys/time.h>
 
 // Result codes. _CUDAFAIL means that the CUDA kernel raised an exception -- an
