@@ -15,6 +15,7 @@ TEXOBJS:=$(wildcard texobjs/*)
 CUDADUMP:=out/cudadump
 CUDAMINIMAL:=out/cudaminimal
 CUDAPINNER:=out/cudapinner
+CUDAQUIRKY:=out/cudaquirky
 CUDARANGER:=out/cudaranger
 CUDASPAWNER:=out/cudaspawner
 CUDASTUFFER:=out/cudastuffer
@@ -117,6 +118,7 @@ test: bin
 	./$(CUDARANGER) $(CUDADEVNO) 0x110000 0x111000
 	./$(CUDASTUFFER) 0
 	./$(CUDASPAWNER) $(CUDADEVNO) 0x100000
+	./$(CUDAQUIRKY)
 	! ./$(CUDARANGER) $(CUDADEVNO) 0 0x100000000
 
 fulltest: test
