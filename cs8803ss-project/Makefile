@@ -36,7 +36,6 @@ NCFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda
 NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
 PTXFLAGS:=--ptx
-#CUBINFLAGS:=-deviceemu
 TAGS:=.tags
 
 all: $(TAGS) doc bin ptx
@@ -53,7 +52,7 @@ $(TAGS): $(CSRC) $(CUDASRC) util/cuda8803ss.c $(SRC)/cuda8803ss.h
 
 $(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
+	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
 $(OUT)/cudaminimal: $(OUT)/cudaminimal.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -65,7 +64,11 @@ $(OUT)/cudapinner: $(OUT)/cudapinner.o $(OUT)/cuda8803ss.o
 
 $(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
+	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
+
+$(OUT)/cudaquirky: $(OUT)/cudaquirky.o $(OUT)/cuda8803ss.o
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
 $(OUT)/cudaspawner: $(OUT)/cudaspawner.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -81,7 +84,7 @@ $(OUT)/%.ptx: $(SRC)/%.cu
 
 $(OUT)/%.o: $(SRC)/%.cu $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(CUBINFLAGS) $(NCFLAGS) -c -o $@ $< $(LFLAGS)
+	$(NVCC) $(NCFLAGS) -c -o $@ $< $(LFLAGS)
 
 $(OUT)/%.o: $(SRC)/%.c $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
