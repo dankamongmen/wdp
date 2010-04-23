@@ -1,5 +1,6 @@
 #include "cudest.h"
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 
@@ -14,13 +15,14 @@ typedef enum {
 static int nvctl = -1;
 
 typedef struct nvfifo { // FIXME just a placeholding guess
-	void *fifo;
+	char ob[0x48];
 } nvfifo;
 
 static CUresult
 init_ctlfd(int fd){
 	nvfifo fifodesc;
 
+	memset(&fifodesc,0,sizeof(fifodesc));
 	if(ioctl(fd,NV_PREPARE_FIFO,&fifodesc)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}

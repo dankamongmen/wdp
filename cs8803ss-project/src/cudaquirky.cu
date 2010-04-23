@@ -8,6 +8,7 @@ __global__ void quirkykernel(void){
 	__syncthreads();
 	while(sharedvar != threadIdx.x) /*** reconvergencepoint ***/ ;
 	++sharedvar;
+	__syncthreads();
 }
 
 int main(void){
