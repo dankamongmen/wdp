@@ -15,6 +15,7 @@ typedef enum {
 	NV_SECOND	= 0xc00446ca,
 	NV_THIRD	= 0xc60046c8,
 	NV_FOURTH	= 0xc00c4622,
+	NV_FIFTH	= 0xc020462a,
 } nvioctls;
 
 // FIXME we'll almost certainly need a rwlock protecting this
@@ -34,6 +35,11 @@ typedef struct fourthtype {
 	uint32_t ob[3];		// 0xc (12) bytes
 } fourthtype;
 
+typedef struct type5 {
+	uint32_t ob[8];		// 0x20 (32) bytes
+} type5;
+
+static type5 t5;
 static thirdtype t3;
 static fourthtype t4;
 static secondtype result0xca;
@@ -56,6 +62,12 @@ init_ctlfd(int fd){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if(ioctl(fd,NV_FOURTH,&t4)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	// FIXME ought be setting the rest of this up
+	t5.ob[0] = t4.ob[0];
+	t5.ob[1] = t4.ob[0];
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	return CUDA_SUCCESS;
