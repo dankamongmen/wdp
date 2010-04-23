@@ -27,10 +27,14 @@ typedef uint32_t secondtype;
 
 static secondtype result0xca;
 
+typedef struct thirdtype {
+	uint32_t ob[384];	// 1536 (0x600) bytes
+} thirdtype;
+
 static CUresult
 init_ctlfd(int fd){
 	nvhandshake hshake;
-	void *t3;
+	thirdtype t3;
 
 	memset(&hshake,0,sizeof(hshake));
 	hshake.ob[2] = 0x35ull;
@@ -48,12 +52,10 @@ init_ctlfd(int fd){
 	if(ioctl(fd,NV_SECOND,&result0xca)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if((t3 = malloc(0x600)) == NULL){
-		return CUDA_ERROR_OUT_OF_MEMORY;
-	}
-	memset(t3,0,0x600);
+	memset(t3.ob,0,sizeof(t3.ob));
+	t3.ob[0] = (uint32_t)-1;
+	printf("%u\n",t3.ob[0]);
 	if(ioctl(fd,NV_THIRD,t3)){
-		free(t3);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	return CUDA_SUCCESS;
