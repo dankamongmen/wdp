@@ -14,6 +14,7 @@ typedef enum {
 	NV_HANDSHAKE	= 0xc04846d2,
 	NV_SECOND	= 0xc00446ca,
 	NV_THIRD	= 0xc60046c8,
+	NV_FOURTH	= 0xc022460c,
 } nvioctls;
 
 // FIXME we'll almost certainly need a rwlock protecting this
@@ -25,16 +26,21 @@ typedef struct nvhandshake {
 
 typedef uint32_t secondtype;
 
-static secondtype result0xca;
-
 typedef struct thirdtype {
 	uint32_t ob[384];	// 1536 (0x600) bytes
 } thirdtype;
 
+typedef struct fourthtype {
+	char ob[34];		// 0x22 bytes
+} fourthtype;
+
+static thirdtype t3;
+static fourthtype t4;
+static secondtype result0xca;
+
 static CUresult
 init_ctlfd(int fd){
 	nvhandshake hshake;
-	thirdtype t3;
 
 	memset(&hshake,0,sizeof(hshake));
 	hshake.ob[2] = 0x35ull;
@@ -42,20 +48,14 @@ init_ctlfd(int fd){
 	if(ioctl(fd,NV_HANDSHAKE,&hshake)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	{
-		unsigned z;
-
-		for(z = 0 ; z < sizeof(hshake.ob) / sizeof(*hshake.ob) ; ++z){
-			printf("0x%2x 0x%jx\n",z * 8,(uintmax_t)hshake.ob[z]);
-		}
-	}
 	if(ioctl(fd,NV_SECOND,&result0xca)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	memset(t3.ob,0,sizeof(t3.ob));
 	t3.ob[0] = (uint32_t)-1;
-	printf("%u\n",t3.ob[0]);
 	if(ioctl(fd,NV_THIRD,t3)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FOURTH,&t4)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	return CUDA_SUCCESS;
