@@ -10,7 +10,6 @@
 #define DEVROOT "/dev/nvidia"
 #define NVCTLDEV "/dev/nvidiactl"
 
-/*
 // Reverse-engineered from strace and binary analysis.
 typedef enum {
 	NV_HANDSHAKE	= 0xc04846d2,
@@ -38,14 +37,15 @@ Ioctl(int fd,int req,void *arg){
 	printf("ioctl %x, %d-byte param, fd %d\t",req & 0xff,s,fd);
 	if(r == 0){
 		for(z = 0 ; z < s ; z += 4){
+			printf("\x1b[1m");
 			if(z % 16 == 0 && z){
 				printf("0x%04x\t\t\t\t",z);
 			}
 			if(dat[z / 4]){
-				printf("\x1b[32m\x1b[1m");
+				printf("\x1b[32m");
 			}
 			printf("0x%08x ",dat[z / 4]);
-			printf("\x1b[0m\x1b[1m");
+			printf("\x1b[0m");
 			if(z % 16 == 12){
 				printf("\n");
 			}
@@ -215,4 +215,4 @@ CUresult cuDeviceGet(CUdevice *d,int devno){
 	}
 	d->devno = devno;
 	return CUDA_SUCCESS;
-}*/
+}
