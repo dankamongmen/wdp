@@ -55,7 +55,7 @@ $(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
-$(OUT)/cudaminimal: $(OUT)/cudaminimal.o
+$(OUT)/cudaminimal: $(OUT)/cudaminimal.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
@@ -63,11 +63,11 @@ $(OUT)/cudapinner: $(OUT)/cudapinner.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cuda8803ss.o
+$(OUT)/cudaquirky: $(OUT)/cudaquirky.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
-$(OUT)/cudaquirky: $(OUT)/cudaquirky.o $(OUT)/cuda8803ss.o
+$(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 

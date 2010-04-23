@@ -1,4 +1,5 @@
 #include "cudest.h"
+#include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
@@ -24,10 +25,11 @@ typedef struct nvhandshake {
 
 typedef uint32_t secondtype;
 
+static secondtype result0xca;
+
 static CUresult
 init_ctlfd(int fd){
 	nvhandshake hshake;
-	secondtype t2;
 	void *t3;
 
 	memset(&hshake,0,sizeof(hshake));
@@ -36,13 +38,20 @@ init_ctlfd(int fd){
 	if(ioctl(fd,NV_HANDSHAKE,&hshake)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	t2 = 0;
-	if(ioctl(fd,NV_SECOND,&t2)){
+	{
+		unsigned z;
+
+		for(z = 0 ; z < sizeof(hshake.ob) / sizeof(*hshake.ob) ; ++z){
+			printf("0x%2x 0x%jx\n",z * 8,(uintmax_t)hshake.ob[z]);
+		}
+	}
+	if(ioctl(fd,NV_SECOND,&result0xca)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if((t3 = malloc(0x600)) == NULL){
 		return CUDA_ERROR_OUT_OF_MEMORY;
 	}
+	memset(t3,0,0x600);
 	if(ioctl(fd,NV_THIRD,t3)){
 		free(t3);
 		return CUDA_ERROR_INVALID_DEVICE;
