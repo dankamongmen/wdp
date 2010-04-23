@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 
+#define DEVROOT "/dev/nvidia"
 #define NVCTLDEV "/dev/nvidiactl"
 
 // Reverse-engineered from strace and binary analysis.
@@ -48,15 +49,49 @@ typedef struct type6 {
 	uint32_t ob[12];	// 0x30 (48) bytes
 } type6;
 
+typedef struct type9 {
+	uint32_t ob[8];		// 0x20 (32) bytes
+} type9;
+
 static type6 t6;
-static type5 t5,ta;
 static thirdtype t3;
 static fourthtype t4;
+static type5 t5,ta,t7;
 static secondtype result0xca;
+
+static CUresult
+init_dev(unsigned dno){
+	char devn[strlen(DEVROOT) + 4];
+	type9 t9;
+	int dfd;
+
+	if(snprintf(devn,sizeof(devn),"%s%u",DEVROOT,dno) >= (int)sizeof(devn)){
+		return CUDA_ERROR_INVALID_VALUE;
+	}
+	if((dfd = open(devn,O_RDWR)) < 0){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	t9.ob[0] = 3251636241;
+	t9.ob[1] = 3251636241;
+	t9.ob[2] = 1;
+	t9.ob[3] = 0;
+	t9.ob[4] = 0;
+	if(ioctl(dfd,NV_I9,&t9)){
+		close(dfd);
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(dfd,NV_I9,&t9)){
+		close(dfd);
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	close(dfd);
+	return CUDA_SUCCESS;
+}
 
 static CUresult
 init_ctlfd(int fd){
 	nvhandshake hshake;
+	CUresult r;
 
 	memset(&hshake,0,sizeof(hshake));
 	hshake.ob[2] = 0x35ull;
@@ -95,11 +130,8 @@ init_ctlfd(int fd){
 	if(ioctl(fd,NV_IA,&ta)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(ioctl(fd,NV_I9,&ta)){
-		return CUDA_ERROR_INVALID_DEVICE;
-	}
-	if(ioctl(fd,NV_I9,&ta)){
-		return CUDA_ERROR_INVALID_DEVICE;
+	if((r = init_dev(0)) != CUDA_SUCCESS){
+		return r;
 	}
 	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
@@ -108,6 +140,12 @@ init_ctlfd(int fd){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_I7,&t7)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if(ioctl(fd,NV_FIFTH,&t5)){
