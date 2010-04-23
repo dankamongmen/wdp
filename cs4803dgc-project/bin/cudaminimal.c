@@ -23,7 +23,7 @@ int main(int argc,char **argv){
 		fprintf(stderr,"Couldn't initialize CUDA (%d)\n",cerr);
 		exit(EXIT_FAILURE);
 	}
-	if( (cerr = cuDeviceGet(c,devno)) ){
+	if( (cerr = cuDeviceGet(&c,devno)) ){
 		fprintf(stderr,"Couldn't reference device %d (%d)\n",devno,cerr);
 	}
 	printf("CUDA initialized.\n");

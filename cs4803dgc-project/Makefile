@@ -12,7 +12,8 @@ INC:=$(wildcard src/*.h)
 TEXOBJS:=$(wildcard texobjs/*)
 SRC:=$(notdir $(wildcard src/*.c))
 OBJ:=$(addsuffix .o,$(addprefix $(OUT)/,$(basename $(SRC))))
-BSRC:=$(wildcard bin/*.c)
+MINSRC:=bin/cudaminimal.c
+SPAWNSRC:=bin/cudaspawner.c
 LIB:=$(OUT)/libcudest.so $(OUT)/ioctlshimmer.so
 TAGBIN:=ctags
 TAGS:=.tags
@@ -21,7 +22,7 @@ CC?=gcc
 IFLAGS:=-Isrc
 CFLAGS:=-pipe -g -ggdb -D_GNU_SOURCE -std=gnu99 $(IFLAGS) -fpic -Wall -W -Werror -march=native -mtune=native
 
-BIN:=$(OUT)/cudaminimal
+BIN:=$(OUT)/cudaminimal $(OUT)/cudaspawner
 
 all: $(LIB) $(PDF)
 
@@ -29,7 +30,10 @@ $(TAGS): $(addprefix src/,$(SRC)) $(INC)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(TAGBIN) -f $@ $^
 
-$(OUT)/cudaminimal: $(BSRC) $(LIB)
+$(OUT)/cudaminimal: $(MINSRC) $(LIB)
+	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
+
+$(OUT)/cudaspawner: $(SPAWNSRC) $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
 
 $(OUT)/libcudest.so: $(OBJ)
@@ -55,7 +59,8 @@ preview: test
 	$(VPDF) $(PDF)
 
 test: all $(BIN)
-	./$(BIN)
+	./$(OUT)/cudaminimal
+	./$(OUT)/cudaspawner 0 0
 
 clean:
 	rm -rf $(OUT) $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)

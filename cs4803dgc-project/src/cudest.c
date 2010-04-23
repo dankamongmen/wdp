@@ -16,6 +16,11 @@ typedef enum {
 	NV_THIRD	= 0xc60046c8,
 	NV_FOURTH	= 0xc00c4622,
 	NV_FIFTH	= 0xc020462a,
+	NV_I6		= 0xc048464d,
+	NV_I7		= 0xc014462d,
+	NV_I8		= 0xc0144632,
+	NV_I9		= 0xc0204637,
+	NV_IA		= 0xc020462b,
 } nvioctls;
 
 // FIXME we'll almost certainly need a rwlock protecting this
@@ -39,7 +44,12 @@ typedef struct type5 {
 	uint32_t ob[8];		// 0x20 (32) bytes
 } type5;
 
-static type5 t5;
+typedef struct type6 {
+	uint32_t ob[12];	// 0x30 (48) bytes
+} type6;
+
+static type6 t6;
+static type5 t5,ta;
 static thirdtype t3;
 static fourthtype t4;
 static secondtype result0xca;
@@ -70,6 +80,39 @@ init_ctlfd(int fd){
 	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
+	if(ioctl(fd,NV_I6,&t6)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_IA,&ta)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_I9,&ta)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_I9,&ta)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if(ioctl(fd,NV_FIFTH,&t5)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
 	return CUDA_SUCCESS;
 }
 
@@ -91,5 +134,13 @@ CUresult cuInit(unsigned flags){
 		close(nvctl);
 	}
 	nvctl = fd;
+	return CUDA_SUCCESS;
+}
+
+CUresult cuDeviceGet(CUdevice *d,int devno){
+	if(devno < 0){
+		return CUDA_ERROR_INVALID_VALUE;
+	}
+	d->devno = devno;
 	return CUDA_SUCCESS;
 }

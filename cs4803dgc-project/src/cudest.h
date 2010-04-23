@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <pthread.h>
+
 // Taken from 3.0's cuda.h
 typedef enum cudaError_enum {
     CUDA_SUCCESS                    = 0,        ///< No errors
@@ -60,8 +62,18 @@ typedef struct CUdevice {
 	int devno;
 } CUdevice;
 
+typedef struct opCUcontext {
+	pthread_t tid;
+} opCUcontext;
+
+typedef opCUcontext *CUcontext;
+
+typedef void *CUdeviceptr;
+
 CUresult CUDAAPI cuInit(unsigned);
-CUresult CUDAAPI cuDeviceGet(CUdevice,int);
+CUresult CUDAAPI cuDeviceGet(CUdevice *,int);
+CUresult CUDAAPI cuCtxCreate(CUcontext *,unsigned,CUdevice);
+CUresult CUDAAPI cuMemAlloc(CUdeviceptr *,unsigned);
 
 #ifdef __cplusplus
 }
