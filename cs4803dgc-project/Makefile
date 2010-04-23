@@ -14,7 +14,7 @@ SRC:=$(notdir $(wildcard src/*.c))
 OBJ:=$(addsuffix .o,$(addprefix $(OUT)/,$(basename $(SRC))))
 MINSRC:=bin/cudaminimal.c
 SPAWNSRC:=bin/cudaspawner.c
-LIB:=$(OUT)/libcudest.so $(OUT)/ioctlshimmer.so
+LIB:=$(OUT)/libcudest.so
 TAGBIN:=ctags
 TAGS:=.tags
 
@@ -40,10 +40,6 @@ $(OUT)/libcudest.so: $(OBJ)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LFLAGS)
 
-$(OUT)/ioctlshimmer.so: ioctlshimmer.c
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -shared -o $@ $^ -Wl,--wrap,ioctl -ldl
-	
 $(OUT)/%.o: src/%.c $(INC) $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
