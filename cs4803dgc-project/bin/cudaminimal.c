@@ -25,6 +25,7 @@ int main(int argc,char **argv){
 	}
 	if( (cerr = cuDeviceGet(&c,devno)) ){
 		fprintf(stderr,"Couldn't reference device %d (%d)\n",devno,cerr);
+		exit(EXIT_FAILURE);
 	}
 	printf("CUDA initialized.\n");
 	exit(EXIT_SUCCESS);
