@@ -12,6 +12,7 @@ INC:=$(wildcard src/*.h)
 TEXOBJS:=$(wildcard texobjs/*)
 SRC:=$(notdir $(wildcard src/*.c))
 OBJ:=$(addsuffix .o,$(addprefix $(OUT)/,$(basename $(SRC))))
+BSRC:=$(wildcard bin/*.c)
 LIB:=$(OUT)/libcudest.so $(OUT)/ioctlshimmer.so
 TAGBIN:=ctags
 TAGS:=.tags
@@ -27,6 +28,9 @@ all: $(LIB) $(PDF)
 $(TAGS): $(addprefix src/,$(SRC)) $(INC)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(TAGBIN) -f $@ $^
+
+$(OUT)/cudaminimal: $(BSRC) $(LIB)
+	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest
 
 $(OUT)/libcudest.so: $(OBJ)
 	@[ -d $(@D) ] || mkdir -p $(@D)
@@ -49,9 +53,6 @@ $(OUT)/%.o: src/%.c $(INC) $(TAGS)
 
 preview: test
 	$(VPDF) $(PDF)
-
-$(OUT)/cudaminimal: ../cs8803ss-project/src/cudaminimal.c $(LIB)
-	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest
 
 test: all $(BIN)
 	./$(BIN)
