@@ -33,7 +33,7 @@ Ioctl(int fd,int req,void *arg){
 	r = ioctl(fd,req,arg);
 	for(z = 0 ; z < s ; z += 4){
 		if(z == 0){
-			printf("ioctl %x, %d-byte param\t\t",req & 0xff,s);
+			printf("ioctl %x, %d-byte param, fd %d\t",req & 0xff,s,fd);
 		}else if(z % 16 == 0){
 			printf("0x%04x\t\t\t\t",z);
 		}
