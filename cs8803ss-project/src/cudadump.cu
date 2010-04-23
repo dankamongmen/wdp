@@ -240,10 +240,10 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 	if((s = cuda_alloc_max(stdout,&ptr,unit)) == 0){
 		return -1;
 	}
-	printf("  Allocated %ju of %ju MB at 0x%jx:0x%jx\n",
+	printf("  Allocated %ju of %ju MB (%f%%) at 0x%jx:0x%jx\n",
 			s / (1024 * 1024) + !!(s % (1024 * 1024)),
 			tmem / (1024 * 1024) + !!(tmem % (1024 * 1024)),
-			(uintmax_t)ptr,(uintmax_t)ptr + s);
+			(float)s / tmem * 100,(uintmax_t)ptr,(uintmax_t)ptr + s);
 	printf("  Verifying allocated region...\n");
 	if(dump_cuda(ptr,ptr + (s / gran) * gran,unit,results)){
 		cuMemFree(ptr);

@@ -31,7 +31,7 @@ $(TAGS): $(addprefix src/,$(SRC)) $(INC)
 	$(TAGBIN) -f $@ $^
 
 $(OUT)/cudaminimal: $(MINSRC) $(LIB)
-	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
+	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest
 
 $(OUT)/cudaspawner: $(SPAWNSRC) $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
