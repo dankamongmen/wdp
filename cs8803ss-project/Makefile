@@ -12,6 +12,7 @@ PRO:=cs8803ssProject
 PDF:=$(PRO).pdf
 TEX:=$(PRO).tex
 TEXOBJS:=$(wildcard texobjs/*)
+CUDABOUNDER:=out/cudabounder
 CUDADUMP:=out/cudadump
 CUDAMINIMAL:=out/cudaminimal
 CUDAPINNER:=out/cudapinner
@@ -31,8 +32,8 @@ CUDART?=$(HOME)/local/cuda/
 CUDARTLIB:=$(CUDART)/lib64
 
 NVCC?=$(CUDA)/bin/nvcc
-CFLAGS:=-g -ggdb -Wall -W -Werror -march=native -mtune=native
-NCFLAGS:=-g -G --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
+CFLAGS:=-O2 -Wall -W -Werror -march=native -mtune=native
+NCFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 NCFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda
 NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
@@ -50,6 +51,10 @@ ptx: $(PTX)
 $(TAGS): $(CSRC) $(CUDASRC) util/cuda8803ss.c $(SRC)/cuda8803ss.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
+
+$(OUT)/cudabounder: $(OUT)/cudabounder.o $(OUT)/cuda8803ss.o
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
 $(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
