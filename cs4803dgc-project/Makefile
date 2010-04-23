@@ -30,7 +30,7 @@ $(TAGS): $(addprefix src/,$(SRC)) $(INC)
 	$(TAGBIN) -f $@ $^
 
 $(OUT)/cudaminimal: $(BSRC) $(LIB)
-	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest
+	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
 
 $(OUT)/libcudest.so: $(OBJ)
 	@[ -d $(@D) ] || mkdir -p $(@D)

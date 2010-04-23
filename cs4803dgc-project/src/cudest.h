@@ -56,7 +56,12 @@ typedef enum cudaError_enum {
 #define CUDAAPI 
 #endif
 
-CUresult CUDAAPI cuInit(unsigned int);
+typedef struct CUdevice {
+	int devno;
+} CUdevice;
+
+CUresult CUDAAPI cuInit(unsigned);
+CUresult CUDAAPI cuDeviceGet(CUdevice,int);
 
 #ifdef __cplusplus
 }
