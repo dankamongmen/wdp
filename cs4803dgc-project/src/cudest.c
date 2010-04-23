@@ -14,7 +14,7 @@ typedef enum {
 	NV_HANDSHAKE	= 0xc04846d2,
 	NV_SECOND	= 0xc00446ca,
 	NV_THIRD	= 0xc60046c8,
-	NV_FOURTH	= 0xc022460c,
+	NV_FOURTH	= 0xc00c4622,
 } nvioctls;
 
 // FIXME we'll almost certainly need a rwlock protecting this
@@ -31,7 +31,7 @@ typedef struct thirdtype {
 } thirdtype;
 
 typedef struct fourthtype {
-	char ob[34];		// 0x22 bytes
+	uint32_t ob[3];		// 0xc (12) bytes
 } fourthtype;
 
 static thirdtype t3;
