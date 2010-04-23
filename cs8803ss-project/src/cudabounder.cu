@@ -39,6 +39,28 @@ touchbytes(CUdeviceptr ptr,uint32_t off,CUdeviceptr res){
 	}
 }
 
+static int
+shoveover(CUdeviceptr *r,size_t s){
+	const size_t shovelen = 0xf0000;
+	CUdeviceptr tmp;
+	CUresult cerr;
+
+	if( (cerr = cuMemAlloc(&tmp,shovelen)) ){
+		fprintf(stderr,"Couldn't alloc+init %zu shove (%d)\n",shovelen,cerr);
+		return -1;
+	}
+	printf("Got %zub shovebuf at %p\n",shovelen,tmp);
+	if( (cerr = cuMemAlloc(r,s)) || (cerr = cuMemsetD32(*r,0,s / sizeof(uint32_t))) ){
+		fprintf(stderr,"Couldn't alloc+init %zu resarr (%d)\n",s,cerr);
+		return -1;
+	}
+	if( (cerr = cuMemFree(tmp)) ){
+		fprintf(stderr,"Couldn't free %zu shove (%d)\n",shovelen,cerr);
+		return -1;
+	}
+	return 0;
+}
+
 int main(int argc,char **argv){
 	CUdeviceptr ptr,res;
 	unsigned long zul;
@@ -62,21 +84,19 @@ int main(int argc,char **argv){
 	if(basic_params(ptr,s)){
 		exit(EXIT_FAILURE);
 	}
-	if( (cerr = cuMemAlloc(&res,BYTES_PER_KERNEL * sizeof(uint32_t))) ||
-			(cerr = cuMemsetD32(res,0,BYTES_PER_KERNEL)) ){
-		fprintf(stderr,"Couldn't alloc+init %zu base (%d)\n",s,cerr);
+	if(shoveover(&res,BYTES_PER_KERNEL * sizeof(uint32_t))){
 		exit(EXIT_FAILURE);
 	}
 	if(res <= ptr){ // FIXME...see loop detect below
 		fprintf(stderr,"Unexpected pointer arrangement (%p >= %p)\n",ptr,res);
 		exit(EXIT_FAILURE);
 	}
-	printf("Got result %zub allocation at %p\n",BYTES_PER_KERNEL * sizeof(uint32_t),res);
+	printf("Got %zub resarr at %p (%ub gap)\n",
+			BYTES_PER_KERNEL * sizeof(uint32_t),res,res - ptr);
 	z = 0;
 	while((cerr = cuCtxSynchronize()) == CUDA_SUCCESS){
 		dim3 dg(1,1,1),db(BYTES_PER_KERNEL,1,1);
 
-		printf("running on %zu\n",z);
 		touchbytes<<<dg,db>>>(ptr,z,res);
 		// FIXME check res
 		if(((z += BYTES_PER_KERNEL) + ptr) > res){
