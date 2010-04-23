@@ -18,7 +18,7 @@ TAGS:=.tags
 
 CC?=gcc
 IFLAGS:=-Isrc
-CFLAGS:=-pipe -g -ggdb -D_GNU_SOURCE -std=gnu99 $(IFLAGS) -fpic -O2 -Wall -W -Werror -march=native -mtune=native
+CFLAGS:=-pipe -g -ggdb -D_GNU_SOURCE -std=gnu99 $(IFLAGS) -fpic -Wall -W -Werror -march=native -mtune=native
 
 BIN:=$(OUT)/cudaminimal
 

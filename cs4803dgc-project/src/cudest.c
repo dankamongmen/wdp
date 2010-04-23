@@ -3,30 +3,48 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 
 #define NVCTLDEV "/dev/nvidiactl"
 
 // Reverse-engineered from strace and binary analysis.
 typedef enum {
-	NV_PREPARE_FIFO	= 0xc04846d2,
+	NV_HANDSHAKE	= 0xc04846d2,
+	NV_SECOND	= 0xc00446ca,
+	NV_THIRD	= 0xc60046c8,
 } nvioctls;
 
 // FIXME we'll almost certainly need a rwlock protecting this
 static int nvctl = -1;
 
-typedef struct nvfifo { // FIXME just a placeholding guess
+typedef struct nvhandshake {
 	uint64_t ob[9];	// 0x48 bytes
-} nvfifo;
+} nvhandshake;
+
+typedef uint32_t secondtype;
 
 static CUresult
 init_ctlfd(int fd){
-	nvfifo fifodesc;
+	nvhandshake hshake;
+	secondtype t2;
+	void *t3;
 
-	memset(&fifodesc,0,sizeof(fifodesc));
-	fifodesc.ob[2] = 0x35ull;
-	fifodesc.ob[1] = 0x312e36332e353931ull;
-	if(ioctl(fd,NV_PREPARE_FIFO,&fifodesc)){
+	memset(&hshake,0,sizeof(hshake));
+	hshake.ob[2] = 0x35ull;
+	hshake.ob[1] = 0x312e36332e353931ull;
+	if(ioctl(fd,NV_HANDSHAKE,&hshake)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	t2 = 0;
+	if(ioctl(fd,NV_SECOND,&t2)){
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
+	if((t3 = malloc(0x600)) == NULL){
+		return CUDA_ERROR_OUT_OF_MEMORY;
+	}
+	if(ioctl(fd,NV_THIRD,t3)){
+		free(t3);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	return CUDA_SUCCESS;
