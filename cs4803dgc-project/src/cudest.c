@@ -19,10 +19,13 @@ typedef enum {
 	NV_FIFTH	= 0xc020462a,
 	NV_I6		= 0xc048464d,
 	NV_I7		= 0xc014462d,
-	NV_I8		= 0xc0144632,
-	NV_I9		= 0xc0204637,
 	NV_IA		= 0xc020462b,
-} nvIoctls;
+} nvioctls;
+
+typedef enum {
+	NV_D0		= 0xc0204637,
+	NV_D1		= 0xc0144632,
+} nvdevioctls;
 
 static int
 Ioctl(int fd,int req,void *arg){
@@ -31,23 +34,24 @@ Ioctl(int fd,int req,void *arg){
 
 	s = (req >> 16u) & 0x3fff;
 	r = ioctl(fd,req,arg);
-	for(z = 0 ; z < s ; z += 4){
-		if(z == 0){
-			printf("ioctl %x, %d-byte param, fd %d\t",req & 0xff,s,fd);
-		}else if(z % 16 == 0){
-			printf("0x%04x\t\t\t\t",z);
+	printf("ioctl %x, %d-byte param, fd %d\t",req & 0xff,s,fd);
+	if(r == 0){
+		for(z = 0 ; z < s ; z += 4){
+			if(z % 16 == 0 && z){
+				printf("0x%04x\t\t\t\t",z);
+			}
+			if(dat[z / 4]){
+				printf("\x1b[32m\x1b[1m");
+			}
+			printf("0x%08x ",dat[z / 4]);
+			printf("\x1b[0m\x1b[1m");
+			if(z % 16 == 12){
+				printf("\n");
+			}
 		}
-		if(dat[z / 4]){
-			printf("\x1b[32m\x1b[1m");
-		}
-		printf("0x%08x ",dat[z / 4]);
-		printf("\x1b[0m\x1b[1m");
-		if(z % 16 == 12){
+		if(z % 16){
 			printf("\n");
 		}
-	}
-	if(z % 16){
-		printf("\n");
 	}
 	printf("\n");
 	return r;
@@ -78,9 +82,9 @@ typedef struct type6 {
 	uint32_t ob[12];	// 0x30 (48) bytes
 } type6;
 
-typedef struct type9 {
+typedef struct typed0 {
 	uint32_t ob[8];		// 0x20 (32) bytes
-} type9;
+} typed0;
 
 static type6 t6;
 static thirdtype t3;
@@ -91,7 +95,7 @@ static secondtype result0xca;
 static CUresult
 init_dev(unsigned dno){
 	char devn[strlen(DEVROOT) + 4];
-	type9 t9;
+	typed0 td0;
 	int dfd;
 
 	if(snprintf(devn,sizeof(devn),"%s%u",DEVROOT,dno) >= (int)sizeof(devn)){
@@ -100,16 +104,16 @@ init_dev(unsigned dno){
 	if((dfd = open(devn,O_RDWR)) < 0){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	t9.ob[0] = 3251636241;
-	t9.ob[1] = 3251636241;
-	t9.ob[2] = 1;
-	t9.ob[3] = 0;
-	t9.ob[4] = 0;
-	if(Ioctl(dfd,NV_I9,&t9)){
+	td0.ob[0] = 3251636241;
+	td0.ob[1] = 3251636241;
+	td0.ob[2] = 1;
+	td0.ob[3] = 0;
+	td0.ob[4] = 0;
+	if(Ioctl(dfd,NV_D0,&td0)){
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(dfd,NV_I9,&t9)){
+	if(Ioctl(dfd,NV_D0,&td0)){
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
@@ -204,10 +208,10 @@ CUresult cuInit(unsigned flags){
 	return CUDA_SUCCESS;
 }
 
-CUresult cuDeviceGet(CUdevice *d,int devno){
+/*CUresult cuDeviceGet(CUdevice *d,int devno){
 	if(devno < 0){
 		return CUDA_ERROR_INVALID_VALUE;
 	}
 	d->devno = devno;
 	return CUDA_SUCCESS;
-}
+}*/

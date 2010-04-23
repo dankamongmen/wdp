@@ -56,7 +56,7 @@ preview: test
 
 test: all $(BIN)
 	./$(OUT)/cudaminimal
-	./$(OUT)/cudaspawner 0 0
+	#./$(OUT)/cudaspawner 0 0
 
 clean:
 	rm -rf $(OUT) $(wildcard *.aux) $(wildcard *.bbl) $(wildcard *.blg) $(wildcard *.log) $(wildcard *.pdf) $(wildcard *.out)
