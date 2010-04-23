@@ -26,9 +26,30 @@ typedef enum {
 
 static int
 Ioctl(int fd,int req,void *arg){
-	int r;
+	uint32_t *dat = arg;
+	int r,s,z;
 
+	s = (req >> 16u) & 0x3fff;
 	r = ioctl(fd,req,arg);
+	for(z = 0 ; z < s ; z += 4){
+		if(z == 0){
+			printf("ioctl %x, %d-byte param\t\t",req & 0xff,s);
+		}else if(z % 16 == 0){
+			printf("0x%04x\t\t\t\t",z);
+		}
+		if(dat[z / 4]){
+			printf("\x1b[32m\x1b[1m");
+		}
+		printf("0x%08x ",dat[z / 4]);
+		printf("\x1b[0m\x1b[1m");
+		if(z % 16 == 12){
+			printf("\n");
+		}
+	}
+	if(z % 16){
+		printf("\n");
+	}
+	printf("\n");
 	return r;
 }
 
