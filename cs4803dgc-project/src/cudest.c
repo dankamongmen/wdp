@@ -10,6 +10,7 @@
 #define DEVROOT "/dev/nvidia"
 #define NVCTLDEV "/dev/nvidiactl"
 
+/*
 // Reverse-engineered from strace and binary analysis.
 typedef enum {
 	NV_HANDSHAKE	= 0xc04846d2,
@@ -208,7 +209,7 @@ CUresult cuInit(unsigned flags){
 	return CUDA_SUCCESS;
 }
 
-/*CUresult cuDeviceGet(CUdevice *d,int devno){
+CUresult cuDeviceGet(CUdevice *d,int devno){
 	if(devno < 0){
 		return CUDA_ERROR_INVALID_VALUE;
 	}

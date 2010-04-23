@@ -71,6 +71,7 @@ typedef opCUcontext *CUcontext;
 typedef void *CUdeviceptr;
 
 CUresult CUDAAPI cuInit(unsigned);
+CUresult CUDAAPI cuDeviceGetCount(int *);
 CUresult CUDAAPI cuDeviceGet(CUdevice *,int);
 CUresult CUDAAPI cuCtxCreate(CUcontext *,unsigned,CUdevice);
 CUresult CUDAAPI cuMemAlloc(CUdeviceptr *,unsigned);
