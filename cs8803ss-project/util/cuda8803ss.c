@@ -117,3 +117,33 @@ int getzul(const char *arg,unsigned long *zul){
 	}
 	return 0;
 }
+
+#define CUDAMAJMIN(v) v / 1000, v % 1000
+
+int init_cuda_alldevs(int *count){
+	int attr,cerr;
+
+	if((cerr = cuInit(0)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't initialize CUDA (%d)\n",cerr);
+		return cerr;
+	}
+	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't get CUDA driver version (%d)\n",cerr);
+		return cerr;
+	}
+	printf("Compiled against CUDA version %d.%d. Linked against CUDA version %d.%d.\n",
+			CUDAMAJMIN(CUDA_VERSION),CUDAMAJMIN(attr));
+	if(CUDA_VERSION > attr){
+		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
+		return -1;
+	}
+	if((cerr = cuDeviceGetCount(count)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't get CUDA device count (%d)\n",cerr);
+		return cerr;
+	}
+	if(*count <= 0){
+		fprintf(stderr,"No CUDA devices found, exiting.\n");
+		return -1;
+	}
+	return CUDA_SUCCESS;
+}

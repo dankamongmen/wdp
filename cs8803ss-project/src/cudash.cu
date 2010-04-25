@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include "cuda8803ss.h"
 
 static int
 add_to_history(const char *rl){
@@ -130,7 +131,11 @@ run_command(const char *cmd){
 int main(void){
 	const char *prompt = "cudash> ";
 	char *rln;
+	int count;
 
+	if(init_cuda_alldevs(&count)){
+		exit(EXIT_FAILURE);
+	}
 	// FIXME initalize CUDA on all devices
 	while( (rln = readline(prompt)) ){
 		// An empty string ought neither be saved to history nor run.

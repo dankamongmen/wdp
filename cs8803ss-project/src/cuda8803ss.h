@@ -9,6 +9,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdint.h>
 
+int init_cuda_alldevs(int *);
 int init_cuda(int,CUdevice *);
 int init_cuda_ctx(int,CUcontext *);
 int getzul(const char *,unsigned long *);

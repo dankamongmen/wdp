@@ -115,35 +115,6 @@ check_const_ram(const unsigned *max){
 	return 0;
 }
 
-#define CUDAMAJMIN(v) v / 1000, v % 1000
-
-static int
-init_cuda(int *count){
-	int attr,cerr;
-
-	if((cerr = cuInit(0)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	printf("Compiled against CUDA version %d.%d. Linked against CUDA version %d.%d.\n",
-			CUDAMAJMIN(CUDA_VERSION),CUDAMAJMIN(attr));
-	if(CUDA_VERSION > attr){
-		fprintf(stderr,"Compiled against a newer version of CUDA than that installed, exiting.\n");
-		return -1;
-	}
-	if((cerr = cuDeviceGetCount(count)) != CUDA_SUCCESS){
-		return cerr;
-	}
-	if(*count <= 0){
-		fprintf(stderr,"No CUDA devices found, exiting.\n");
-		return -1;
-	}
-	printf("CUDA device count: %d\n",*count);
-	return CUDA_SUCCESS;
-}
-
 // Returns the maxpoint of the first of at most two ranges into which the
 // region will be divided, where a premium is placed on the first range being
 // a multiple of gran.
@@ -295,14 +266,10 @@ int main(int argc,char **argv){
 	}else{
 		gran = GRAN_DEFAULT;
 	}
-	if(init_cuda(&count)){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"Error initializing CUDA (%s?)\n",
-				cudaGetErrorString(err));
+	if(init_cuda_alldevs(&count)){
 		return EXIT_FAILURE;
 	}
+	printf("CUDA device count: %d\n",count);
 	for(z = 0 ; z < count ; ++z){
 		uint32_t hostresarr[GRID_SIZE * BLOCK_SIZE];
 		unsigned mem,tmem;
