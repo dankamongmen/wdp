@@ -24,24 +24,41 @@ cudash_quit(const char *c,const char *cmdline){
 	exit(EXIT_SUCCESS);
 }
 
+static int
+list_cards(void){
+	// FIXME
+	return 0;
+}
+
+static int
+cudash_cards(const char *c,const char *cmdline){
+	if(strcmp(cmdline,"")){
+		fprintf(stderr,"%s doesn't support options\n");
+		return 0;
+	}
+	return list_cards();
+}
+
 static int cudash_help(const char *,const char *);
 
 static const struct {
 	const char *cmd;
 	cudashfxn fxn;
+	const char *help;
 } cmdtable[] = {
-	{ "exit",	cudash_quit,	},
-	{ "help",	cudash_help,	},
-	{ "quit",	cudash_quit,	},
-	{ NULL,		NULL,		}
+	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
+	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
+	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
+	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
+	{ NULL,		NULL,		NULL,	}
 };
 
 static typeof(*cmdtable) *
-lookup_command(const char *c){
+lookup_command(const char *c,size_t n){
 	typeof(*cmdtable) *tptr;
 
 	for(tptr = cmdtable ; tptr->cmd ; ++tptr){
-		if(strcmp(tptr->cmd,c) == 0){
+		if(strncmp(tptr->cmd,c,n) == 0 && strlen(tptr->cmd) == n){
 			return tptr;
 		}
 	}
@@ -53,7 +70,7 @@ list_commands(void){
 	typeof(*cmdtable) *t;
 
 	for(t = cmdtable ; t->cmd ; ++t){
-		if(printf(" %s\n",t->cmd) < 0){
+		if(printf(" %s: %s\n",t->cmd,t->help) < 0){
 			return -1;
 		}
 	}
@@ -67,10 +84,19 @@ cudash_help(const char *c,const char *cmdline){
 	}else{
 		typeof(*cmdtable) *tptr;
 
-		if((tptr = lookup_command(cmdline)) == NULL){
-			printf("No help is available for \"%s\".\n",cmdline);
+		while(isspace(*cmdline)){
+			++cmdline;
 		}
-		// FIXME print help
+		// FIXME extract first token
+		if((tptr = lookup_command(cmdline,strlen(cmdline))) == NULL){
+			if(printf("No help is available for \"%s\".\n",cmdline) < 0){
+				return -1;
+			}
+		}else{
+			if(printf(" %s: %s\n",tptr->cmd,tptr->help) < 0){
+				return -1;
+			}
+		}
 	}
 	return 0;
 }
@@ -90,7 +116,7 @@ run_command(const char *cmd){
 	if(cmd != toke){
 		typeof(*cmdtable) *tptr;
 
-		if( (tptr = lookup_command(toke)) ){
+		if( (tptr = lookup_command(toke,cmd - toke)) ){
 			fxn = tptr->fxn;
 		}
 	}
@@ -98,7 +124,6 @@ run_command(const char *cmd){
 		fprintf(stderr,"Invalid command: \"%.*s\"\n",cmd - toke,toke);
 		return 0;
 	}
-	printf("running \"%s\"(\"%s\")\n",toke,cmd);
 	return fxn(toke,cmd);
 }
 
