@@ -18,6 +18,7 @@ CUDAMINIMAL:=out/cudaminimal
 CUDAPINNER:=out/cudapinner
 CUDAQUIRKY:=out/cudaquirky
 CUDARANGER:=out/cudaranger
+CUDASH:=out/cudash
 CUDASPAWNER:=out/cudaspawner
 CUDASTUFFER:=out/cudastuffer
 CSRC:=$(wildcard src/*.c)
@@ -75,6 +76,10 @@ $(OUT)/cudaquirky: $(OUT)/cudaquirky.o $(OUT)/cuda8803ss.o
 $(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
+
+$(OUT)/cudash: $(OUT)/cudash.o $(OUT)/cuda8803ss.o
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS) -lreadline
 
 $(OUT)/cudaspawner: $(OUT)/cudaspawner.o $(OUT)/cuda8803ss.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
