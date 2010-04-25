@@ -24,23 +24,59 @@ cudash_quit(const char *c,const char *cmdline){
 	exit(EXIT_SUCCESS);
 }
 
-static int
-cudash_help(const char *c,const char *cmdline){
-}
+static int cudash_help(const char *,const char *);
 
-static struct {
+static const struct {
 	const char *cmd;
 	cudashfxn fxn;
 } cmdtable[] = {
-	{ "help",	cudash_help,	},
 	{ "exit",	cudash_quit,	},
+	{ "help",	cudash_help,	},
 	{ "quit",	cudash_quit,	},
 	{ NULL,		NULL,		}
 };
 
+static typeof(*cmdtable) *
+lookup_command(const char *c){
+	typeof(*cmdtable) *tptr;
+
+	for(tptr = cmdtable ; tptr->cmd ; ++tptr){
+		if(strcmp(tptr->cmd,c) == 0){
+			return tptr;
+		}
+	}
+	return NULL;
+}
+
+static int
+list_commands(void){
+	typeof(*cmdtable) *t;
+
+	for(t = cmdtable ; t->cmd ; ++t){
+		if(printf(" %s\n",t->cmd) < 0){
+			return -1;
+		}
+	}
+	return 0;
+}
+
+static int
+cudash_help(const char *c,const char *cmdline){
+	if(strcmp(cmdline,"") == 0){
+		return list_commands();
+	}else{
+		typeof(*cmdtable) *tptr;
+
+		if((tptr = lookup_command(cmdline)) == NULL){
+			printf("No help is available for \"%s\".\n",cmdline);
+		}
+		// FIXME print help
+	}
+	return 0;
+}
+
 static int
 run_command(const char *cmd){
-	typeof(*cmdtable) *tptr;
 	cudashfxn fxn = NULL;
 	const char *toke;
 
@@ -52,11 +88,10 @@ run_command(const char *cmd){
 		++cmd;
 	}
 	if(cmd != toke){
-		for(tptr = cmdtable ; tptr->cmd ; ++tptr){
-			if(strcmp(tptr->cmd,toke) == 0){
-				fxn = tptr->fxn;
-				break;
-			}
+		typeof(*cmdtable) *tptr;
+
+		if( (tptr = lookup_command(toke)) ){
+			fxn = tptr->fxn;
 		}
 	}
 	if(fxn == NULL){
