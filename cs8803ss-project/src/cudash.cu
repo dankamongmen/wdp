@@ -26,7 +26,7 @@ typedef struct cudadev {
 	unsigned addrbits;
 } cudadev;
 
-static cudamap *maps;		// FIXME ought be per-card; we're overloading
+static cudamap *maps;
 static unsigned cudash_child;
 static cudadev *devices,*curdev;
 
