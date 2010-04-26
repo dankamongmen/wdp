@@ -1,9 +1,17 @@
 #include <errno.h>
 #include <ctype.h>
+#include <unistd.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "cuda8803ss.h"
+
+typedef struct cudamap {
+	uintptr_t base;
+	size_t s;		// only what we asked for, not actually got
+	struct cudamap *next;
+} cudamap;
 
 typedef struct cudadev {
 	char *devname;
@@ -11,9 +19,11 @@ typedef struct cudadev {
 	struct cudadev *next;
 	int major,minor,warpsz,mpcount;
 	CUcontext ctx;
+	cudamap *map;
 } cudadev;
 
 static cudadev *devices;
+static unsigned cudash_child;
 
 static int
 add_to_history(const char *rl){
@@ -32,7 +42,9 @@ cudash_quit(const char *c,const char *cmdline){
 		fprintf(stderr,"Command line following %s; did you really mean to quit?\n",c);
 		return 0;
 	}
-	printf("Thank you for using the CUDA shell. Have a very CUDA day.\n");
+	if(!cudash_child){
+		printf("Thank you for using the CUDA shell. Have a very CUDA day.\n");
+	}
 	exit(EXIT_SUCCESS);
 }
 
@@ -68,7 +80,7 @@ cudash_alloc(const char *c,const char *cmdline){
 
 	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
 			|| cmdline == ep){
-		fprintf(stderr,"Invalid size: %.*s\n",ep - cmdline,cmdline);
+		fprintf(stderr,"Invalid size: %s\n",cmdline);
 		return 0;
 	}
 	if((cerr = cuMemAlloc(&p,size)) != CUDA_SUCCESS){
@@ -90,7 +102,7 @@ cudash_pin(const char *c,const char *cmdline){
 
 	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
 			|| cmdline == ep){
-		fprintf(stderr,"Invalid size: %.*s\n",ep - cmdline,cmdline);
+		fprintf(stderr,"Invalid size: %s\n",cmdline);
 		return 0;
 	}
 	if((cerr = cuMemHostAlloc(&p,size,flags)) != CUDA_SUCCESS){
@@ -108,6 +120,30 @@ cudash_pin(const char *c,const char *cmdline){
 	return 0;
 }
 
+static int
+cudash_fork(const char *c,const char *cmdline){
+	pid_t pid;
+
+	if(fflush(stdout) || fflush(stderr)){
+		fprintf(stderr,"Couldn't flush output (%s?)\n",strerror(errno));
+		return -1;
+	}
+	if((pid = fork()) < 0){
+		fprintf(stderr,"Couldn't fork (%s?)\n",strerror(errno));
+		return -1;
+	}else if(pid == 0){
+		cudash_child = 1;
+		printf("Type \"exit\" to leave this child (PID %ju)\n",(uintmax_t)getpid());
+		return 0;
+	}else{
+		int status;
+
+		waitpid(pid,&status,0); // FIXME check result code
+		printf("Returning to parent shell (PID %ju)\n",(uintmax_t)getpid());
+	}
+	return 0;
+}
+
 // FIXME unimplemented
 static int
 cudash_exec(const char *c,const char *cmdline){
@@ -115,7 +151,7 @@ cudash_exec(const char *c,const char *cmdline){
 }
 
 static int
-cudash_fork(const char *c,const char *cmdline){
+cudash_maps(const char *c,const char *cmdline){
 	return -1;
 }
 
@@ -132,6 +168,7 @@ static const struct {
 	{ "fork",	cudash_fork,	"fork a child cudash",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
+	{ "maps",	cudash_maps,	"display CUDA memory tables",	},
 	{ "pin",	cudash_pin,	"pin and map host memory",	},
 	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
 	{ NULL,		NULL,		NULL,	}
@@ -218,6 +255,12 @@ free_devices(cudadev *d){
 
 		d = d->next;
 		free(t->devname);
+		while(t->map){
+			cudamap *tm = t->map;
+
+			t->map = t->map->next;
+			free(tm);
+		}
 		cuCtxDestroy(t->ctx);
 		free(t);
 	}
@@ -282,6 +325,7 @@ make_devices(int count){
 			return -1;
 		}
 		c->devno = count;
+		c->map = NULL;
 		if(id_cudadev(c)){
 			free_devices(chain);
 			free(c);
@@ -310,20 +354,16 @@ int main(void){
 		if(strcmp("",rln)){
 			if(add_to_history(rln)){
 				fprintf(stderr,"Error adding input to history. Exiting.\n");
-				goto err;
+				free(rln);
+				break;
 			}
 			if(run_command(rln)){
-				fprintf(stderr,"Exception while running command. Exiting.\n");
-				goto err;
+				free(rln);
+				break;
 			}
 		}
 		free(rln);
 	}
 	free_devices(devices);
 	exit(EXIT_SUCCESS);
-
-err:
-	free(rln);
-	free_devices(devices);
-	exit(EXIT_FAILURE);
 }
