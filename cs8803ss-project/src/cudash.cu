@@ -137,13 +137,25 @@ clockkernel(uint64_t clocks){
 
 static int
 get_resarray(CUdeviceptr *r){
+	size_t s = sizeof(uint32_t) * BLOCK_SIZE * GRID_SIZE;
 	CUresult cerr;
 
-	if((cerr = cuMemAlloc(r,sizeof(uint32_t) * BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
-		return -1;
+	if((cerr = cuMemAlloc(r,s)) != CUDA_SUCCESS){
+		void *vr;
+
+		printf("Falling back to host allocation for result array...\n");
+		if((cerr = cuMemHostAlloc(&vr,s,0)) != CUDA_SUCCESS){
+			fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
+			return -1;
+		}
+		if((cerr = cuMemHostGetDevicePointer(r,vr,curdev->devno)) != CUDA_SUCCESS){
+			fprintf(stderr,"Couldn't map result array to dev %d (%d)\n",
+					curdev->devno,cerr);
+			cuMemFreeHost(vr);
+			return -1;
+		}
 	}
-	if((cerr = cuMemsetD32(*r,0,BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
+	if((cerr = cuMemsetD32(*r,0,s / sizeof(uint32_t))) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't initialize result array (%d)\n",cerr);
 		cuMemFree(*r);
 		return -1;
