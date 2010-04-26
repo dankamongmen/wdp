@@ -745,8 +745,14 @@ run_command(const char *cmd){
 	r = fxn(toke,cmd);
 	gettimeofday(&t1,NULL);
 	timersub(&t1,&t0,&tsub);
-	if(printf("Command took %u.%06us\n",tsub.tv_sec,tsub.tv_usec) < 0){
-		return -1;
+	if(tsub.tv_sec){
+		if(printf("Command took %u.%04us\n",tsub.tv_sec,tsub.tv_usec / 1000) < 0){
+			return -1;
+		}
+	}else if(tsub.tv_usec / 1000){
+		if(printf("Command took %ums\n",tsub.tv_usec / 1000) < 0){
+			return -1;
+		}
 	}
 	return r;
 }
