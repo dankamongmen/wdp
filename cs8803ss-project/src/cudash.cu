@@ -79,6 +79,46 @@ cudash_alloc(const char *c,const char *cmdline){
 	return 0;
 }
 
+static int
+cudash_pin(const char *c,const char *cmdline){
+	unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
+	unsigned long long size;
+	CUdeviceptr cd;
+	CUresult cerr;
+	char *ep;
+	void *p;
+
+	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid size: %.*s\n",ep - cmdline,cmdline);
+		return 0;
+	}
+	if((cerr = cuMemHostAlloc(&p,size,flags)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't host-allocate %llub (%d)\n",size,cerr);
+		return 0;
+	}
+	printf("Allocated %llub host memory @ %p\n",size,p); // FIXME adjust map
+	// FIXME map into each card's memory space, not just one
+	if((cerr = cuMemHostGetDevicePointer(&cd,p,0)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't map %llub @ %p (%d)\n",size,p,cerr);
+		cuMemFreeHost(p);
+		return 0;
+	}
+	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
+	return 0;
+}
+
+// FIXME unimplemented
+static int
+cudash_exec(const char *c,const char *cmdline){
+	return -1;
+}
+
+static int
+cudash_fork(const char *c,const char *cmdline){
+	return -1;
+}
+
 static int cudash_help(const char *,const char *);
 
 static const struct {
@@ -88,8 +128,11 @@ static const struct {
 } cmdtable[] = {
 	{ "alloc",	cudash_alloc,	"allocate device memory",	},
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
+	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
+	{ "fork",	cudash_fork,	"fork a child cudash",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
+	{ "pin",	cudash_pin,	"pin and map host memory",	},
 	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
 	{ NULL,		NULL,		NULL,	}
 };
