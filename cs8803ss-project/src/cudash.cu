@@ -115,17 +115,23 @@ create_ctx_map(cudamap **m,uintptr_t p,size_t size){
 __global__ void
 clockkernel(uint64_t clocks){
 	__shared__ typeof(clocks) p[GRID_SIZE * BLOCK_SIZE];
+	uint64_t c0 = clock();
 
 	p[blockIdx.x * BLOCK_SIZE + threadIdx.x] = 0;
 	while(clocks >= 0x100000000ull){
-		while(clock() < 0xffffffff){
+		c0 = clock();
+		do{
+			++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
+		}while(clock() > c0);
+		while(clock() < c0){
 			++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
 		}
 		clocks -= 0x100000000ull;
 	}
-	while(clock() < 0xffffffffull){
+	c0 = clock();
+	do{
 		++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
-	}
+	}while(clock() - c0 < clocks);
 }
 
 
@@ -604,8 +610,10 @@ cudash_help(const char *c,const char *cmdline){
 
 static int
 run_command(const char *cmd){
+	struct timeval t0,t1,tsub;
 	cudashfxn fxn = NULL;
 	const char *toke;
+	int r;
 
 	while(isspace(*cmd)){
 		++cmd;
@@ -622,10 +630,19 @@ run_command(const char *cmd){
 		}
 	}
 	if(fxn == NULL){
-		fprintf(stderr,"Invalid command: \"%.*s\"\n",cmd - toke,toke);
+		if(fprintf(stderr,"Invalid command: \"%.*s\"\n",cmd - toke,toke) < 0){
+			return -1;
+		}
 		return 0;
 	}
-	return fxn(toke,cmd);
+	gettimeofday(&t0,NULL);
+	r = fxn(toke,cmd);
+	gettimeofday(&t1,NULL);
+	timersub(&t1,&t0,&tsub);
+	if(printf("Command took %u.%06us\n",tsub.tv_sec,tsub.tv_usec) < 0){
+		return -1;
+	}
+	return r;
 }
 
 static void
@@ -738,21 +755,15 @@ int main(void){
 	while( (rln = readline(prompt)) ){
 		// An empty string ought neither be saved to history nor run.
 		if(strcmp("",rln)){
-			struct timeval t0,t1,tsub;
-
 			if(add_to_history(rln)){
 				fprintf(stderr,"Error adding input to history. Exiting.\n");
 				free(rln);
 				break;
 			}
-			gettimeofday(&t0,NULL);
 			if(run_command(rln)){
 				free(rln);
 				break;
 			}
-			gettimeofday(&t1,NULL);
-			timersub(&t1,&t0,&tsub);
-			printf("Command took %u.%06us\n",tsub.tv_sec,tsub.tv_usec);
 		}
 		free(rln);
 	}
