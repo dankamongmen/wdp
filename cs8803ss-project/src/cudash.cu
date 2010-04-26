@@ -115,6 +115,8 @@ create_ctx_map(cudamap **m,uintptr_t p,size_t size){
 static int
 cudash_read(const char *c,const char *cmdline){
 	unsigned long long base,size;
+	dim3 db(BLOCK_SIZE,1,1);
+	uint32_t *res;
 	char *ep;
 
 	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
@@ -129,7 +131,13 @@ cudash_read(const char *c,const char *cmdline){
 		return 0;
 	}
 	printf("read [0x%llx - 0x%llx)\n",base,base + size);
-	// FIXME read it
+	if((res = (uint32_t *)malloc(sizeof(uint32_t) * BLOCK_SIZE)) == NULL){
+		fprintf(stderr,"Couldn't allocate result array (%s)\n",strerror(errno));
+		return 0;
+	}
+	readkernel<<<1,db>>>((unsigned *)base,(unsigned *)(base + size),NULL);
+	// FIXME check results
+	free(res);
 	return 0;
 }
 
@@ -289,7 +297,7 @@ cudash_maps(const char *c,const char *cmdline){
 					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
 				return -1;
 			}
-			if(m->maps){
+			if(m->maps != MAP_FAILED){
 				if(printf(" (maps %012p)",m->maps) < 0){
 					return -1;
 				}
