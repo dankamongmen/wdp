@@ -141,10 +141,11 @@ get_resarray(CUdeviceptr *r){
 	CUresult cerr;
 
 	if((cerr = cuMemAlloc(r,s)) != CUDA_SUCCESS){
+		unsigned flags = CU_MEMHOSTALLOC_DEVICEMAP;
 		void *vr;
 
 		printf("Falling back to host allocation for result array...\n");
-		if((cerr = cuMemHostAlloc(&vr,s,0)) != CUDA_SUCCESS){
+		if((cerr = cuMemHostAlloc(&vr,s,flags)) != CUDA_SUCCESS){
 			fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
 			return -1;
 		}
