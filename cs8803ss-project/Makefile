@@ -33,9 +33,11 @@ CUDART?=$(HOME)/local/cuda/
 CUDARTLIB:=$(CUDART)/lib64
 
 NVCC?=$(CUDA)/bin/nvcc
+GPUARCH?=compute_10
+GPUCODE?=sm_12,sm_10
 CFLAGS:=-O2 -Wall -W -Werror -march=native -mtune=native
 NCFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
-NCFLAGS+=--compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
+NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda
 NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
 PTXFLAGS:=--ptx
@@ -126,7 +128,7 @@ preview: doc
 CUDADEVNO?=0
 test: bin
 	./$(CUDARANGER) $(CUDADEVNO) 0x1000 0x201000
-	./$(CUDASTUFFER) 0
+	./$(CUDASTUFFER) $(CUDADEVNO)
 	./$(CUDASPAWNER) $(CUDADEVNO) 0x100000
 	! ./$(CUDARANGER) $(CUDADEVNO) 0 0x1000
 
