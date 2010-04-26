@@ -116,7 +116,8 @@ static int
 cudash_read(const char *c,const char *cmdline){
 	unsigned long long base,size;
 	dim3 db(BLOCK_SIZE,1,1);
-	uint32_t *res;
+	dim3 dg(GRID_SIZE,1,1);
+	CUdeviceptr res;
 	CUresult cerr;
 	char *ep;
 
@@ -134,14 +135,15 @@ cudash_read(const char *c,const char *cmdline){
 	if(printf("Reading [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
-	if((res = (uint32_t *)malloc(sizeof(uint32_t) * BLOCK_SIZE)) == NULL){
+	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't allocate result array (%s)\n",strerror(errno));
 		return 0;
 	}
-	readkernel<<<1,db>>>((unsigned *)base,(unsigned *)(base + size),NULL);
-	// FIXME check result array
-	free(res);
-	if((cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
+	readkernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
+				(uint32_t *)res);
+	// FIXME inspect result array
+	if((cerr = cuMemFree(res)) != CUDA_SUCCESS
+			|| (cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
 		if(fprintf(stderr,"Error reading memory (%d)\n",cerr) < 0){
 			return -1;
 		}
