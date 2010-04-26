@@ -105,6 +105,7 @@ __global__ void constkernel(const unsigned *constmax){
 }
 
 #define CONSTWIN ((unsigned *)0x10000u)
+#define NOMANSPACE ((unsigned *)0x1000u)
 
 static int
 check_const_ram(const unsigned *max){
@@ -238,7 +239,7 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 		return -1;
 	}
 	printf("  Dumping %jub...\n",tmem);
-	if(divide_address_space(devno,0,tmem,unit,gran,results,&worked)){
+	if(divide_address_space(devno,(uintmax_t)NOMANSPACE,tmem,unit,gran,results,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
