@@ -341,7 +341,7 @@ cudash_maps(const char *c,const char *cmdline){
 	return 0;
 }
 
-#define CUCTXSIZE 18 // FIXME just a guess
+#define CUCTXSIZE 48 // FIXME just a guess
 
 static int
 list_contexts(void){
@@ -410,18 +410,38 @@ cudash_pokectx(const char *c,const char *cmdline){
 		return 0;
 	}
 	cmdline = ep;
-	if(((value = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+	if((value = strtoull(cmdline,&ep,16)) == ULONG_MAX && errno == ERANGE
 			|| cmdline == ep){
 		fprintf(stderr,"Invalid value: %s\n",cmdline);
 		return 0;
 	}
-	if(value > 0xffu){
-		fprintf(stderr,"Invalid value: %llu\n",value);
-		return 0;
+	while(off < CUCTXSIZE){
+		if(value > 0xffu){
+			fprintf(stderr,"Invalid value: 0x%llx\n",value);
+			return 0;
+		}
+		((char *)cd->ctx)[off] = value;
+		if(printf("Poked device %llu off %02llx with value 0x%02llx\n",
+					devno,off,value) < 0){
+			return -1;
+		}
+		++off;
+		cmdline = ep;
+		if((value = strtoull(cmdline,&ep,16)) == ULONG_MAX && errno == ERANGE){
+			fprintf(stderr,"Invalid value: %s\n",cmdline);
+			return 0;
+		}
+		if(cmdline == ep){
+			return 0;
+		}
 	}
-	((char *)cd->ctx)[off] = value;
-	if(printf("Poked device %llu with value 0x%llx\n",devno,value) < 0){
-		return -1;
+	while(isspace(*cmdline)){
+		++cmdline;
+	}
+	if(*cmdline){
+		if(fprintf(stderr,"Too much data (%s)!\n",cmdline) < 0){
+			return 0;
+		}
 	}
 	return 0;
 }
