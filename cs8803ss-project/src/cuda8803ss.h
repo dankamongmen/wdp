@@ -43,17 +43,17 @@ __global__ void
 readkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
 	__shared__ typeof(*results) psum[GRID_SIZE * BLOCK_SIZE];
 
-	psum[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
-		results[BLOCK_SIZE * blockIdx.x + threadIdx.x];
-	while(aptr + BLOCK_SIZE * blockIdx.x + threadIdx.x < bptr){
-		++psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
-		if(aptr[BLOCK_SIZE * blockIdx.x + threadIdx.x]){
-			++psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+	psum[blockDim.x * blockIdx.x + threadIdx.x] =
+		results[blockDim.x * blockIdx.x + threadIdx.x];
+	while(aptr + blockDim.x * blockIdx.x + threadIdx.x < bptr){
+		++psum[blockDim.x * blockIdx.x + threadIdx.x];
+		if(aptr[blockDim.x * blockIdx.x + threadIdx.x]){
+			++psum[blockDim.x * blockIdx.x + threadIdx.x];
 		}
-		aptr += BLOCK_SIZE * GRID_SIZE;
+		aptr += blockDim.x * gridDim.x;
 	}
-	results[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
-		psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+	results[blockDim.x * blockIdx.x + threadIdx.x] =
+		psum[blockDim.x * blockIdx.x + threadIdx.x];
 }
 
 static cudadump_e

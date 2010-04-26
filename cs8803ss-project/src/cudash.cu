@@ -192,7 +192,7 @@ cudash_read(const char *c,const char *cmdline){
 
 __global__ void
 writekernel(unsigned *aptr,const unsigned *bptr,unsigned val,uint32_t *results){
-	__shared__ typeof(*results) psum[gridDim.x * blockDim.x];
+	__shared__ typeof(*results) psum[GRID_SIZE * BLOCK_SIZE];
 
 	psum[blockDim.x * blockIdx.x + threadIdx.x] =
 		results[blockDim.x * blockIdx.x + threadIdx.x];
