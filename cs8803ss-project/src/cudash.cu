@@ -18,7 +18,7 @@ typedef struct cudamap {
 
 typedef struct cudadev {
 	char *devname;
-	int devno;
+	unsigned devno;
 	struct cudadev *next;
 	int major,minor,warpsz,mpcount;
 	CUcontext ctx;
@@ -376,6 +376,56 @@ cudash_ctxdump(const char *c,const char *cmdline){
 	return list_contexts();
 }
 
+static cudadev *
+getdev(unsigned devno){
+	cudadev *d;
+
+	for(d = devices ; d ; d = d->next){
+		if(d->devno == devno){
+			break;
+		}
+	}
+	return d;
+}
+
+static int
+cudash_pokectx(const char *c,const char *cmdline){
+	unsigned long long devno,value,off;
+	cudadev *cd;
+	char *ep;
+
+	if(((devno = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid devno: %s\n",cmdline);
+		return 0;
+	}
+	if((cd = getdev(devno)) == NULL){
+		fprintf(stderr,"Invalid devno: %llu\n",devno);
+		return 0;
+	}
+	cmdline = ep;
+	if(((off = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid off: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
+	if(((value = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid value: %s\n",cmdline);
+		return 0;
+	}
+	if(value > 0xffu){
+		fprintf(stderr,"Invalid value: %llu\n",value);
+		return 0;
+	}
+	((char *)cd->ctx)[off] = value;
+	if(printf("Poked device %llu with value 0x%llx\n",devno,value) < 0){
+		return -1;
+	}
+	return 0;
+}
+
 static int cudash_help(const char *,const char *);
 
 static const struct {
@@ -392,6 +442,7 @@ static const struct {
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
 	{ "maps",	cudash_maps,	"display CUDA memory tables",	},
 	{ "pin",	cudash_pin,	"pin and map host memory",	},
+	{ "pokectx",	cudash_pokectx,	"poke values into CUcontext objects",	},
 	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "read",	cudash_read,	"read device memory in CUDA",	},
 	{ "write",	cudash_write,	"write device memory in CUDA",	},
