@@ -24,6 +24,7 @@ typedef struct cudadev {
 	CUcontext ctx;
 	cudamap *map;
 	unsigned addrbits;
+	CUdeviceptr resarray;
 } cudadev;
 
 static cudamap *maps;
@@ -136,16 +137,16 @@ clockkernel(uint64_t clocks){
 }
 
 static int
-get_resarray(CUdeviceptr *r){
-	size_t s = sizeof(uint32_t) * BLOCK_SIZE * GRID_SIZE;
+get_resarray(CUdeviceptr *r,size_t *s){
 	CUresult cerr;
 
-	if((cerr = cuMemAlloc(r,s)) != CUDA_SUCCESS){
+	*s = sizeof(uint32_t) * BLOCK_SIZE * GRID_SIZE;
+	if((cerr = cuMemAlloc(r,*s)) != CUDA_SUCCESS){
 		unsigned flags = CU_MEMHOSTALLOC_DEVICEMAP;
 		void *vr;
 
 		printf("Falling back to host allocation for result array...\n");
-		if((cerr = cuMemHostAlloc(&vr,s,flags)) != CUDA_SUCCESS){
+		if((cerr = cuMemHostAlloc(&vr,*s,flags)) != CUDA_SUCCESS){
 			fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
 			return -1;
 		}
@@ -156,7 +157,7 @@ get_resarray(CUdeviceptr *r){
 			return -1;
 		}
 	}
-	if((cerr = cuMemsetD32(*r,0,s / sizeof(uint32_t))) != CUDA_SUCCESS){
+	if((cerr = cuMemsetD32(*r,0,*s / sizeof(uint32_t))) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't initialize result array (%d)\n",cerr);
 		cuMemFree(*r);
 		return -1;
@@ -192,13 +193,10 @@ cudash_read(const char *c,const char *cmdline){
 	if(printf("Reading [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
-	if(get_resarray(&res)){
-		return 0;
-	}
+	res = curdev->resarray;
 	readkernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
 				(uint32_t *)res);
-	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS ||
-			(cerr = cuMemFree(res)) != CUDA_SUCCESS){
+	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
 		if(fprintf(stderr,"Error reading memory (%d)\n",cerr) < 0){
 			return -1;
 		}
@@ -256,16 +254,13 @@ cudash_write(const char *c,const char *cmdline){
 		}
 		return 0;
 	}
-	if(get_resarray(&res)){
-		return 0;
-	}
+	res = curdev->resarray;
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
 	writekernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
 				0xffu,(uint32_t *)res);
-	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS ||
-			(cerr = cuMemFree(res)) != CUDA_SUCCESS){
+	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
 		if(fprintf(stderr,"Error writing memory (%d)\n",cerr) < 0){
 			return -1;
 		}
@@ -545,28 +540,26 @@ cudash_verify(const char *c,const char *cmdline){
 	cudadev *d;
 	cudamap *m;
 
-	if(get_resarray(&res)){
-		return 0;
-	}
+	res = curdev->resarray;
 	for(d = devices ; d ; d = d->next){
 		for(m = d->map ; m ; m = m->next){
 			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
 					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
-				goto err;
+				return -1;
 			}
 			if(m->maps != MAP_FAILED){
 				if(printf(" (maps %012p)",m->maps) < 0){
-					goto err;
+					return -1;
 				}
 			}
 			if(printf("\n") < 0){
-				goto err;
+				return -1;
 			}
 			readkernel<<<dg,db>>>((unsigned *)m->base,(unsigned *)(m->base + m->s),
 						(uint32_t *)res);
 			if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
 				if(fprintf(stderr,"Error reading memory (%d)\n",cerr) < 0){
-					goto err;
+					return -1;
 				}
 				break;
 			}else{
@@ -577,21 +570,12 @@ cudash_verify(const char *c,const char *cmdline){
 					csum += hostres[i];
 				}
 				if(printf(" Successfully read memory (checksum: 0x%016jx (%ju)).\n",csum,csum) < 0){
-					goto err;
+					return -1;
 				}
 			}
 		}
 	}
-	if((cerr = cuMemFree(res)) != CUDA_SUCCESS){
-		if(fprintf(stderr,"Error freeing result array (%d)\n",cerr) < 0){
-			return -1;
-		}
-	}
 	return 0;
-
-err:
-	cuMemFree(res);
-	return -1;
 }
 
 #define CUCTXSIZE 48 // FIXME just a guess
@@ -836,6 +820,7 @@ free_devices(cudadev *d){
 		d = d->next;
 		free(t->devname);
 		free_maps(t->map);
+		cuMemFree(t->resarray);
 		cuCtxDestroy(t->ctx);
 		free(t);
 	}
@@ -844,6 +829,7 @@ free_devices(cudadev *d){
 static int
 id_cudadev(cudadev *c){
 	struct cudaDeviceProp dprop;
+	size_t rsize;
 	CUdevice d;
 	int cerr;
 
@@ -887,6 +873,16 @@ id_cudadev(cudadev *c){
 #undef CUDASTRLEN
 	if((cerr = cuCtxCreate(&c->ctx,CU_CTX_MAP_HOST,d)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't get context for device %d (%d)\n",c->devno,cerr);
+		free(c->devname);
+		return -1;
+	}
+	if(get_resarray(&c->resarray,&rsize)){
+		cuCtxDestroy(c->ctx);
+		free(c->devname);
+		return -1;
+	}
+	if(create_ctx_map(&c->map,c->resarray,rsize)){
+		cuCtxDestroy(c->ctx);
 		free(c->devname);
 		return -1;
 	}
