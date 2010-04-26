@@ -58,6 +58,26 @@ cudash_cards(const char *c,const char *cmdline){
 	return list_cards();
 }
 
+static int
+cudash_alloc(const char *c,const char *cmdline){
+	unsigned long long size;
+	CUdeviceptr p;
+	CUresult cerr;
+	char *ep;
+
+	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid size: %.*s\n",ep - cmdline,cmdline);
+		return 0;
+	}
+	if((cerr = cuMemAlloc(&p,size)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
+		return 0;
+	}
+	printf("Allocated %llub\n",size); // FIXME adjust map
+	return 0;
+}
+
 static int cudash_help(const char *,const char *);
 
 static const struct {
@@ -65,6 +85,7 @@ static const struct {
 	cudashfxn fxn;
 	const char *help;
 } cmdtable[] = {
+	{ "alloc",	cudash_alloc,	"allocate device memory",	},
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
