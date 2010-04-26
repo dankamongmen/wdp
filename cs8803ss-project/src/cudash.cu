@@ -40,7 +40,8 @@ list_cards(void){
 	cudadev *c;
 
 	for(c = devices ; c ; c = c->next){
-		if(printf("Card %d: %s\n",c->devno,c->devname) < 0){
+		if(printf("Card %d: %s, capability %d.%d, %d MPs\n",
+			c->devno,c->devname,c->major,c->minor,c->mpcount) < 0){
 			return -1;
 		}
 		// FIXME more detail
