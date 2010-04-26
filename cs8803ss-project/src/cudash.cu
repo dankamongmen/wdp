@@ -361,6 +361,8 @@ static int
 cudash_pinmax(const char *c,const char *cmdline){
 	unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
 	uintmax_t size;
+	CUdeviceptr cd;
+	CUresult cerr;
 	void *p;
 
 	if(strcmp(cmdline,"")){
@@ -370,12 +372,24 @@ cudash_pinmax(const char *c,const char *cmdline){
 	if((size = cuda_hostalloc_max(stdout,&p,1,flags)) == 0){
 		return 0;
 	}
-	if(create_ctx_map(&curdev->map,(uintptr_t)p,size)){
+	printf("Allocated %llub host memory @ %p\n",size,p);
+	// FIXME map into each card's memory space, not just current's
+	if((cerr = cuMemHostGetDevicePointer(&cd,p,curdev->devno)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't map %llub @ %p on dev %d (%d)\n",
+				size,p,curdev->devno,cerr);
 		cuMemFreeHost(p);
 		return 0;
 	}
-	printf("Allocated %llub host memory @ %p\n",size,p);
-	// FIXME map + register into devices
+	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
+	if(create_ctx_map(&maps,(uintptr_t)p,size)){
+		cuMemFreeHost(p);
+		return 0;
+	}
+	if(create_ctx_mapofmap(&curdev->map,cd,size,p)){
+		cuMemFreeHost(p);
+		// FIXME need to extract from host map list
+		return 0;
+	}
 	return 0;
 }
 
@@ -397,25 +411,23 @@ cudash_pin(const char *c,const char *cmdline){
 		fprintf(stderr,"Couldn't host-allocate %llub (%d)\n",size,cerr);
 		return 0;
 	}
-	if(create_ctx_map(&maps,(uintptr_t)p,size)){
-		cuMemFreeHost(p);
-		return 0;
-	}
-	printf("Allocated %llub host memory @ %p\n",size,p); // FIXME adjust map
-	// FIXME map into each card's memory space, not just current's
+	printf("Allocated %llub host memory @ %p\n",size,p);
 	if((cerr = cuMemHostGetDevicePointer(&cd,p,curdev->devno)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't map %llub @ %p on dev %d (%d)\n",
 				size,p,curdev->devno,cerr);
 		cuMemFreeHost(p);
-		// FIXME need to extract from host map list, previous devices
+		return 0;
+	}
+	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
+	if(create_ctx_map(&maps,(uintptr_t)p,size)){
+		cuMemFreeHost(p);
 		return 0;
 	}
 	if(create_ctx_mapofmap(&curdev->map,cd,size,p)){
 		cuMemFreeHost(p);
-		// FIXME need to extract from host map list, previous devices
+		// FIXME need to extract from host map list
 		return 0;
 	}
-	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
 	return 0;
 }
 
