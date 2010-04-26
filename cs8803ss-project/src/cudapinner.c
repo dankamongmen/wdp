@@ -26,7 +26,7 @@ int main(int argc,char **argv){
 	uintmax_t total = 0,s;
 	unsigned long zul,sig;
 	CUcontext ctx;
-	unsigned ptr;
+	void *ptr;
 	int cerr;
 
 	if(argc > 3 || argc < 2){
@@ -59,17 +59,17 @@ int main(int argc,char **argv){
 	}
 	zul = 0;
 	do{
-		if(printf("  Allocation at 0x%x (expected 0x%x)\n",ptr,oldptr) < 0){
+		if(printf("  Allocation at %p (expected 0x%x)\n",ptr,oldptr) < 0){
 			exit(EXIT_FAILURE);
 		}
 		total += s;
-		if(ptr != oldptr){
-			if(printf("  Memory hole: 0x%x->0x%x (0x%xb)\n",
-				oldptr,ptr - 1,ptr - oldptr) < 0){
+		if((uintptr_t)ptr != oldptr){
+			if(printf("  Memory hole: 0x%x->%p (%pb)\n",
+				oldptr,(char *)ptr - 1,(char *)ptr - oldptr) < 0){
 				exit(EXIT_SUCCESS);
 			}
 		}
-		oldptr = ptr + s;
+		oldptr = (uintptr_t)ptr + s;
 		++zul;
 	}while( (s = cuda_hostalloc_max(stdout,&ptr,sizeof(unsigned),flags)) );
 	printf(" Got %ju (0x%jx) total bytes in %lu allocations.\n",total,total,zul);

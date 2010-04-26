@@ -238,6 +238,28 @@ cudash_allocmax(const char *c,const char *cmdline){
 }
 
 static int
+cudash_pinmax(const char *c,const char *cmdline){
+	unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
+	uintmax_t size;
+	void *p;
+
+	if(strcmp(cmdline,"")){
+		fprintf(stderr,"%s doesn't support options\n");
+		return 0;
+	}
+	if((size = cuda_hostalloc_max(stdout,&p,1,flags)) == 0){
+		return 0;
+	}
+	if(create_ctx_map(&curdev->map,(uintptr_t)p,size)){
+		cuMemFreeHost(p);
+		return 0;
+	}
+	printf("Allocated %llub host memory @ %p\n",size,p);
+	// FIXME map + register into devices
+	return 0;
+}
+
+static int
 cudash_pin(const char *c,const char *cmdline){
 	unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
 	unsigned long long size;
@@ -483,6 +505,7 @@ static const struct {
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
 	{ "maps",	cudash_maps,	"display CUDA memory tables",	},
 	{ "pin",	cudash_pin,	"pin and map host memory",	},
+	{ "pinmax",	cudash_pinmax,  "pin and map all possible contiguous host memory",	},
 	{ "pokectx",	cudash_pokectx,	"poke values into CUcontext objects",	},
 	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "read",	cudash_read,	"read device memory in CUDA",	},

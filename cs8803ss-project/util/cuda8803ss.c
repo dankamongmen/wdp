@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <limits.h>
+#include "cuda8803ss.h"
 
 int init_cuda(int devno,CUdevice *c){
 	int attr,cerr;
