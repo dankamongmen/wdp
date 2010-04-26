@@ -470,6 +470,69 @@ cudash_maps(const char *c,const char *cmdline){
 	return 0;
 }
 
+static int
+cudash_verify(const char *c,const char *cmdline){
+	uint32_t hostres[BLOCK_SIZE];
+	dim3 db(BLOCK_SIZE,1,1);
+	dim3 dg(GRID_SIZE,1,1);
+	CUdeviceptr res;
+	CUresult cerr;
+	cudadev *d;
+	cudamap *m;
+
+	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS
+			|| (cerr = cuMemsetD32(res,0,BLOCK_SIZE))){
+		if(fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr) < 0){
+			return -1;
+		}
+		return 0;
+	}
+	for(d = devices ; d ; d = d->next){
+		for(m = d->map ; m ; m = m->next){
+			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
+				goto err;
+			}
+			if(m->maps != MAP_FAILED){
+				if(printf(" (maps %012p)",m->maps) < 0){
+					goto err;
+				}
+			}
+			if(printf("\n") < 0){
+				goto err;
+			}
+			readkernel<<<dg,db>>>((unsigned *)m->base,(unsigned *)(m->base + m->s),
+						(uint32_t *)res);
+			if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
+				if(fprintf(stderr,"Error reading memory (%d)\n",cerr) < 0){
+					goto err;
+				}
+				break;
+			}else{
+				uintmax_t csum = 0;
+				unsigned i;
+
+				for(i = 0 ; i < sizeof(hostres) / sizeof(*hostres) ; ++i){
+					csum += hostres[i];
+				}
+				if(printf(" Successfully read memory (checksum: 0x%016jx (%ju)).\n",csum,csum) < 0){
+					goto err;
+				}
+			}
+		}
+	}
+	if((cerr = cuMemFree(res)) != CUDA_SUCCESS){
+		if(fprintf(stderr,"Error freeing result array (%d)\n",cerr) < 0){
+			return -1;
+		}
+	}
+	return 0;
+
+err:
+	cuMemFree(res);
+	return -1;
+}
+
 #define CUCTXSIZE 48 // FIXME just a guess
 
 static int
@@ -598,6 +661,7 @@ static const struct {
 	{ "pokectx",	cudash_pokectx,	"poke values into CUcontext objects",	},
 	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "read",	cudash_read,	"read device memory in CUDA",	},
+	{ "verify",	cudash_verify,	"verify all mapped memory is readable",	},
 	{ "write",	cudash_write,	"write device memory in CUDA",	},
 	{ NULL,		NULL,		NULL,	}
 };
