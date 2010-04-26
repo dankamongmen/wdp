@@ -341,6 +341,41 @@ cudash_maps(const char *c,const char *cmdline){
 	return 0;
 }
 
+#define CUCTXSIZE 18 // FIXME just a guess
+
+static int
+list_contexts(void){
+	cudadev *c;
+
+	for(c = devices ; c ; c = c->next){
+		CUcontext ctx = c->ctx;
+		unsigned z;
+
+		if(printf("Card %d: %s, capability %d.%d, %d MPs\n",
+			c->devno,c->devname,c->major,c->minor,c->mpcount) < 0){
+			return -1;
+		}
+		for(z = 0 ; z < CUCTXSIZE ; ++z){
+			if(printf(" %02x",((const unsigned char *)ctx)[z]) < 0){
+				return -1;
+			}
+		}
+		if(printf("\n") < 0){
+			return -1;
+		}
+	}
+	return 0;
+}
+
+static int
+cudash_ctxdump(const char *c,const char *cmdline){
+	if(strcmp(cmdline,"")){
+		fprintf(stderr,"%s doesn't support options\n");
+		return 0;
+	}
+	return list_contexts();
+}
+
 static int cudash_help(const char *,const char *);
 
 static const struct {
@@ -350,6 +385,7 @@ static const struct {
 } cmdtable[] = {
 	{ "alloc",	cudash_alloc,	"allocate device memory",	},
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
+	{ "ctxdump",	cudash_ctxdump,	"serialize CUcontext objects",	},
 	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "fork",	cudash_fork,	"fork a child cudash",	},
