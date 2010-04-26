@@ -218,6 +218,26 @@ cudash_alloc(const char *c,const char *cmdline){
 }
 
 static int
+cudash_allocmax(const char *c,const char *cmdline){
+	uintmax_t size;
+	CUdeviceptr p;
+
+	if(strcmp(cmdline,"")){
+		fprintf(stderr,"%s doesn't support options\n");
+		return 0;
+	}
+	if((size = cuda_alloc_max(stdout,&p,1)) == 0){
+		return 0;
+	}
+	if(create_ctx_map(&curdev->map,p,size)){
+		cuMemFree(p);
+		return 0;
+	}
+	printf("Allocated %llub @ %p\n",size,p);
+	return 0;
+}
+
+static int
 cudash_pin(const char *c,const char *cmdline){
 	unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
 	unsigned long long size;
@@ -454,6 +474,7 @@ static const struct {
 	const char *help;
 } cmdtable[] = {
 	{ "alloc",	cudash_alloc,	"allocate device memory",	},
+	{ "allocmax",	cudash_allocmax,"allocate all possible contiguous device memory",	},
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
 	{ "ctxdump",	cudash_ctxdump,	"serialize CUcontext objects",	},
 	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
