@@ -1,8 +1,18 @@
+#include <errno.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "cuda8803ss.h"
+
+typedef struct cudadev {
+	char *devname;
+	int devno;
+	struct cudadev *next;
+	int major,minor,warpsz,mpcount;
+} cudadev;
+
+static cudadev *devices;
 
 static int
 add_to_history(const char *rl){
@@ -27,7 +37,14 @@ cudash_quit(const char *c,const char *cmdline){
 
 static int
 list_cards(void){
-	// FIXME
+	cudadev *c;
+
+	for(c = devices ; c ; c = c->next){
+		if(printf("Card %d: %s\n",c->devno,c->devname) < 0){
+			return -1;
+		}
+		// FIXME more detail
+	}
 	return 0;
 }
 
@@ -71,7 +88,7 @@ list_commands(void){
 	typeof(*cmdtable) *t;
 
 	for(t = cmdtable ; t->cmd ; ++t){
-		if(printf(" %s: %s\n",t->cmd,t->help) < 0){
+		if(printf("%s: %s\n",t->cmd,t->help) < 0){
 			return -1;
 		}
 	}
@@ -94,7 +111,7 @@ cudash_help(const char *c,const char *cmdline){
 				return -1;
 			}
 		}else{
-			if(printf(" %s: %s\n",tptr->cmd,tptr->help) < 0){
+			if(printf("%s: %s\n",tptr->cmd,tptr->help) < 0){
 				return -1;
 			}
 		}
@@ -128,30 +145,113 @@ run_command(const char *cmd){
 	return fxn(toke,cmd);
 }
 
+static void
+free_devices(cudadev *d){
+	while(d){
+		cudadev *t = d;
+
+		d = d->next;
+		free(t->devname);
+		free(t);
+	}
+}
+
+static int
+id_cudadev(cudadev *c){
+	struct cudaDeviceProp dprop;
+	CUdevice d;
+	int cerr;
+
+	if((cerr = cuDeviceGet(&d,c->devno)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't query device %d (%d)\n",c->devno,cerr);
+		return -1;
+	}
+	if((cerr = cudaGetDeviceProperties(&dprop,d)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't query device %d (%d)\n",c->devno,cerr);
+		return -1;
+	}
+	cerr = cuDeviceGetAttribute(&c->warpsz,CU_DEVICE_ATTRIBUTE_WARP_SIZE,d);
+	if(cerr != CUDA_SUCCESS || c->warpsz <= 0){
+		fprintf(stderr,"Couldn't get warp size for device %d (%d)\n",c->devno,cerr);
+		return -1;
+	}
+	cerr = cuDeviceGetAttribute(&c->mpcount,CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,d);
+	if(cerr != CUDA_SUCCESS || c->mpcount <= 0){
+		fprintf(stderr,"Couldn't get MP count for device %d (%d)\n",c->devno,cerr);
+		return -1;
+	}
+	if((cerr = cuDeviceComputeCapability(&c->major,&c->minor,d)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't get compute capability for device %d (%d)\n",c->devno,cerr);
+		return -1;
+	}
+#define CUDASTRLEN 80
+	if((c->devname = (char *)malloc(CUDASTRLEN)) == NULL){
+		fprintf(stderr,"Couldn't allocate %zub (%s?)\n",CUDASTRLEN,strerror(errno));
+		return -1;
+	}
+	if((cerr = cuDeviceGetName(c->devname,CUDASTRLEN,d)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't get name for device %d (%d)\n",c->devno,cerr);
+		free(c->devname);
+		return -1;
+	}
+#undef CUDASTRLEN
+	return 0;
+}
+
+static int
+make_devices(int count){
+	cudadev *chain = NULL;
+
+	while(count--){
+		cudadev *c;
+
+		if((c = (cudadev *)malloc(sizeof(*c))) == NULL){
+			free_devices(chain);
+			return -1;
+		}
+		c->devno = count;
+		if(id_cudadev(c)){
+			free_devices(chain);
+			free(c);
+			return -1;
+		}
+		c->next = chain;
+		chain = c;
+	}
+	devices = chain;
+	return 0;
+}
+
 int main(void){
 	const char *prompt = "cudash> ";
-	char *rln;
+	char *rln = NULL;
 	int count;
 
 	if(init_cuda_alldevs(&count)){
 		exit(EXIT_FAILURE);
 	}
-	// FIXME initalize CUDA on all devices
+	if(make_devices(count)){
+		exit(EXIT_FAILURE);
+	}
 	while( (rln = readline(prompt)) ){
 		// An empty string ought neither be saved to history nor run.
 		if(strcmp("",rln)){
 			if(add_to_history(rln)){
 				fprintf(stderr,"Error adding input to history. Exiting.\n");
-				free(rln);
-				exit(EXIT_FAILURE);
+				goto err;
 			}
 			if(run_command(rln)){
 				fprintf(stderr,"Exception while running command. Exiting.\n");
-				free(rln);
-				exit(EXIT_FAILURE);
+				goto err;
 			}
 		}
 		free(rln);
 	}
+	free_devices(devices);
 	exit(EXIT_SUCCESS);
+
+err:
+	free(rln);
+	free_devices(devices);
+	exit(EXIT_FAILURE);
 }
