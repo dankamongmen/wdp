@@ -118,20 +118,20 @@ clockkernel(uint64_t clocks){
 	__shared__ typeof(clocks) p[GRID_SIZE * BLOCK_SIZE];
 	uint64_t c0 = clock();
 
-	p[blockIdx.x * BLOCK_SIZE + threadIdx.x] = 0;
+	p[blockIdx.x * blockDim.x + threadIdx.x] = 0;
 	while(clocks >= 0x100000000ull){
 		c0 = clock();
 		do{
-			++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
+			++p[blockIdx.x * blockDim.x + threadIdx.x];
 		}while(clock() > c0);
 		while(clock() < c0){
-			++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
+			++p[blockIdx.x * blockDim.x + threadIdx.x];
 		}
 		clocks -= 0x100000000ull;
 	}
 	c0 = clock();
 	do{
-		++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
+		++p[blockIdx.x * blockDim.x + threadIdx.x];
 	}while(clock() - c0 < clocks);
 }
 
@@ -188,17 +188,17 @@ cudash_read(const char *c,const char *cmdline){
 
 __global__ void
 writekernel(unsigned *aptr,const unsigned *bptr,unsigned val,uint32_t *results){
-	__shared__ typeof(*results) psum[GRID_SIZE * BLOCK_SIZE];
+	__shared__ typeof(*results) psum[gridDim.x * blockDim.x];
 
-	psum[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
-		results[BLOCK_SIZE * blockIdx.x + threadIdx.x];
-	while(aptr + BLOCK_SIZE * blockIdx.x + threadIdx.x < bptr){
-		aptr[BLOCK_SIZE * blockIdx.x + threadIdx.x] = val;
-		++psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
-		aptr += BLOCK_SIZE * GRID_SIZE;
+	psum[blockDim.x * blockIdx.x + threadIdx.x] =
+		results[blockDim.x * blockIdx.x + threadIdx.x];
+	while(aptr + blockDim.x * blockIdx.x + threadIdx.x < bptr){
+		aptr[blockDim.x * blockIdx.x + threadIdx.x] = val;
+		++psum[blockDim.x * blockIdx.x + threadIdx.x];
+		aptr += blockDim.x * gridDim.x;
 	}
-	results[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
-		psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+	results[blockDim.x * blockIdx.x + threadIdx.x] =
+		psum[blockDim.x * blockIdx.x + threadIdx.x];
 }
 
 static int
