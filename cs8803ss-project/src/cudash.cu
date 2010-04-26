@@ -26,7 +26,7 @@ typedef struct cudadev {
 	unsigned addrbits;
 } cudadev;
 
-static cudamap *maps;		// FIXME ought be per-card; we're overloading
+static cudamap *maps;
 static unsigned cudash_child;
 static cudadev *devices,*curdev;
 
@@ -35,7 +35,7 @@ add_to_history(const char *rl){
 	if(strcmp(rl,"") == 0){
 		return 0;
 	}
-	add_history(rl); // FIXME error check?
+	add_history(rl); // libreadline has no proviso for error checking :/
 	return 0;
 }
 
@@ -160,9 +160,13 @@ cudash_read(const char *c,const char *cmdline){
 	if(printf("Reading [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
-	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS
-			|| (cerr = cuMemsetD32(res,0,BLOCK_SIZE))){
+	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
+		return 0;
+	}
+	if((cerr = cuMemsetD32(res,0,BLOCK_SIZE)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't initialize result array (%d)\n",cerr);
+		cuMemFree(res);
 		return 0;
 	}
 	readkernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
@@ -225,9 +229,13 @@ cudash_write(const char *c,const char *cmdline){
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
-	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS
-			|| (cerr = cuMemsetD32(res,0,BLOCK_SIZE))){
+	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
+		return 0;
+	}
+	if((cerr = cuMemsetD32(res,0,BLOCK_SIZE)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't initialize result array (%d)\n",cerr);
+		cuMemFree(res);
 		return 0;
 	}
 	writekernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
