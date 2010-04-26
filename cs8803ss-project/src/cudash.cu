@@ -155,7 +155,7 @@ cudash_read(const char *c,const char *cmdline){
 		for(i = 0 ; i < sizeof(hostres) / sizeof(*hostres) ; ++i){
 			csum += hostres[i];
 		}
-		if(printf("Successfully read memory (checksum: %jx).\n") < 0){
+		if(printf("Successfully read memory (checksum: 0x%jx (%ju)).\n",csum,csum) < 0){
 			return -1;
 		}
 	}
