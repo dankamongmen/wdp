@@ -23,6 +23,7 @@ typedef struct cudadev {
 	int major,minor,warpsz,mpcount;
 	CUcontext ctx;
 	cudamap *map;
+	unsigned addrbits;
 } cudadev;
 
 static cudamap *maps;		// FIXME ought be per-card; we're overloading
@@ -452,7 +453,17 @@ cudash_maps(const char *c,const char *cmdline){
 		}
 	}
 	for(d = devices ; d ; d = d->next){
+		uintmax_t b = 0;
+
 		for(m = d->map ; m ; m = m->next){
+			if((uintmax_t)m->base > b){
+				uintmax_t skip = (uintmax_t)m->base - b;
+
+				if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx unallocated\n",
+						d->devno,skip,skip,b) < 0){
+					return -1;
+				}
+			}
 			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
 					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
 				return -1;
@@ -465,6 +476,16 @@ cudash_maps(const char *c,const char *cmdline){
 			if(printf("\n") < 0){
 				return -1;
 			}
+			b = (uintmax_t)m->base + m->s;
+		}
+		if(b != (1u << d->addrbits)){
+			uintmax_t skip = (1ull << d->addrbits) - b;
+
+			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx unallocated\n",
+					d->devno,skip,skip,b) < 0){
+				return -1;
+			}
+			b += skip;
 		}
 	}
 	return 0;
@@ -807,6 +828,11 @@ id_cudadev(cudadev *c){
 	if((cerr = cuDeviceComputeCapability(&c->major,&c->minor,d)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't get compute capability for device %d (%d)\n",c->devno,cerr);
 		return -1;
+	}
+	if(c->major < 2){
+		c->addrbits = 32;
+	}else{
+		c->addrbits = 40;
 	}
 #define CUDASTRLEN 80
 	if((c->devname = (char *)malloc(CUDASTRLEN)) == NULL){
