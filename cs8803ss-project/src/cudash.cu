@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "cuda8803ss.h"
@@ -11,6 +12,8 @@ typedef struct cudamap {
 	uintptr_t base;
 	size_t s;		// only what we asked for, not actually got
 	struct cudamap *next;
+	void *maps;		// only for on-device mappings of host memory.
+				// otherwise, equal to MAP_FAILED.
 } cudamap;
 
 typedef struct cudadev {
@@ -36,7 +39,7 @@ add_to_history(const char *rl){
 }
 
 static cudamap *
-create_cuda_map(uintptr_t p,size_t s){
+create_cuda_map(uintptr_t p,size_t s,void *targ){
 	cudamap *r;
 
 	if((r = (cudamap *)malloc(sizeof(*r))) == NULL){
@@ -45,6 +48,7 @@ create_cuda_map(uintptr_t p,size_t s){
 	}
 	r->base = p;
 	r->s = s;
+	r->maps = targ;
 	return r;
 }
 
@@ -86,10 +90,10 @@ cudash_cards(const char *c,const char *cmdline){
 }
 
 static int
-create_ctx_map(cudamap **m,uintptr_t p,size_t size){
+create_ctx_mapofmap(cudamap **m,uintptr_t p,size_t size,void *targ){
 	cudamap *cm;
 
-	if((cm = create_cuda_map(p,size)) == NULL){
+	if((cm = create_cuda_map(p,size,targ)) == NULL){
 		return 0;
 	}
 	while(*m){
@@ -101,6 +105,11 @@ create_ctx_map(cudamap **m,uintptr_t p,size_t size){
 	cm->next = *m;
 	*m = cm;
 	return 0;
+}
+
+static inline int
+create_ctx_map(cudamap **m,uintptr_t p,size_t size){
+	return create_ctx_mapofmap(m,p,size,MAP_FAILED);
 }
 
 static int
@@ -200,7 +209,7 @@ cudash_pin(const char *c,const char *cmdline){
 		// FIXME need to extract from host map list, previous devices
 		return 0;
 	}
-	if(create_ctx_map(&curdev->map,(uintptr_t)p,size)){
+	if(create_ctx_mapofmap(&curdev->map,cd,size,p)){
 		cuMemFreeHost(p);
 		// FIXME need to extract from host map list, previous devices
 		return 0;
@@ -269,15 +278,23 @@ cudash_maps(const char *c,const char *cmdline){
 	cudamap *m;
 
 	for(m = maps ; m ; m = m->next){
-		if(printf("(host) %10zu (0x%08x) @ 0x%jx\n",
+		if(printf("(host) %10zu (0x%08x) @ 0x%012jx\n",
 				m->s,m->s,(uintmax_t)m->base) < 0){
 			return -1;
 		}
 	}
 	for(d = devices ; d ; d = d->next){
 		for(m = d->map ; m ; m = m->next){
-			if(printf("(%4d) %10zu (0x%08x) @ 0x%jx\n",
+			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
 					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
+				return -1;
+			}
+			if(m->maps){
+				if(printf(" (maps %012p)",m->maps) < 0){
+					return -1;
+				}
+			}
+			if(printf("\n") < 0){
 				return -1;
 			}
 		}
