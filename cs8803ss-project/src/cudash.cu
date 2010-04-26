@@ -533,11 +533,7 @@ cudash_verify(const char *c,const char *cmdline){
 	cudadev *d;
 	cudamap *m;
 
-	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS
-			|| (cerr = cuMemsetD32(res,0,BLOCK_SIZE))){
-		if(fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr) < 0){
-			return -1;
-		}
+	if(get_resarray(&res)){
 		return 0;
 	}
 	for(d = devices ; d ; d = d->next){
