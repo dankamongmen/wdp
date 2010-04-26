@@ -35,7 +35,7 @@ add_to_history(const char *rl){
 	if(strcmp(rl,"") == 0){
 		return 0;
 	}
-	add_history(rl); // FIXME error check?
+	add_history(rl); // libreadline has no proviso for error checking :/
 	return 0;
 }
 
