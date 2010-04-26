@@ -522,7 +522,7 @@ cudash_maps(const char *c,const char *cmdline){
 			}
 			b = (uintmax_t)m->base + m->s;
 		}
-		if(b != (1u << d->addrbits)){
+		if(b != (1ull << d->addrbits)){
 			uintmax_t skip = (1ull << d->addrbits) - b;
 
 			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx unallocated\n",
