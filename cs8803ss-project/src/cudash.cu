@@ -22,6 +22,7 @@ typedef struct cudadev {
 	cudamap *map;
 } cudadev;
 
+static cudamap *maps;		// FIXME ought be per-card; we're overloading
 static cudadev *devices;
 static unsigned cudash_child;
 
@@ -32,6 +33,19 @@ add_to_history(const char *rl){
 	}
 	add_history(rl); // FIXME error check?
 	return 0;
+}
+
+static cudamap *
+create_cuda_map(uintptr_t p,size_t s){
+	cudamap *r;
+
+	if((r = (cudamap *)malloc(sizeof(*r))) == NULL){
+		fprintf(stderr,"Couldn't allocate map (%s)\n",strerror(errno));
+		return NULL;
+	}
+	r->base = p;
+	r->s = s;
+	return r;
 }
 
 typedef int (*cudashfxn)(const char *,const char *);
@@ -72,6 +86,24 @@ cudash_cards(const char *c,const char *cmdline){
 }
 
 static int
+create_ctx_map(cudamap **m,uintptr_t p,size_t size){
+	cudamap *cm;
+
+	if((cm = create_cuda_map(p,size)) == NULL){
+		return 0;
+	}
+	while(*m){
+		if(cm->base <= (*m)->base){
+			break;
+		}
+		m = &(*m)->next;
+	}
+	cm->next = *m;
+	*m = cm;
+	return 0;
+}
+
+static int
 cudash_alloc(const char *c,const char *cmdline){
 	unsigned long long size;
 	CUdeviceptr p;
@@ -87,7 +119,11 @@ cudash_alloc(const char *c,const char *cmdline){
 		fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
 		return 0;
 	}
-	printf("Allocated %llub @ %p\n",size,p); // FIXME adjust map
+	if(create_ctx_map(&maps,p,size)){
+		cuMemFree(p);
+		return 0;
+	}
+	printf("Allocated %llub @ %p\n",size,p);
 	return 0;
 }
 
@@ -107,6 +143,10 @@ cudash_pin(const char *c,const char *cmdline){
 	}
 	if((cerr = cuMemHostAlloc(&p,size,flags)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't host-allocate %llub (%d)\n",size,cerr);
+		return 0;
+	}
+	if(create_ctx_map(&maps,(uintptr_t)p,size)){
+		cuMemFreeHost(p);
 		return 0;
 	}
 	printf("Allocated %llub host memory @ %p\n",size,p); // FIXME adjust map
@@ -152,7 +192,14 @@ cudash_exec(const char *c,const char *cmdline){
 
 static int
 cudash_maps(const char *c,const char *cmdline){
-	return -1;
+	cudamap *m;
+
+	for(m = maps ; m ; m = m->next){
+		if(printf("%zu (0x%x) bytes @ 0x%jx\n",m->s,m->s,(uintmax_t)m->base) < 0){
+			return -1;
+		}
+	}
+	return 0;
 }
 
 static int cudash_help(const char *,const char *);
@@ -249,18 +296,23 @@ run_command(const char *cmd){
 }
 
 static void
+free_maps(cudamap *m){
+	while(m){
+		cudamap *tm = m;
+
+		m = tm->next;
+		free(tm);
+	}
+}
+
+static void
 free_devices(cudadev *d){
 	while(d){
 		cudadev *t = d;
 
 		d = d->next;
 		free(t->devname);
-		while(t->map){
-			cudamap *tm = t->map;
-
-			t->map = t->map->next;
-			free(tm);
-		}
+		free_maps(t->map);
 		cuCtxDestroy(t->ctx);
 		free(t);
 	}
@@ -365,5 +417,6 @@ int main(void){
 		free(rln);
 	}
 	free_devices(devices);
+	free_maps(maps);
 	exit(EXIT_SUCCESS);
 }
