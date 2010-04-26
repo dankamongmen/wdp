@@ -112,6 +112,23 @@ create_ctx_map(cudamap **m,uintptr_t p,size_t size){
 	return create_ctx_mapofmap(m,p,size,MAP_FAILED);
 }
 
+__global__ void
+clockkernel(uint64_t clocks){
+	__shared__ typeof(clocks) p[GRID_SIZE * BLOCK_SIZE];
+
+	p[blockIdx.x * BLOCK_SIZE + threadIdx.x] = 0;
+	while(clocks >= 0x100000000ull){
+		while(clock() < 0xffffffff){
+			++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
+		}
+		clocks -= 0x100000000ull;
+	}
+	while(clock() < 0xffffffffull){
+		++p[blockIdx.x * BLOCK_SIZE + threadIdx.x];
+	}
+}
+
+
 static int
 cudash_read(const char *c,const char *cmdline){
 	unsigned long long base,size;
@@ -190,6 +207,29 @@ cudash_write(const char *c,const char *cmdline){
 			return -1;
 		}
 	}
+	return 0;
+}
+
+static int
+cudash_clocks(const char *c,const char *cmdline){
+	unsigned long long clocks;
+	dim3 db(BLOCK_SIZE,1,1);
+	dim3 dg(GRID_SIZE,1,1);
+	CUresult cerr;
+	char *ep;
+
+	if(((clocks = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid clocks: %s\n",cmdline);
+		return 0;
+	}
+	clockkernel<<<dg,db>>>(clocks);
+	if((cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
+		if(fprintf(stderr,"Error spinning on device (%d)\n",cerr) < 0){
+			return -1;
+		}
+	}
+	printf("Occupied %llu clocks\n",clocks);
 	return 0;
 }
 
@@ -498,6 +538,7 @@ static const struct {
 	{ "alloc",	cudash_alloc,	"allocate device memory",	},
 	{ "allocmax",	cudash_allocmax,"allocate all possible contiguous device memory",	},
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
+	{ "clocks",	cudash_clocks,	"spin for a specified number of device clocks",	},
 	{ "ctxdump",	cudash_ctxdump,	"serialize CUcontext objects",	},
 	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
@@ -697,15 +738,21 @@ int main(void){
 	while( (rln = readline(prompt)) ){
 		// An empty string ought neither be saved to history nor run.
 		if(strcmp("",rln)){
+			struct timeval t0,t1,tsub;
+
 			if(add_to_history(rln)){
 				fprintf(stderr,"Error adding input to history. Exiting.\n");
 				free(rln);
 				break;
 			}
+			gettimeofday(&t0,NULL);
 			if(run_command(rln)){
 				free(rln);
 				break;
 			}
+			gettimeofday(&t1,NULL);
+			timersub(&t1,&t0,&tsub);
+			printf("Command took %u.%06us\n",tsub.tv_sec,tsub.tv_usec);
 		}
 		free(rln);
 	}
