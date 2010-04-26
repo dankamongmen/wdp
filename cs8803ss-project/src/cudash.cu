@@ -10,6 +10,7 @@ typedef struct cudadev {
 	int devno;
 	struct cudadev *next;
 	int major,minor,warpsz,mpcount;
+	CUcontext ctx;
 } cudadev;
 
 static cudadev *devices;
@@ -74,7 +75,7 @@ cudash_alloc(const char *c,const char *cmdline){
 		fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
 		return 0;
 	}
-	printf("Allocated %llub\n",size); // FIXME adjust map
+	printf("Allocated %llub @ %p\n",size,p); // FIXME adjust map
 	return 0;
 }
 
@@ -174,6 +175,7 @@ free_devices(cudadev *d){
 
 		d = d->next;
 		free(t->devname);
+		cuCtxDestroy(t->ctx);
 		free(t);
 	}
 }
@@ -217,6 +219,11 @@ id_cudadev(cudadev *c){
 		return -1;
 	}
 #undef CUDASTRLEN
+	if((cerr = cuCtxCreate(&c->ctx,CU_CTX_MAP_HOST,d)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't get context for device %d (%d)\n",c->devno,cerr);
+		free(c->devname);
+		return -1;
+	}
 	return 0;
 }
 
