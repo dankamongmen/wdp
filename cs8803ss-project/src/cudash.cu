@@ -191,10 +191,34 @@ cudash_fork(const char *c,const char *cmdline){
 	return 0;
 }
 
-// FIXME unimplemented
 static int
 cudash_exec(const char *c,const char *cmdline){
-	return -1;
+	pid_t pid;
+
+	if(fflush(stdout) || fflush(stderr)){
+		fprintf(stderr,"Couldn't flush output (%s?)\n",strerror(errno));
+		return -1;
+	}
+	if((pid = fork()) < 0){
+		fprintf(stderr,"Couldn't fork (%s?)\n",strerror(errno));
+		return -1;
+	}else if(pid == 0){
+		while(isspace(*cmdline)){
+			++cmdline;
+		}{
+			// FIXME tokenize that bitch
+			char * const argv[] = { strdup(cmdline), NULL };
+			if(execvp(cmdline,argv)){
+				fprintf(stderr,"Couldn't launch %s (%s)\n",cmdline,strerror(errno));
+			}
+		}
+		exit(EXIT_FAILURE);
+	}else{
+		int status;
+
+		waitpid(pid,&status,0); // FIXME check result code
+	}
+	return 0;
 }
 
 static int
