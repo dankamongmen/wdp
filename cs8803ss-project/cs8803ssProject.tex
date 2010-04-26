@@ -38,7 +38,7 @@ programmable domains to be rapidly subjected (and often found vulnerable) to
 attacks of the past; indeed, wherever processing goes, so does the possibility
 of automated attacks.  We describe one of the predominant general purpose
 architectures for GPUs today, NVIDIA's Compute Unified Device Architecture
-(CUDA\footnote{CUDA\textsuperscript{\textregistered} is a registered trademark of the NVIDIA Corporation.}), and examine possible attack vectors against this architecture.  Through our research we have discovered a number of possible attack avenues that have not been considered to date.  These vectors include spoofing, tampering and video manipulation, information disclosure, denial of service, and privilege escalation.}
+(CUDA) \footnote{CUDA\textsuperscript{\textregistered} is a registered trademark of the NVIDIA Corporation.}, and examine possible attack vectors against this architecture.  Through our research we have discovered a number of possible attack avenues that have not been considered to date.  These vectors include spoofing, tampering and video manipulation, information disclosure, denial of service, and privilege escalation.}
 
 \textbf{We investigated methods of exploiting these possible vectors and developed a series of tools that succeed in this regard.  In cases where we were unable to specifically develop a tool to exploit a given vector, we state our view on whether or not we feel the vector is exploitable given more time and effort.  If we feel it's likely that the vector can be exploited we explain what we feel are possible methods of exploiting it, and if not we explain what defense mechanisms are in place that make it unlikely.  For all attack vectors we describe defense mechanisms against them, but note that in the high-performance world of graphics cards adding security mechanisms may be an extremely high burden.}
 
@@ -234,10 +234,14 @@ to explore memory protection.
 \subsection{Tools}
 We developed
 \squishlist
-\item \texttt{cudadump} to read raw address ranges, generating as output a
-bitmap of valid and invalid accesses, and an optional disk image.
-\item \texttt{cudascorch} to write raw address ranges, generating as output a
-bitmap of valid and invalid accesses.
+\item \texttt{cudadump} (and its helper binary, \texttt{cudaranger}) to
+discover readable regions in a given virtual memory. If there is an error
+reading a specified range, that range is recursively bisected down to some
+granularity. Output is a map of accessible and inaccessible ranges of memory.
+\item \texttt{cudash}, the CUDA Shell, to perform close-in experiments and
+prototype attacks.
+\item \texttt{cudabounder}, \texttt{cudaminimal}, \texttt{cudapinner}, \texttt{cudaquirky},
+\texttt{cudaspawner}, and \texttt{cudastuffer}, a series of single-purpose attack tools.
 \squishend
 We made use of
 \squishlist
