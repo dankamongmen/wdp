@@ -104,6 +104,48 @@ create_ctx_map(cudamap **m,uintptr_t p,size_t size){
 }
 
 static int
+cudash_read(const char *c,const char *cmdline){
+	unsigned long long base,size;
+	char *ep;
+
+	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid base: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
+	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid size: %s\n",cmdline);
+		return 0;
+	}
+	printf("read [0x%llx - 0x%llx)\n",base,base + size);
+	// FIXME read it
+	return 0;
+}
+
+static int
+cudash_write(const char *c,const char *cmdline){
+	unsigned long long base,size;
+	char *ep;
+
+	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid base: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
+	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid size: %s\n",cmdline);
+		return 0;
+	}
+	printf("write [0x%llx - 0x%llx)\n",base,base + size);
+	// FIXME write it
+	return 0;
+}
+
+static int
 cudash_alloc(const char *c,const char *cmdline){
 	unsigned long long size;
 	CUdeviceptr p;
@@ -253,12 +295,14 @@ static const struct {
 	{ "alloc",	cudash_alloc,	"allocate device memory",	},
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
 	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
-	{ "fork",	cudash_fork,	"fork a child cudash",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
+	{ "fork",	cudash_fork,	"fork a child cudash",	},
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
 	{ "maps",	cudash_maps,	"display CUDA memory tables",	},
 	{ "pin",	cudash_pin,	"pin and map host memory",	},
 	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
+	{ "read",	cudash_read,	"read device memory in CUDA",	},
+	{ "write",	cudash_write,	"write device memory in CUDA",	},
 	{ NULL,		NULL,		NULL,	}
 };
 
