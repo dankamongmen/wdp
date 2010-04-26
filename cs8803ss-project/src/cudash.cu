@@ -117,6 +117,7 @@ cudash_read(const char *c,const char *cmdline){
 	unsigned long long base,size;
 	dim3 db(BLOCK_SIZE,1,1);
 	uint32_t *res;
+	CUresult cerr;
 	char *ep;
 
 	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
@@ -130,20 +131,32 @@ cudash_read(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid size: %s\n",cmdline);
 		return 0;
 	}
-	printf("read [0x%llx - 0x%llx)\n",base,base + size);
+	if(printf("Reading [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
+		return -1;
+	}
 	if((res = (uint32_t *)malloc(sizeof(uint32_t) * BLOCK_SIZE)) == NULL){
 		fprintf(stderr,"Couldn't allocate result array (%s)\n",strerror(errno));
 		return 0;
 	}
 	readkernel<<<1,db>>>((unsigned *)base,(unsigned *)(base + size),NULL);
-	// FIXME check results
+	// FIXME check result array
 	free(res);
+	if((cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
+		if(fprintf(stderr,"Error reading memory (%d)\n",cerr) < 0){
+			return -1;
+		}
+	}else{
+		if(printf("Successfully read memory.\n") < 0){
+			return -1;
+		}
+	}
 	return 0;
 }
 
 static int
 cudash_write(const char *c,const char *cmdline){
 	unsigned long long base,size;
+	CUresult cerr;
 	char *ep;
 
 	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
@@ -157,8 +170,17 @@ cudash_write(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid size: %s\n",cmdline);
 		return 0;
 	}
-	printf("write [0x%llx - 0x%llx)\n",base,base + size);
+	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
+		return -1;
+	}
 	// FIXME write it
+	if((cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
+		fprintf(stderr,"Error writing memory (%d)\n",cerr);
+	}else{
+		if(printf("Successfully wrote memory.\n") < 0){
+			return -1;
+		}
+	}
 	return 0;
 }
 
