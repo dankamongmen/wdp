@@ -138,7 +138,7 @@ cudash_read(const char *c,const char *cmdline){
 	}
 	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS
 			|| (cerr = cuMemsetD32(res,0,BLOCK_SIZE))){
-		fprintf(stderr,"Couldn't allocate result array (%s)\n",strerror(errno));
+		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
 		return 0;
 	}
 	readkernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
