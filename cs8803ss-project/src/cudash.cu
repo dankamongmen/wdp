@@ -23,8 +23,8 @@ typedef struct cudadev {
 } cudadev;
 
 static cudamap *maps;		// FIXME ought be per-card; we're overloading
-static cudadev *devices;
 static unsigned cudash_child;
+static cudadev *devices,*curdev;
 
 static int
 add_to_history(const char *rl){
@@ -119,7 +119,7 @@ cudash_alloc(const char *c,const char *cmdline){
 		fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
 		return 0;
 	}
-	if(create_ctx_map(&maps,p,size)){
+	if(create_ctx_map(&curdev->map,p,size)){
 		cuMemFree(p);
 		return 0;
 	}
@@ -150,10 +150,17 @@ cudash_pin(const char *c,const char *cmdline){
 		return 0;
 	}
 	printf("Allocated %llub host memory @ %p\n",size,p); // FIXME adjust map
-	// FIXME map into each card's memory space, not just one
-	if((cerr = cuMemHostGetDevicePointer(&cd,p,0)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't map %llub @ %p (%d)\n",size,p,cerr);
+	// FIXME map into each card's memory space, not just current's
+	if((cerr = cuMemHostGetDevicePointer(&cd,p,curdev->devno)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't map %llub @ %p on dev %d (%d)\n",
+				size,p,curdev->devno,cerr);
 		cuMemFreeHost(p);
+		// FIXME need to extract from host map list, previous devices
+		return 0;
+	}
+	if(create_ctx_map(&curdev->map,(uintptr_t)p,size)){
+		cuMemFreeHost(p);
+		// FIXME need to extract from host map list, previous devices
 		return 0;
 	}
 	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
@@ -192,11 +199,21 @@ cudash_exec(const char *c,const char *cmdline){
 
 static int
 cudash_maps(const char *c,const char *cmdline){
+	cudadev *d;
 	cudamap *m;
 
 	for(m = maps ; m ; m = m->next){
-		if(printf("%zu (0x%x) bytes @ 0x%jx\n",m->s,m->s,(uintmax_t)m->base) < 0){
+		if(printf("(host) %10zu (0x%08x) @ 0x%jx\n",
+				m->s,m->s,(uintmax_t)m->base) < 0){
 			return -1;
+		}
+	}
+	for(d = devices ; d ; d = d->next){
+		for(m = d->map ; m ; m = m->next){
+			if(printf("(%4d) %10zu (0x%08x) @ 0x%jx\n",
+					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
+				return -1;
+			}
 		}
 	}
 	return 0;
@@ -401,6 +418,7 @@ int main(void){
 	if(make_devices(count)){
 		exit(EXIT_FAILURE);
 	}
+	curdev = devices;
 	while( (rln = readline(prompt)) ){
 		// An empty string ought neither be saved to history nor run.
 		if(strcmp("",rln)){
