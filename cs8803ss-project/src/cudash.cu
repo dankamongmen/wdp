@@ -115,6 +115,7 @@ create_ctx_map(cudamap **m,uintptr_t p,size_t size){
 static int
 cudash_read(const char *c,const char *cmdline){
 	unsigned long long base,size;
+	uint32_t hostres[BLOCK_SIZE];
 	dim3 db(BLOCK_SIZE,1,1);
 	dim3 dg(GRID_SIZE,1,1);
 	CUdeviceptr res;
@@ -135,20 +136,26 @@ cudash_read(const char *c,const char *cmdline){
 	if(printf("Reading [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
-	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS){
+	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS
+			|| (cerr = cuMemsetD32(res,0,BLOCK_SIZE))){
 		fprintf(stderr,"Couldn't allocate result array (%s)\n",strerror(errno));
 		return 0;
 	}
 	readkernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
 				(uint32_t *)res);
-	// FIXME inspect result array
-	if((cerr = cuMemFree(res)) != CUDA_SUCCESS
-			|| (cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
+	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS ||
+			(cerr = cuMemFree(res)) != CUDA_SUCCESS){
 		if(fprintf(stderr,"Error reading memory (%d)\n",cerr) < 0){
 			return -1;
 		}
 	}else{
-		if(printf("Successfully read memory.\n") < 0){
+		uintmax_t csum = 0;
+		unsigned i;
+
+		for(i = 0 ; i < sizeof(hostres) / sizeof(*hostres) ; ++i){
+			csum += hostres[i];
+		}
+		if(printf("Successfully read memory (checksum: %jx).\n") < 0){
 			return -1;
 		}
 	}
