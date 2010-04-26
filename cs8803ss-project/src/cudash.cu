@@ -135,6 +135,21 @@ clockkernel(uint64_t clocks){
 	}while(clock() - c0 < clocks);
 }
 
+static int
+get_resarray(CUdeviceptr *r){
+	CUresult cerr;
+
+	if((cerr = cuMemAlloc(r,sizeof(uint32_t) * BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
+		return -1;
+	}
+	if((cerr = cuMemsetD32(*r,0,BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't initialize result array (%d)\n",cerr);
+		cuMemFree(*r);
+		return -1;
+	}
+	return 0;
+}
 
 static int
 cudash_read(const char *c,const char *cmdline){
@@ -148,25 +163,23 @@ cudash_read(const char *c,const char *cmdline){
 
 	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
 			|| cmdline == ep){
-		fprintf(stderr,"Invalid base: %s\n",cmdline);
+		if(fprintf(stderr,"Invalid base: %s\n",cmdline) < 0){
+			return -1;
+		}
 		return 0;
 	}
 	cmdline = ep;
 	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
 			|| cmdline == ep){
-		fprintf(stderr,"Invalid size: %s\n",cmdline);
+		if(fprintf(stderr,"Invalid size: %s\n",cmdline) < 0){
+			return -1;
+		}
 		return 0;
 	}
 	if(printf("Reading [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
-	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
-		return 0;
-	}
-	if((cerr = cuMemsetD32(res,0,BLOCK_SIZE)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't initialize result array (%d)\n",cerr);
-		cuMemFree(res);
+	if(get_resarray(&res)){
 		return 0;
 	}
 	readkernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
@@ -217,26 +230,24 @@ cudash_write(const char *c,const char *cmdline){
 
 	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
 			|| cmdline == ep){
-		fprintf(stderr,"Invalid base: %s\n",cmdline);
+		if(fprintf(stderr,"Invalid base: %s\n",cmdline) < 0){
+			return -1;
+		}
 		return 0;
 	}
 	cmdline = ep;
 	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
 			|| cmdline == ep){
-		fprintf(stderr,"Invalid size: %s\n",cmdline);
+		if(fprintf(stderr,"Invalid size: %s\n",cmdline) < 0){
+			return -1;
+		}
+		return 0;
+	}
+	if(get_resarray(&res)){
 		return 0;
 	}
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
-	}
-	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
-		return 0;
-	}
-	if((cerr = cuMemsetD32(res,0,BLOCK_SIZE)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't initialize result array (%d)\n",cerr);
-		cuMemFree(res);
-		return 0;
 	}
 	writekernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
 				0xffu,(uint32_t *)res);
