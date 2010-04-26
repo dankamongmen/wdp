@@ -89,7 +89,18 @@ __global__ void constkernel(const unsigned *constmax){
 	// overcome this). That area's reserved for constant memory (.const
 	// state space; see 5.1.3 of the PTX 2.0 Reference), from what I see.
 	for(ptr = constptr ; ptr < constmax ; ptr += BLOCK_SIZE){
-		psum[threadIdx.x] += ptr[threadIdx.x];
+		++psum[threadIdx.x];
+		if(ptr[threadIdx.x]){
+			++psum[threadIdx.x];
+		}
+	}
+	ptr = constptr;
+	while((uintptr_t)ptr > threadIdx.x * sizeof(unsigned)){
+		++psum[threadIdx.x];
+		if(*(ptr - threadIdx.x)){
+			++psum[threadIdx.x];
+		}
+		ptr -= BLOCK_SIZE;
 	}
 }
 

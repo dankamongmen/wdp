@@ -178,16 +178,35 @@ cudash_read(const char *c,const char *cmdline){
 		for(i = 0 ; i < sizeof(hostres) / sizeof(*hostres) ; ++i){
 			csum += hostres[i];
 		}
-		if(printf("Successfully read memory (checksum: 0x%jx (%ju)).\n",csum,csum) < 0){
+		if(printf("Successfully read memory (checksum: 0x%016jx (%ju)).\n",csum,csum) < 0){
 			return -1;
 		}
 	}
 	return 0;
 }
 
+__global__ void
+writekernel(unsigned *aptr,const unsigned *bptr,unsigned val,uint32_t *results){
+	__shared__ typeof(*results) psum[GRID_SIZE * BLOCK_SIZE];
+
+	psum[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
+		results[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+	while(aptr + BLOCK_SIZE * blockIdx.x + threadIdx.x < bptr){
+		aptr[BLOCK_SIZE * blockIdx.x + threadIdx.x] = val;
+		++psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+		aptr += BLOCK_SIZE * GRID_SIZE;
+	}
+	results[BLOCK_SIZE * blockIdx.x + threadIdx.x] =
+		psum[BLOCK_SIZE * blockIdx.x + threadIdx.x];
+}
+
 static int
 cudash_write(const char *c,const char *cmdline){
 	unsigned long long base,size;
+	uint32_t hostres[BLOCK_SIZE];
+	dim3 db(BLOCK_SIZE,1,1);
+	dim3 dg(GRID_SIZE,1,1);
+	CUdeviceptr res;
 	CUresult cerr;
 	char *ep;
 
@@ -205,7 +224,29 @@ cudash_write(const char *c,const char *cmdline){
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
-	// FIXME write it
+	if((cerr = cuMemAlloc(&res,sizeof(uint32_t) * BLOCK_SIZE)) != CUDA_SUCCESS
+			|| (cerr = cuMemsetD32(res,0,BLOCK_SIZE))){
+		fprintf(stderr,"Couldn't allocate result array (%d)\n",cerr);
+		return 0;
+	}
+	writekernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
+				0xffu,(uint32_t *)res);
+	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS ||
+			(cerr = cuMemFree(res)) != CUDA_SUCCESS){
+		if(fprintf(stderr,"Error writing memory (%d)\n",cerr) < 0){
+			return -1;
+		}
+	}else{
+		uintmax_t csum = 0;
+		unsigned i;
+
+		for(i = 0 ; i < sizeof(hostres) / sizeof(*hostres) ; ++i){
+			csum += hostres[i];
+		}
+		if(printf("Successfully wrote memory (verify: 0x%016jx (%ju)).\n",csum,csum) < 0){
+			return -1;
+		}
+	}
 	if((cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
 		fprintf(stderr,"Error writing memory (%d)\n",cerr);
 	}else{
@@ -439,8 +480,9 @@ list_contexts(void){
 		CUcontext ctx = c->ctx;
 		unsigned z;
 
-		if(printf("Card %d: %s, capability %d.%d, %d MPs\n",
-			c->devno,c->devname,c->major,c->minor,c->mpcount) < 0){
+		if(printf("Card %d: %s, capability %d.%d, %d MP%s\n",
+			c->devno,c->devname,c->major,c->minor,c->mpcount,
+			c->mpcount == 1 ? "" : "s") < 0){
 			return -1;
 		}
 		for(z = 0 ; z < CUCTXSIZE ; ++z){
