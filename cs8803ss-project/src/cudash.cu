@@ -469,7 +469,7 @@ cudash_maps(const char *c,const char *cmdline){
 				return -1;
 			}
 			if(m->maps != MAP_FAILED){
-				if(printf(" (maps %012p)",m->maps) < 0){
+				if(printf(" maps %012p",m->maps) < 0){
 					return -1;
 				}
 			}
