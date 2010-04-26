@@ -360,7 +360,7 @@ list_contexts(void){
 				return -1;
 			}
 		}
-		if(printf("\n") < 0){
+		if(printf(" (%p)\n",ctx) < 0){
 			return -1;
 		}
 	}
