@@ -9,6 +9,9 @@
 #include "cuda8803ss.h"
 
 #define HISTORY_FILE ".cudahistory" // FIXME use homedir
+// Single bytes allocated using cuMemAlloc() have a periodicity of 0x100, but
+// this might change in the future (or past).
+#define MINIMUM_ALLOC 0x100
 
 typedef struct cudamap {
 	uintptr_t base;
@@ -326,6 +329,48 @@ cudash_alloc(const char *c,const char *cmdline){
 		fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
 		return 0;
 	}
+	if(create_ctx_map(&curdev->map,p,size)){
+		cuMemFree(p);
+		return 0;
+	}
+	printf("Allocated %llub @ %p\n",size,p);
+	return 0;
+}
+
+static int
+cudash_allocat(const char *c,const char *cmdline){
+	unsigned long long size,addr;
+	CUdeviceptr p;
+	CUresult cerr;
+	char *ep;
+
+	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid size: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
+	if(((addr = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid addr: %s\n",cmdline);
+		return 0;
+	}
+	if(addr % MINIMUM_ALLOC){
+		fprintf(stderr,"Insufficiently aligned: 0x%llx\n",addr);
+		return 0;
+	}
+	do{
+		if((cerr = cuMemAlloc(&p,size)) != CUDA_SUCCESS){
+			fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
+			return 0;
+		}
+		if(p > addr){
+			fprintf(stderr,"Couldn't place %llub at 0x%llx\n",size,addr);
+			return 0;
+		}
+		// FIXME need keep a free-list, and also likely do larger
+		// allocations to span voids
+	}while(p < addr);
 	if(create_ctx_map(&curdev->map,p,size)){
 		cuMemFree(p);
 		return 0;
@@ -694,6 +739,7 @@ static const struct {
 	const char *help;
 } cmdtable[] = {
 	{ "alloc",	cudash_alloc,	"allocate device memory",	},
+	{ "allocat",	cudash_allocat,	"allocate particular device memory",	},
 	{ "allocmax",	cudash_allocmax,"allocate all possible contiguous device memory",	},
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
 	{ "clocks",	cudash_clocks,	"spin for a specified number of device clocks",	},
