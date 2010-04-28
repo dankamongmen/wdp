@@ -8,6 +8,8 @@
 #include <readline/readline.h>
 #include "cuda8803ss.h"
 
+#define HISTORY_FILE ".cudahistory" // FIXME use homedir
+
 typedef struct cudamap {
 	uintptr_t base;
 	size_t s;		// only what we asked for, not actually got
@@ -926,6 +928,12 @@ int main(void){
 		exit(EXIT_FAILURE);
 	}
 	curdev = devices;
+
+	// Set up GNU readline history.
+	using_history();
+	if(read_history(HISTORY_FILE)){
+		// FIXME no history file for you! oh well
+	}
 	while( (rln = readline(prompt)) ){
 		// An empty string ought neither be saved to history nor run.
 		if(strcmp("",rln)){
@@ -940,6 +948,9 @@ int main(void){
 			}
 		}
 		free(rln);
+	}
+	if(write_history(HISTORY_FILE)){
+		fprintf(stderr,"Warning: couldn't write history file at %s\n",HISTORY_FILE);
 	}
 	free_devices(devices);
 	free_maps(maps);
