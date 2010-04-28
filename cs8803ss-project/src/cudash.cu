@@ -206,6 +206,11 @@ cudash_read(const char *c,const char *cmdline){
 		return -1;
 	}
 	res = curdev->resarray;
+	if((cerr = cuMemsetD32(res,0,BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
+		if(fprintf(stderr,"Couln't initialize result array (%d)\n",cerr) < 0){
+			return -1;
+		}
+	}
 	readkernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
 				(uint32_t *)res);
 	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
@@ -269,6 +274,11 @@ cudash_write(const char *c,const char *cmdline){
 	res = curdev->resarray;
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
+	}
+	if((cerr = cuMemsetD32(res,0,BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
+		if(fprintf(stderr,"Couln't initialize result array (%d)\n",cerr) < 0){
+			return -1;
+		}
 	}
 	writekernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
 				0xffu,(uint32_t *)res);
@@ -682,6 +692,11 @@ cudash_verify(const char *c,const char *cmdline){
 			if(printf("\n") < 0){
 				return -1;
 			}
+			if((cerr = cuMemsetD32(res,0,BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
+				if(fprintf(stderr,"Couln't initialize result array (%d)\n",cerr) < 0){
+					return -1;
+				}
+			}
 			readkernel<<<dg,db>>>((unsigned *)m->base,(unsigned *)(m->base + m->s),
 						(uint32_t *)res);
 			if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
@@ -697,6 +712,59 @@ cudash_verify(const char *c,const char *cmdline){
 					csum += hostres[i];
 				}
 				if(printf(" Successfully read memory (checksum: 0x%016jx (%ju)).\n",csum,csum) < 0){
+					return -1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+static int
+cudash_wverify(const char *c,const char *cmdline){
+	uint32_t hostres[BLOCK_SIZE];
+	dim3 db(BLOCK_SIZE,1,1);
+	dim3 dg(GRID_SIZE,1,1);
+	CUdeviceptr res;
+	CUresult cerr;
+	cudadev *d;
+	cudamap *m;
+
+	res = curdev->resarray;
+	for(d = devices ; d ; d = d->next){
+		for(m = d->map ; m ; m = m->next){
+			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
+				return -1;
+			}
+			if(m->maps != MAP_FAILED){
+				if(printf(" (maps %012p)",m->maps) < 0){
+					return -1;
+				}
+			}
+			if(printf("\n") < 0){
+				return -1;
+			}
+			if((cerr = cuMemsetD32(res,0,BLOCK_SIZE * GRID_SIZE)) != CUDA_SUCCESS){
+				if(fprintf(stderr,"Couln't initialize result array (%d)\n",cerr) < 0){
+					return -1;
+				}
+			}
+			writekernel<<<dg,db>>>((unsigned *)m->base,(unsigned *)(m->base + m->s),
+						0xffu,(uint32_t *)res);
+			if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
+				if(fprintf(stderr,"Error writing memory (%d)\n",cerr) < 0){
+					return -1;
+				}
+				break;
+			}else{
+				uintmax_t csum = 0;
+				unsigned i;
+
+				for(i = 0 ; i < sizeof(hostres) / sizeof(*hostres) ; ++i){
+					csum += hostres[i];
+				}
+				if(printf(" Successfully wrote memory (checksum: 0x%016jx (%ju)).\n",csum,csum) < 0){
 					return -1;
 				}
 			}
@@ -861,6 +929,7 @@ static const struct {
 	{ "read",	cudash_read,	"read device memory in CUDA",	},
 	{ "verify",	cudash_verify,	"verify all mapped memory is readable",	},
 	{ "write",	cudash_write,	"write device memory in CUDA",	},
+	{ "wverify",	cudash_wverify,	"verify all mapped memory is writeable",	},
 	{ NULL,		NULL,		NULL,	}
 };
 
