@@ -731,6 +731,28 @@ cudash_ctxdump(const char *c,const char *cmdline){
 	return list_contexts();
 }
 
+static int
+cudash_device(const char *c,const char *cmdline){
+	unsigned long long devno;
+	cudadev *d;
+	char *ep;
+
+	if(((devno = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid devno: %s\n",cmdline);
+		return 0;
+	}
+	for(d = devices ; d ; d = d->next){
+		if(d->devno == devno){
+			return 0;
+		}
+	}
+	if(fprintf(stderr,"%llu is not a valid device number.\n",devno) < 0){
+		return -1;
+	}
+	return 0;
+}
+
 static cudadev *
 getdev(unsigned devno){
 	cudadev *d;
@@ -814,6 +836,7 @@ static const struct {
 	{ "cards",	cudash_cards,	"list devices supporting CUDA",	},
 	{ "clocks",	cudash_clocks,	"spin for a specified number of device clocks",	},
 	{ "ctxdump",	cudash_ctxdump,	"serialize CUcontext objects",	},
+	{ "device",	cudash_device,	"change the current device",	},
 	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "fork",	cudash_fork,	"fork a child cudash",	},
