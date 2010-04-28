@@ -179,8 +179,8 @@ get_resarray(CUdeviceptr *r,size_t *s){
 
 static int
 cudash_read(const char *c,const char *cmdline){
+	uint32_t hostres[BLOCK_SIZE * GRID_SIZE];
 	unsigned long long base,size;
-	uint32_t hostres[BLOCK_SIZE];
 	dim3 db(BLOCK_SIZE,1,1);
 	dim3 dg(GRID_SIZE,1,1);
 	CUdeviceptr res;
@@ -238,7 +238,9 @@ writekernel(unsigned *aptr,const unsigned *bptr,unsigned val,uint32_t *results){
 	psum[blockDim.x * blockIdx.x + threadIdx.x] =
 		results[blockDim.x * blockIdx.x + threadIdx.x];
 	while(aptr + blockDim.x * blockIdx.x + threadIdx.x < bptr){
-		aptr[blockDim.x * blockIdx.x + threadIdx.x] = val;
+		if( (aptr[blockDim.x * blockIdx.x + threadIdx.x] = val) ){
+			++psum[blockDim.x * blockIdx.x + threadIdx.x];
+		}
 		++psum[blockDim.x * blockIdx.x + threadIdx.x];
 		aptr += blockDim.x * gridDim.x;
 	}
@@ -248,8 +250,8 @@ writekernel(unsigned *aptr,const unsigned *bptr,unsigned val,uint32_t *results){
 
 static int
 cudash_write(const char *c,const char *cmdline){
-	unsigned long long base,size;
-	uint32_t hostres[BLOCK_SIZE];
+	uint32_t hostres[BLOCK_SIZE * GRID_SIZE];
+	unsigned long long base,size,val;
 	dim3 db(BLOCK_SIZE,1,1);
 	dim3 dg(GRID_SIZE,1,1);
 	CUdeviceptr res;
@@ -271,6 +273,13 @@ cudash_write(const char *c,const char *cmdline){
 		}
 		return 0;
 	}
+	cmdline = ep;
+	if(((val = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid wvalue: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
 	res = curdev->resarray;
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
@@ -281,7 +290,7 @@ cudash_write(const char *c,const char *cmdline){
 		}
 	}
 	writekernel<<<dg,db>>>((unsigned *)base,(unsigned *)(base + size),
-				0xffu,(uint32_t *)res);
+				val,(uint32_t *)res);
 	if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
 		if(fprintf(stderr,"Error writing memory (%d)\n",cerr) < 0){
 			return -1;
@@ -669,7 +678,7 @@ cudash_maps(const char *c,const char *cmdline){
 
 static int
 cudash_verify(const char *c,const char *cmdline){
-	uint32_t hostres[BLOCK_SIZE];
+	uint32_t hostres[BLOCK_SIZE * GRID_SIZE];
 	dim3 db(BLOCK_SIZE,1,1);
 	dim3 dg(GRID_SIZE,1,1);
 	CUdeviceptr res;
@@ -703,7 +712,6 @@ cudash_verify(const char *c,const char *cmdline){
 				if(fprintf(stderr,"Error reading memory (%d)\n",cerr) < 0){
 					return -1;
 				}
-				break;
 			}else{
 				uintmax_t csum = 0;
 				unsigned i;
@@ -715,21 +723,29 @@ cudash_verify(const char *c,const char *cmdline){
 					return -1;
 				}
 			}
-		}
+		} 
 	}
 	return 0;
 }
 
 static int
 cudash_wverify(const char *c,const char *cmdline){
-	uint32_t hostres[BLOCK_SIZE];
+	uint32_t hostres[BLOCK_SIZE * GRID_SIZE];
 	dim3 db(BLOCK_SIZE,1,1);
+	unsigned long long val;
 	dim3 dg(GRID_SIZE,1,1);
 	CUdeviceptr res;
 	CUresult cerr;
 	cudadev *d;
 	cudamap *m;
+	char *ep;
 
+	if(((val = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid value: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
 	res = curdev->resarray;
 	for(d = devices ; d ; d = d->next){
 		for(m = d->map ; m ; m = m->next){
@@ -751,12 +767,11 @@ cudash_wverify(const char *c,const char *cmdline){
 				}
 			}
 			writekernel<<<dg,db>>>((unsigned *)m->base,(unsigned *)(m->base + m->s),
-						0xffu,(uint32_t *)res);
+						val,(uint32_t *)res);
 			if((cerr = cuMemcpyDtoH(hostres,res,sizeof(hostres))) != CUDA_SUCCESS){
 				if(fprintf(stderr,"Error writing memory (%d)\n",cerr) < 0){
 					return -1;
 				}
-				break;
 			}else{
 				uintmax_t csum = 0;
 				unsigned i;
