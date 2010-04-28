@@ -19,6 +19,7 @@ typedef struct cudamap {
 	struct cudamap *next;
 	void *maps;		// only for on-device mappings of host memory.
 				// otherwise, equal to MAP_FAILED.
+	unsigned allocno;	// 0 == cudash internal alloc
 } cudamap;
 
 typedef struct cudadev {
@@ -33,6 +34,7 @@ typedef struct cudadev {
 } cudadev;
 
 static cudamap *maps;
+static unsigned alloccount;
 static unsigned cudash_child;
 static cudadev *devices,*curdev;
 
@@ -49,6 +51,9 @@ static cudamap *
 create_cuda_map(uintptr_t p,size_t s,void *targ){
 	cudamap *r;
 
+	if(s == 0){
+		return NULL;
+	}
 	if((r = (cudamap *)malloc(sizeof(*r))) == NULL){
 		fprintf(stderr,"Couldn't allocate map (%s)\n",strerror(errno));
 		return NULL;
@@ -56,6 +61,8 @@ create_cuda_map(uintptr_t p,size_t s,void *targ){
 	r->base = p;
 	r->s = s;
 	r->maps = targ;
+	// allocno of 0 is internal; we ought only need one internal alloc.
+	r->allocno = alloccount++;
 	return r;
 }
 
@@ -498,6 +505,61 @@ cudash_fork(const char *c,const char *cmdline){
 }
 
 static int
+cudash_free(const char *c,const char *cmdline){
+	unsigned long long base,size;
+	cudamap **m;
+	char *ep;
+
+	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid size: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
+	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid base: %s\n",cmdline);
+		return 0;
+	}
+	m = &curdev->map;
+	while(*m){
+		if((*m)->base >= base && base + size >= (*m)->base + (*m)->s){
+			CUresult cerr;
+			cudamap *tmp;
+
+			// FIXME don't free our internal allocs!
+			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+				curdev->devno,(*m)->s,(*m)->s,(uintmax_t)(*m)->base) < 0){
+				return -1;
+			}
+			if((*m)->maps != MAP_FAILED){
+				if(printf(" maps %012p",(*m)->maps) < 0){
+					return -1;
+				}
+				fprintf(stderr,"Freeing mappings is not yet implemented\n");
+				return -1; // FIXME not yet supported...
+			}else{
+				cerr = cuMemFree((*m)->base);
+			}
+			if(printf("\n") < 0){
+				return -1;
+			}
+			if(cerr){
+				if(fprintf(stderr,"Error freeing device region (%d)\n",cerr)){
+					return -1;
+				}
+			}
+			tmp = *m;
+			*m = (*m)->next;
+			free(tmp);
+		}else{
+			m = &(*m)->next;
+		}
+	}
+	return 0;
+}
+
+static int
 cudash_exec(const char *c,const char *cmdline){
 	pid_t pid;
 
@@ -556,6 +618,14 @@ cudash_maps(const char *c,const char *cmdline){
 			}
 			if(m->maps != MAP_FAILED){
 				if(printf(" maps %012p",m->maps) < 0){
+					return -1;
+				}
+			}else if(m->allocno){
+				if(printf(" user alloc #%u",m->allocno) < 0){
+					return -1;
+				}
+			}else{
+				if(printf(" cudash result buffer",m->maps) < 0){
 					return -1;
 				}
 			}
@@ -747,6 +817,7 @@ static const struct {
 	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "fork",	cudash_fork,	"fork a child cudash",	},
+	{ "free",	cudash_free,	"free maps within a range",	},
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
 	{ "maps",	cudash_maps,	"display CUDA memory tables",	},
 	{ "pin",	cudash_pin,	"pin and map host memory",	},

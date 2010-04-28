@@ -41,7 +41,7 @@ touchbytes(CUdeviceptr ptr,uint32_t off,CUdeviceptr res){
 
 static int
 shoveover(CUdeviceptr *r,size_t s){
-	const size_t shovelen = 0xf0000;
+	const size_t shovelen = 0xf00000;
 	CUdeviceptr tmp;
 	CUresult cerr;
 
