@@ -365,7 +365,7 @@ cudash_allocat(const char *c,const char *cmdline){
 			return 0;
 		}
 		if(p > addr){
-			fprintf(stderr,"Couldn't place %llub at 0x%llx\n",size,addr);
+			fprintf(stderr,"Couldn't place %llub at 0x%llx (got 0x%llx)\n",size,addr,p);
 			return 0;
 		}
 		// FIXME need keep a free-list, and also likely do larger
