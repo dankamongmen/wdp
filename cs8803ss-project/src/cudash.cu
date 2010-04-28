@@ -347,7 +347,7 @@ cudash_alloc(const char *c,const char *cmdline){
 static int
 cudash_allocat(const char *c,const char *cmdline){
 	unsigned long long size,addr;
-	CUdeviceptr p;
+	CUdeviceptr p = 0x101200; // FIXME massive hack
 	CUresult cerr;
 	char *ep;
 
@@ -367,17 +367,27 @@ cudash_allocat(const char *c,const char *cmdline){
 		return 0;
 	}
 	do{
+		if(p != addr){
+			if(p > addr){
+				fprintf(stderr,"Couldn't place %llub at 0x%llx (got 0x%llx)\n",size,addr,p);
+				return 0;
+			}else if(p + size > addr){
+				printf("fillin %llu 0x%llx\n",addr - p,addr - p);
+				if((cerr = cuMemAlloc(&p,addr - p)) != CUDA_SUCCESS){
+					fprintf(stderr,"Couldn't allocate %llub (%d)\n",addr - p,cerr);
+					return 0;
+				}
+			}
+		}
+		printf("gofor %llu 0x%llx\n",size,size);
 		if((cerr = cuMemAlloc(&p,size)) != CUDA_SUCCESS){
 			fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
 			return 0;
 		}
-		if(p > addr){
-			fprintf(stderr,"Couldn't place %llub at 0x%llx (got 0x%llx)\n",size,addr,p);
-			return 0;
-		}
+		printf("got %llu 0x%llx at %llu (0x%llx)\n",size,size,p,p);
 		// FIXME need keep a free-list, and also likely do larger
 		// allocations to span voids
-	}while(p < addr);
+	}while(p != addr);
 	if(create_ctx_map(&curdev->map,p,size)){
 		cuMemFree(p);
 		return 0;
