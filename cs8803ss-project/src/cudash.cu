@@ -744,6 +744,7 @@ cudash_device(const char *c,const char *cmdline){
 	}
 	for(d = devices ; d ; d = d->next){
 		if(d->devno == devno){
+			curdev = d;
 			return 0;
 		}
 	}
