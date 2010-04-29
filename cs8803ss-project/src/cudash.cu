@@ -249,6 +249,49 @@ writekernel(unsigned *aptr,const unsigned *bptr,unsigned val,uint32_t *results){
 }
 
 static int
+cudash_memset(const char *c,const char *cmdline){
+	unsigned long long base,size,val;
+	CUresult cerr;
+	char *ep;
+
+	if(((base = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		if(fprintf(stderr,"Invalid base: %s\n",cmdline) < 0){
+			return -1;
+		}
+		return 0;
+	}
+	cmdline = ep;
+	if(((size = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		if(fprintf(stderr,"Invalid size: %s\n",cmdline) < 0){
+			return -1;
+		}
+		return 0;
+	}
+	cmdline = ep;
+	if(((val = strtoull(cmdline,&ep,0)) == ULONG_MAX && errno == ERANGE)
+			|| cmdline == ep){
+		fprintf(stderr,"Invalid wvalue: %s\n",cmdline);
+		return 0;
+	}
+	cmdline = ep;
+	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
+		return -1;
+	}
+	if((cerr = cuMemsetD8(base,val,size)) != CUDA_SUCCESS){
+		if(fprintf(stderr,"Error writing memory (%d)\n",cerr) < 0){
+			return -1;
+		}
+	}else{
+		if(printf("Successfully wrote memory.\n") < 0){
+			return -1;
+		}
+	}
+	return 0;
+}
+
+static int
 cudash_write(const char *c,const char *cmdline){
 	uint32_t hostres[BLOCK_SIZE * GRID_SIZE];
 	unsigned long long base,size,val;
@@ -303,13 +346,6 @@ cudash_write(const char *c,const char *cmdline){
 			csum += hostres[i];
 		}
 		if(printf("Successfully wrote memory (verify: 0x%016jx (%ju)).\n",csum,csum) < 0){
-			return -1;
-		}
-	}
-	if((cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
-		fprintf(stderr,"Error writing memory (%d)\n",cerr);
-	}else{
-		if(printf("Successfully wrote memory.\n") < 0){
 			return -1;
 		}
 	}
@@ -937,6 +973,7 @@ static const struct {
 	{ "free",	cudash_free,	"free maps within a range",	},
 	{ "help",	cudash_help,	"help on the CUDA shell and commands",	},
 	{ "maps",	cudash_maps,	"display CUDA memory tables",	},
+	{ "memset",	cudash_memset,	"write device memory from host",	},
 	{ "pin",	cudash_pin,	"pin and map host memory",	},
 	{ "pinmax",	cudash_pinmax,  "pin and map all possible contiguous host memory",	},
 	{ "pokectx",	cudash_pokectx,	"poke values into CUcontext objects",	},

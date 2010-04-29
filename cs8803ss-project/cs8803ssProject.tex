@@ -285,13 +285,20 @@ This is puzzling: the Harvard architecture's primary advantage is the ability
 to fetch instructions and data into the CPU simultaneously. We suggest that
 coherence simplification, combined with the weak memory assurances of the global
 memory space, motivated this solution.
+\subsection{Is virtual memory implemented?}
+\textit{CUDA implements virtual memories.} We conclusively demonstrated this
+by examining allocation results in multiple concurrent CUDA contexts. Returned
+device pointers are equivalent for equivalent allocations in multiple contexts.
+Allocations begin at 0x101000, honor a minimum alignment of 256 bytes (larger
+alignments are honored for very large allocations), and otherwise move
+contiguously through memory. Freed regions can be reclaimed.
 \subsection{Does memory protection exist?}
 \textit{CUDA enforces memory protection in hardware.} Use of a general-purpose,
 word-sized register when referencing the global space means kernels' memory
 accesses cannot be preverified, and the possibility of software-assisted memory
 protection can be eliminated by analyzing details of memory transactions
 relative to the device clock\cite{microbenchmarks}. The use of two-level TLBs
-has been illustrated in previous work\cite{demmel}. We verified memory
+has been illustrated in previous work\cite{demmel}. We verified memoryy
 protection to be effective beyond the combined capacities of the TLBs, and
 note a L2 TLB miss to be only about half again as expensive as a L2 TLB hit.
 Thus we assert that memory protection is performed independently of, and in
@@ -299,7 +306,6 @@ parallel with, address translation. This requires virtual- (and thus per-context
 indexing; together with a memory protection granularity (1MB) distinct from
 either TLB size (4KB and 8MB), we consider this to imply a backing store in
 video RAM, and that memory protection is a single bit per entry.
-
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
@@ -337,9 +343,18 @@ While we were unable to specifically locate the framebuffer in memory, during ou
 \end{comment}
 
 \section{Defending CUDA}
-CUDA manifests a Harvard architecture atop what is likely a Von Neumann unified
-memory. It is necessary that code be properly protected.
-
+Implementors of competing CUDA stacks must ensure that their systems implement
+the relatively successful memory protections extant in the NVIDIA solution. The
+following properties ought be considered in designs, and verified:
+\squishlist
+\item CUDA manifests a Harvard architecture atop what is likely a Von Neumann
+unified memory. It is necessary that code be properly protected, especially
+under Compute Capability 2.0's concurrent kernels.
+\item CUDA performs memory translation and protection, almost certainly in
+hardware. It is necessary that these mechanisms be properly configured,
+and that proper invalidations are performed in the face of remappings. Concurrent
+kernels must not be able to freely read each other's memory.
+\squishend
 \section{Other Vendors}
 Examining graphics architectures of other vendors was outside the scope of our research.  NVIDIA's leading competitor, ATI, provides a similar framework, ATI Stream\footnote{\url{http://www.amd.com/US/PRODUCTS/TECHNOLOGIES/STREAM-TECHNOLOGY/Pages/stream-technology.aspx}}.  We feel that similar security issues have been overlooked in ATI's model as well given the lack of security discussion in this area.  Additionally, the high-performance and cut-throat nature of the graphics card market has likely precluded any thoughts on security implementations.  We believe that if ATI Stream was examined with the same threat model in mind it is certainly possible that similar security concerns would come to light.
 
