@@ -207,11 +207,6 @@ all but ring 0 operations (recall that our threat model does not assume access
 to ring 0). It is unlikely that protection on the card itself can be generally
 circumvented. Furthermore, this is the only place to protect memory from CUDA
 kernels.
-
-We implemented the \texttt{cudadump} and
-\texttt{cudascorch} tools (see below)%fixme use ref%
-to explore memory protection.
-
 \subsection{Tools}
 We developed
 \squishlist
