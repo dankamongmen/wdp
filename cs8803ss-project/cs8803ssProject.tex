@@ -268,8 +268,29 @@ Beyond the basic toolchain, we made use of:
 \centering
 \includegraphics[width=\columnwidth]{texobjs/cudash-help.png}
 \end{figurehere}
-\section{Attacking CUDA}
+\section{Attacking CUDA (A Socratic dialogue)}
+We now move beyond the realm of the documented.
+\subsection{Von Neumann or Harvard architecture?}
+\textit{CUDA appears to be a Harvard architecture.} Kernels do occupy
+video memory, as can be verified by dumping the video RAM. We assert that, by
+default, a given kernel's code is neither readable nor writeable using
+the global state space. The former was tested by verifying that global state
+spaces checksummed to the same value over distinct, subsequent kernels (all of
+which operated strictly on the shared memory space). The latter was tested by
+reversing all possible bits in the global memory space, and then performing a
+series of calculations. It is possible that undocumented opcodes can retrieve
+or modify code.
 
+This is puzzling: the Harvard architecture's primary advantage is the ability
+to fetch instructions and data into the CPU simultaneously. We suggest that
+coherence simplification, combined with the weak memory assurances of the global
+memory space, motivated this solution.
+\subsection{Does memory protection exist?}
+\textit{CUDA enforces memory protection in hardware.} Use of a general-purpose,
+word-sized register when referencing the global space means kernels' memory
+accesses cannot be preverified, and the possibility of software-assisted memory
+protection can be eliminated by analyzing details of memory transactions
+relative to the device clock\cite{microbenchmarks}.
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
@@ -307,6 +328,8 @@ While we were unable to specifically locate the framebuffer in memory, during ou
 \end{comment}
 
 \section{Defending CUDA}
+CUDA manifests a Harvard architecture atop what is likely a Von Neumann unified
+memory. It is necessary that code be properly protected.
 
 \section{Other Vendors}
 Examining graphics architectures of other vendors was outside the scope of our research.  NVIDIA's leading competitor, ATI, provides a similar framework, ATI Stream\footnote{\url{http://www.amd.com/US/PRODUCTS/TECHNOLOGIES/STREAM-TECHNOLOGY/Pages/stream-technology.aspx}}.  We feel that similar security issues have been overlooked in ATI's model as well given the lack of security discussion in this area.  Additionally, the high-performance and cut-throat nature of the graphics card market has likely precluded any thoughts on security implementations.  We believe that if ATI Stream was examined with the same threat model in mind it is certainly possible that similar security concerns would come to light.
