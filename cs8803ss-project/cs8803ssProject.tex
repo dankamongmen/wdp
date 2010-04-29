@@ -232,22 +232,19 @@ context association to be performed via \texttt{pthread\_key\_t} thread-specific
 data. By interpositioning ourselves between the binary and \texttt{libpthread.so},
 we implemented a context-multiplexing system under our own control.
 
-Some addressing details are definitively declared in the PTX Reference.
-Through Compute Capability 1.3, load and store instructions require a ``state space''
+The PTX Reference provides some details. Load and store instructions require a ``state space''
 modifier in addition to an address. General-purpose registers (\texttt{r0}--\texttt{r127}) are
 indexed via 7-bit immediates. Global memory, accessed via one of 16 linear ranges
 of up to 4GB each (\texttt{g0}--\texttt{g15}), is addressed via the
-contents of a 32-bit general purpose register. Other state spaces are addressed
-via the sum of an address register (\texttt{a0}--\texttt{a7}) and an immediate
-offset. Constant memory is referenced through one of 16 linear ranges of up to
-64KB each (\texttt{c0}--\texttt{c15}), as is a block-shared region of up to 16KB
-(\texttt{s}). The per-thread local memory (\texttt{l}), an abstraction atop the
-global memory, performs address translation based on the block and thread indices.
-Platforms such as the Tesla\textsuperscript{\texttrademark} C1060 provide the
-full 4GB of memory accessible via these 32 bits.
-%Compute Capability 2.0 unifies addressing, but provides backwards-compatibility.
-%Virtual addresses are extended to 64 bits, with 40 physical bits currently
-%supported for up to 1TB of RAM.
+contents of a 32-bit general purpose register\footnote{Platforms such as the Tesla\textsuperscript{\texttrademark} C1060 provide the
+full 4GB of accessible memory. Compute Capability 2.0 unifies addressing
+and extends addresses to 64 bits. 40 physical bits are currently
+supported for up to 1TB of RAM.}. Constant memory is referenced through one of 16 linear ranges of up to
+64KB each (\texttt{c0}--\texttt{c15}), as is a block-shared region of up to 16KB.
+Per-thread local memory, an abstraction atop the global memory, performs
+address translation based on block and thread indices.
+% Other state spaces are addressed
+%via the sum of an address register (\texttt{a0}--\texttt{a7}) and an immediate offset.
 \subsection{Tools}
 We developed:
 \squishlist
