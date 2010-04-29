@@ -42,24 +42,18 @@ programmable domains to be rapidly subjected (and often found vulnerable) to
 attacks of the past. We enumerate a system-centric threat model using Microsoft's
 STRIDE process\cite{stride}. We then describe an active general purpose
 programming system, NVIDIA's Compute Unified Device Architecture
-(CUDA) \footnote{CUDA\textsuperscript{\textregistered} is a registered
-trademark of the NVIDIA Corporation.}, and explore the threat space. We derive
+(CUDA) \footnote{NVIDIA, CUDA, and GeForce are trademarks or registered trademarks of the NVIDIA Corporation.},
+and explore the threat space. We derive
 and describe previously-undisclosed memory protection and translation processes
 in CUDA, successfully mount several attacks on the CUDA system, and identify
 numerous directions for future work. Our CUBAR suite of tools, especially \texttt{cudash}
 (the CUDA Shell), form a solid platform for research to come.}
 
-\begin{comment}
-With high powered GPUs moving from the gamer's desktop to the laboratory's cluster, it's essential that the security issues surrounding their use be fleshed out earlier rather than later. Unfortunately, this is not the case; graphics card manufacturers have not publicized any of their own internal security studies (if any exist), and popular manufacturers are infamous for their
-hostility to open source and academia\footnote{See for instance Wikipedia's page on
-``\href{http://en.wikipedia.org/wiki/NVIDIA\_and\_FOSS}{Graphics hardware and FOSS}''.}
-\end{comment}
-
 \end{abstract}
 \begin{multicols}{2}
 \section{Introduction}
 Within modern desktops, high-performance workstations, and even laptops there
-exist sources of tremendous computing power: programmable, massively parallel graphics cards\footnote{Also known as ``unified shaders'' and General-Purpose GPUs (GPGPUs).}.
+exist sources of tremendous computing power: programmable, massively parallel graphics cards.
 The hundreds of simple in-order cores found on recent NVIDIA and ATI hardware provide many more peak FLOPS than the x86 processor packages with
 which they're commonly coupled.
 Devices such as NVIDIA's Tesla\texttrademark{} have already traded video outputs for onboard memory, giving rise to ``desktop
@@ -71,40 +65,43 @@ single-instance, interactive tasks (such as video games and CAD) and
 decomposable, compute-bound tasks (such as batch rendering) for which a
 deinterleaved schedule is optimal. Hardware facilities for the support of
 multiple threads or processes are primitive at best. When the GPU was limited to
-blitting, fogging and aliasing framebuffers, minimal isolation and
+blitting, fogging, and anti-aliasing framebuffers, minimal isolation and
 assurance capabilities were tolerable. Compromises of scientific data,
 cryptographic materials and SCADA systems are rather more serious, yet these
-precise applications are driving GPGPU's adoption. 
+precise applications drive the adoption of GPGPU programming. 
 
-Given CUDA's status as a relative newcomer we describe some of the keys to CUDA from a security perspective.  We begin by presenting an overview of NVIDIA's CUDA framework, describing the basics of CUDA kernels, memory management, its capabilities, and hardware details.
-
-We provide a system-centric threat model analysis of NVIDIA's CUDA system.
-We close with software-level defenses against our attacks, and their limitations.
-Our results suggest that, unless GPGPU systems add complexity related to security state (and thus devote
-less transistor budget to performance), they cannot provide a trusted computing
-base, and their mere presence may even compromise the existing TCB.
+We explored CUDA 3.0 on a 2.6.34-rc2 Linux kernel, using version 195.36.15
+of the CUDA software. Hardware included a GTS 360M, a GeForce 8400 GS, and a
+GT 9600. Our source code can be found on GitHub\footnote{\url{http://github.com/dankamongmen/wdp/tree/master/cs8803ss-project/}}.
 
 \section{An overview of CUDA}
-CUDA is accessed via \texttt{open(2)}ing an appropriate device node and
-invoking \texttt{ioctl(2)}\footnote{See Appendix~\ref{strace} for sample \texttt{strace(2)}
-output.} upon the resulting file descriptor. All accesses to the card and its memory
-originate from the (ring 0) driver; only the \texttt{ioctl(2)} calls themselves
-are executed in userspace. The device node is set 0660 by default;
-ability to make use of the GPU therefore depends upon membership in the
-associated ``\texttt{video}'' group. Aside from this filesystem-level access check, no
-isolation or authentication schemes are known to be present in NVIDIA's driver
-or hardware. It ought be noted that failure to set a device file descriptor
-close-on-exec via \texttt{O\_CLOEXEC} or \texttt{FD\_CLOEXEC} will
-result in a usable device descriptor being duplicated into child processes,
-and that these file descriptors can (by design or error) be passed via
-\texttt{SCM\_RIGHTS} messages on \texttt{PF\_UNIX} sockets.
+A GPU-accelerated CUDA application on Linux adds four component parts to
+a typical process:
+\squishlist
+\item A ``fat binary'' containing host and guest object code, typically x86 and PTX.
+Note that PTX is a mere intermediate representation, converted to the native
+CUBIN format at runtime.
+\item The CUDA userspace library \texttt{libcuda.so}. This closed-source archive
+provides an interface to the NVIDIA driver, and management of a CUDA instance.
+\item The NVIDIA driver \texttt{nvidia.ko}. This closed-source module handles
+\texttt{ioctl}s issued by \texttt{libcuda.so}.
+\item The hardware, controlled by registers and memory-mapped IO.
+\squishend
+No complete open-source CUDA solution yet exists.
 
-CUDA devices are either integrated or standalone; integrated hardware typically
-claims a chunk of system RAM, and promptly marks it unprotected. No memory
-protection hardware exists for onboard GDDR\@. All accesses to video memory go
-through the card, unless page-locked memory is comutually mapped. In the
-absence of shared mappings, data must be explicitly copied from video to system
-memory (and vice versa) to be shared among computation devices\cite{cudaguide}.
+The CUDA language is an extension of C++, designed for compilation with NVIDIA's \texttt{nvcc}\cite{nvcc}
+toolchain. NVIDIA states that a given device supports multiple host threads,
+but that a given host thread can control only one device. Data must either be
+explicitly copied between system and video RAM or, on devices of Compute Capability
+1.2 or higher, restricted to shared memory maps\cite{cudaguide}. GPU processes
+(``kernels'') can be launched asynchronously, though (until Compute Capability
+2.0) only one kernel can be executed at a time by a given device.
+
+CUDA supports numerous memory ``spaces'', selected via PTX affixes (until the
+advent of unified addressing in Compute Capability 2.0, presumably effected via
+memory translation). Spaces differ according to caching, method of
+initialization, visibility across the device's multiprocessors, and mutability.
+Official documentation does not address memory protection or translation.
 
 CUDA kernels are typically distributed as JIT-friendly PTX binaries\cite{kerr},
 an intermediate representation suitable for all NVIDIA hardware. Upon being
