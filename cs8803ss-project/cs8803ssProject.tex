@@ -232,8 +232,24 @@ context association to be performed via \texttt{pthread\_key\_t} thread-specific
 data. By interpositioning ourselves between the binary and \texttt{libpthread.so},
 we implemented a context-multiplexing system under our own control.
 
+Some addressing details are definitively declared in the PTX Reference.
+Through Compute Capability 1.3, load and store instructions require a ``state space''
+modifier in addition to an address. General-purpose registers (\texttt{r0}--\texttt{r127}) are
+indexed via 7-bit immediates. Global memory, accessed via one of 16 linear ranges
+of up to 4GB each (\texttt{g0}--\texttt{g15}), is addressed via the
+contents of a 32-bit general purpose register. Other state spaces are addressed
+via the sum of an address register (\texttt{a0}--\texttt{a7}) and an immediate
+offset. Constant memory is referenced through one of 16 linear ranges of up to
+64KB each (\texttt{c0}--\texttt{c15}), as is a block-shared region of up to 16KB
+(\texttt{s}). The per-thread local memory (\texttt{l}), an abstraction atop the
+global memory, performs address translation based on the block and thread indices.
+Platforms such as the Tesla\textsuperscript{\texttrademark} C1060 provide the
+full 4GB of memory accessible via these 32 bits.
+%Compute Capability 2.0 unifies addressing, but provides backwards-compatibility.
+%Virtual addresses are extended to 64 bits, with 40 physical bits currently
+%supported for up to 1TB of RAM.
 \subsection{Tools}
-We developed
+We developed:
 \squishlist
 \item \texttt{cudadump} (and its helper binary, \texttt{cudaranger}) to
 discover readable regions in a given virtual memory,
@@ -242,7 +258,7 @@ prototype attacks, and
 \item \texttt{cudabounder}, \texttt{cudaminimal}, \texttt{cudapinner}, \texttt{cudaquirky},
 \texttt{cudaspawner}, and \texttt{cudastuffer}, a series of single-purpose attack tools.
 \squishend
-We made use of
+Beyond the basic toolchain, we made use of:
 \squishlist
 \item \texttt{vbtracetool}\cite{vbtrace} to dump VIDEO BIOS,
 \item \texttt{cuda-gdb}\cite{cudagdb} to debug CUDA programs,
@@ -257,23 +273,6 @@ We made use of
 \caption{\small The CUDA shell}
 \end{figurehere}
 \section{Attacking CUDA}
-Some addressing details are definitively declared in the PTX Reference.
-Through Compute Capability 1.3, load and store instructions require a ``state space''
-modifier in addition to an address. General-purpose registers (\texttt{r0}--\texttt{r127}) are
-indexed via a 7-bit immediate. Global memory, accessed via one of 16 linear ranges
-of up to 4GB each (\texttt{g0}--\texttt{g15}), is addressed via the
-contents of a 32-bit general purpose register. Other state spaces are addressed
-via the sum of an address register (\texttt{a0}--\texttt{a7}) and an immediate
-offset. Constant memory is referenced through one of 16 linear ranges of up to
-64KB each (\texttt{c0}--\texttt{c15}), as is a block-shared region of up to 16KB
-(\texttt{s}). The per-thread local memory (\texttt{l}), an abstraction atop the
-global memory, performs address translation based on the block and thread indices.
-Platforms such as the Tesla\textsuperscript{\texttrademark} provide the full 
-4GB of memory accessible via these 32 bits.
-
-Compute Capability 2.0 unifies addressing, but provides backwards-compatibility.
-Virtual addresses are extended to 64 bits, with 40 physical bits currently
-supported for up to 1TB of RAM.
 
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
