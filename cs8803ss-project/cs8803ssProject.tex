@@ -112,6 +112,23 @@ Streaming Multiprocessors across the card, all of which share a common memory.
 A given system thread can use only one device at a time, but a device may be
 used by more than one system thread.
 
+In our case, the \texttt{nvidia.ko} kernel module and \texttt{libcuda.so}
+library weigh in at thirteen and seven megabytes respectively. We can assume
+them to contain substantial logic. Ultimately, some of our questions can be
+answered only via analysis of these binaries. This is a matter of some importance
+for open source projects seeking to duplicate CUDA functionality, such as the
+Nouveau Project and \texttt{libcudest}\cite{libcudest}.
+
+\subsection{Existing controls}
+The \texttt{/dev/nvidiaX} device nodes control access to the CUDA hardware and
+kernelspace component. Under the standard Linux security model, these
+will be restricted via 0660 permissions to a group (typically \texttt{video}).
+Membership in the owning group is thus necessary and sufficient to satisfy the
+operating system. \texttt{strace} output for CUDA applications, along with
+NVIDIA's \texttt{nvidia-smi} device configuration program, show use of the
+\texttt{geteuid} system call, but no further access controls are exported to
+the user.
+
 \section{Threat model}
 Well-known threat taxonomies include the ``CIA Triad'' (extended by the
 ``Parkerian Hexad\cite{sechandbook}'') and Microsoft's STRIDE\@. The latter, developed as part of
@@ -134,42 +151,12 @@ from another?
 \item Can one CUDA kernel manipulate another's data set?
 \item Is it possible to construct a debugging environment around other CUDA kernels?
 \squishend
-\subsection{Video Manipulation}
-One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
-to modify the system's video channel.  The threat model we considered was arbitrary code
-being able to manipulate the video channel.  
-
-In one case, this could consist of grabbing the current 
-framebuffer to obtain information from other programs.  In another case, this could consist of modifying the 
-current framebuffer in an effort to deceive the user into believing the system is in a different state than 
-it actually is.  For example, if one could replace the padlock icon
-commonly used on browsers to indicate a secure web connection, an attacker could fool a user into believing 
-that they have a secure and authentic connection when in fact they do not.
-
-The memory that CUDA code can access consists of three types: per-thread local memory, 
-per-block shared memory, and global memory.  However, this memory differs from the framebuffer 
-that is used by the graphics card to update the display.  We analyzed the possibility of both reading 
-and writing to the framebuffer in the case of CUDA applications.
-
-We first examined the case of reading the current framebuffer.  Not only is this necessary in order 
-to be able to modify it, but it can lead to information disclosure as well.  While CUDA provides several 
-methods for obtaining the current framebuffer, all of these methods rely on interfacing with OpenGL or Direct3D 
-through the provided interfaces.  
-
-In the case of OpenGL, glReadPixels() can be used to obtain the current framebuffer.  
-While this can be done within a CUDA program, it is not done using CUDA itself.  The data can be pulled into CUDA directly 
-via several methods, including the use of cudaGraphicsMapResources or cudaGLMapBufferObject\cite{cudaguide}\cite{cudareference}.  In this instance, CUDA provides no added benefit or significant difference over existing programs.
-
-Similarly, writing to the framebuffer is not explicitely possible in CUDA, and similar methods must be used as to read from it (i.e. using OpenGL or Direct3D within CUDA).
-
-However, CUDA provides both read and write access to video memory, and the framebuffer is contained within memory.  Unfortunately, our tests were unsuccessful at locating the location of the framebuffer in memory.  This indicates either that the CUDA API disallows access to the region of memory containing the framebuffer or that there is a system in place that provides a hardware barrier between the framebuffer and the rest of VRAM for this purpose.
-
-%WTF happened on my system - artifacting.  Could this be exploited somehow?%
-While we were unable to specifically locate the framebuffer in memory, during our tests we did encounter several cases of video artifacting on our displays.  This led us to believe that there must be some method of accessing the framebuffer by using CUDA in a way that it was not intended for.  As of the writing of this paper we have been unable to isolate the circumstances that led to the artifacting and to reproduce them in a controlled manner, but we believe there is promise in future work being done in this area.
-
-%Hopefully the above section can be updated, but as of now I have no clue what happened on my system to produce the artifacting.  I'll take another look at it but it'll probably have to wait until after my take-home final is done%
-
-
+\subsubsection{Video Tampering}
+\squishlist
+\item Can a CUDA kernel modify the active display?
+\item Can a CUDA kernel recover the active display?
+\item What unique issues arise from such capabilities?
+\squishend
 \subsection{Repudiation}
 \squishlist
 \item Can a CUDA kernel disassociate itself from the system process which spawned it?
@@ -271,6 +258,43 @@ Platforms such as the Tesla\textsuperscript{\texttrademark} provide the full
 Compute Capability 2.0 unifies addressing, but provides backwards-compatibility.
 Virtual addresses are extended to 64 bits, with 40 physical bits currently
 supported for up to 1TB of RAM.
+
+\begin{comment}
+One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
+to modify the system's video channel.  The threat model we considered was arbitrary code
+being able to manipulate the video channel.  
+
+In one case, this could consist of grabbing the current 
+framebuffer to obtain information from other programs.  In another case, this could consist of modifying the 
+current framebuffer in an effort to deceive the user into believing the system is in a different state than 
+it actually is.  For example, if one could replace the padlock icon
+commonly used on browsers to indicate a secure web connection, an attacker could fool a user into believing 
+that they have a secure and authentic connection when in fact they do not.
+
+The memory that CUDA code can access consists of three types: per-thread local memory, 
+per-block shared memory, and global memory.  However, this memory differs from the framebuffer 
+that is used by the graphics card to update the display.  We analyzed the possibility of both reading 
+and writing to the framebuffer in the case of CUDA applications.
+
+We first examined the case of reading the current framebuffer.  Not only is this necessary in order 
+to be able to modify it, but it can lead to information disclosure as well.  While CUDA provides several 
+methods for obtaining the current framebuffer, all of these methods rely on interfacing with OpenGL or Direct3D 
+through the provided interfaces.  
+
+In the case of OpenGL, glReadPixels() can be used to obtain the current framebuffer.  
+While this can be done within a CUDA program, it is not done using CUDA itself.  The data can be pulled into CUDA directly 
+via several methods, including the use of cudaGraphicsMapResources or cudaGLMapBufferObject\cite{cudaguide}\cite{cudareference}.  In this instance, CUDA provides no added benefit or significant difference over existing programs.
+
+Similarly, writing to the framebuffer is not explicitely possible in CUDA, and similar methods must be used as to read from it (i.e. using OpenGL or Direct3D within CUDA).
+
+However, CUDA provides both read and write access to video memory, and the framebuffer is contained within memory.  Unfortunately, our tests were unsuccessful at locating the location of the framebuffer in memory.  This indicates either that the CUDA API disallows access to the region of memory containing the framebuffer or that there is a system in place that provides a hardware barrier between the framebuffer and the rest of VRAM for this purpose.
+
+%WTF happened on my system - artifacting.  Could this be exploited somehow?%
+While we were unable to specifically locate the framebuffer in memory, during our tests we did encounter several cases of video artifacting on our displays.  This led us to believe that there must be some method of accessing the framebuffer by using CUDA in a way that it was not intended for.  As of the writing of this paper we have been unable to isolate the circumstances that led to the artifacting and to reproduce them in a controlled manner, but we believe there is promise in future work being done in this area.
+
+%Hopefully the above section can be updated, but as of now I have no clue what happened on my system to produce the artifacting.  I'll take another look at it but it'll probably have to wait until after my take-home final is done%
+\end{comment}
+
 \section{Defending CUDA}
 
 \section{Other Vendors}
