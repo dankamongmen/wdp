@@ -545,10 +545,10 @@ sciences, medical imaging, defense, and more\footnote{For a full list, see \url{
  \section{Conclusions} 
 The recommendations of the Orange Book\cite{orangebook}, requirements of the Common Criteria\cite{ccrit},
 and animadversions of Saltzer and Schroeder\cite{principles} have long provided general principles for
-security-conscious design. Any number of these principles have been ignored
-(or poorly effected) along the way to NVIDIA's and ATI's current GPUs. These
-manufacturers focused nigh-exclusively on performance relative to cost and
-power, resulting in some of the world's most powerful devices. Harnessing these
+security-conscious design. These principles have been at least superficially
+observed along the way to NVIDIA's CUDA system. Reverse engineering of the
+CUDA software stack and validation of open-source competition will reveal how
+truly sound the implementations may be. Modern GPUs are some of the world's most powerful devices. Harnessing these
 mighty processing units is necessary to even approach full machine utilization.
 This will become only more true:
 \begin{itemize}
@@ -589,15 +589,12 @@ sufficiently large problem sets, of course), whereas x86 binaries\footnote{Most 
 require dynamic translation or recompilation to take advantage of the new SIMD
 order.
 
-Extensive manycoring and huge memory bandwidths are certainly the key to FLOPS,
-but programmable GPUs in their current state are damningly insecure. Without the
-addition of infrastructure and policy, they must not be trusted in a
-multiprocessing context. Even in the absence of calculated attack, one's own
-mistakes or accidents can wreck undetected havoc. It ought be noted that memory
-protection could be implemented without the added complexity of
-hardware-supported virtual memory (provided some assistance from the OS); this
-would immediately address most issues.
-
+Extensive manycoring and huge memory bandwidths are certainly the key to FLOPS.
+Without security-conscious analysis and verification of infrastructure and
+policy, they must not be trusted in a multiprocessing context. As GPUs become
+more and more general-purpose, the attack space will grow; Compute Capability 2.0
+already adds significant complexity and danger. The only answer is constant
+vigilance.
 \bibliographystyle{acm}
 \bibliography{cs8803ssProject}
 \end{multicols}
