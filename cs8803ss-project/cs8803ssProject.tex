@@ -31,16 +31,23 @@ CS8803SS Project, Spring 2010}
 \begin{document}
 \maketitle
 
+\begin{quotation}\scriptsize\textit{``The charm of history and its enigmatic lesson consist in the fact that, from age to age, nothing changes and yet everything is completely different.''}
+
+\hfill---Aldous Huxley \end{quotation}
+
 \begin{abstract}
 \textbf{Heterogeneous computing has definitely arrived, and graphics processing
-units (GPUs) in the millions are employed worldwide. Tradition has shown newly
+units (GPUs) in the millions are employed worldwide. History has shown newly
 programmable domains to be rapidly subjected (and often found vulnerable) to
-attacks of the past; indeed, wherever processing goes, so does the possibility
-of automated attacks.  We describe one of the predominant general purpose
-architectures for GPUs today, NVIDIA's Compute Unified Device Architecture
-(CUDA) \footnote{CUDA\textsuperscript{\textregistered} is a registered trademark of the NVIDIA Corporation.}, and examine possible attack vectors against this architecture.  Through our research we have discovered a number of possible attack avenues that have not been considered to date.  These vectors include spoofing, tampering and video manipulation, information disclosure, denial of service, and privilege escalation.}
-
-\textbf{We investigated methods of exploiting these possible vectors and developed a series of tools that succeed in this regard.  In cases where we were unable to specifically develop a tool to exploit a given vector, we state our view on whether or not we feel the vector is exploitable given more time and effort.  If we feel it's likely that the vector can be exploited we explain what we feel are possible methods of exploiting it, and if not we explain what defense mechanisms are in place that make it unlikely.  For all attack vectors we describe defense mechanisms against them, but note that in the high-performance world of graphics cards adding security mechanisms may be an extremely high burden.}
+attacks of the past. We enumerate a system-centric threat model using Microsoft's
+STRIDE process\cite{stride}. We then describe an active general purpose
+programming system, NVIDIA's Compute Unified Device Architecture
+(CUDA) \footnote{CUDA\textsuperscript{\textregistered} is a registered
+trademark of the NVIDIA Corporation.}, and explore the threat space. We derive
+and describe previously-undisclosed memory protection and translation processes
+in CUDA, successfully mount several attacks on the CUDA system, and identify
+numerous directions for future work. Our CUBAR suite of tools, especially \texttt{cudash}
+(the CUDA Shell), form a solid platform for research to come.}
 
 \begin{comment}
 With high powered GPUs moving from the gamer's desktop to the laboratory's cluster, it's essential that the security issues surrounding their use be fleshed out earlier rather than later. Unfortunately, this is not the case; graphics card manufacturers have not publicized any of their own internal security studies (if any exist), and popular manufacturers are infamous for their
@@ -245,6 +252,7 @@ prototype attacks.
 \squishend
 We made use of
 \squishlist
+\item \texttt{vbtracetool}\cite{vbtrace} to dump VIDEO BIOS,
 \item \texttt{cuda-gdb}\cite{cudagdb} to debug CUDA programs,
 \item \texttt{strace}\cite{stracecode} to track system calls,
 \item \texttt{nv50dis}\cite{nv50dis} to disassemble nv50 binaries,
@@ -334,7 +342,7 @@ sciences, medical imaging, defense, and more\footnote{For a full list, see \url{
 
  \section{Conclusions} 
 The recommendations of the Orange Book\cite{orangebook}, requirements of the Common Criteria\cite{ccrit},
-and Saltzer-Schroeder\cite{principles} have long provided general principles for
+and animadversions of Saltzer and Schroeder\cite{principles} have long provided general principles for
 security-conscious design. Any number of these principles have been ignored
 (or poorly effected) along the way to NVIDIA's and ATI's current GPUs. These
 manufacturers focused nigh-exclusively on performance relative to cost and
