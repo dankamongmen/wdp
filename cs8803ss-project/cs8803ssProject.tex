@@ -247,7 +247,16 @@ address translation based on block and thread indices.
 % Other state spaces are addressed
 %via the sum of an address register (\texttt{a0}--\texttt{a7}) and an immediate offset.
 \subsection{Tools}
-We developed:
+Beyond the basic toolchain, we made use of:
+\squishlist
+\item \texttt{vbtracetool}\cite{vbtrace} to dump video BIOS,
+\item \texttt{cuda-gdb}\cite{cudagdb} to debug CUDA programs,
+\item \texttt{strace}\cite{stracecode} to track system calls,
+\item \texttt{nv50dis}\cite{nv50dis} to disassemble nv50 binaries,
+\item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl}s issued to the NVIDIA proprietary driver, and
+\item the Linux kernel's MMIOTrace\cite{mmiotrace} infrastructure to track memory-mapped I/O operations.
+\squishend
+We then developed some tools:
 \squishlist
 \item \texttt{cudadump} (and its helper binary, \texttt{cudaranger}) to
 discover readable regions in a given virtual memory,
@@ -255,15 +264,7 @@ discover readable regions in a given virtual memory,
 prototype attacks, and
 \item \texttt{cudabounder}, \texttt{cudaminimal}, \texttt{cudapinner}, \texttt{cudaquirky}, \texttt{cudaspawner}, and \texttt{cudastuffer}, a series of single-purpose attack tools.
 \squishend
-Beyond the basic toolchain, we made use of:
-\squishlist
-\item \texttt{vbtracetool}\cite{vbtrace} to dump VIDEO BIOS,
-\item \texttt{cuda-gdb}\cite{cudagdb} to debug CUDA programs,
-\item \texttt{strace}\cite{stracecode} to track system calls,
-\item \texttt{nv50dis}\cite{nv50dis} to disassemble nv50 binaries,
-\item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl}s issued to the NVIDIA proprietary driver, and
-\item the Linux kernel's MMIOTrace\cite{mmiotrace} infrastructure to track memory-mapped I/O operations.
-\squishend
+\vfill
 \begin{figurehere}
 \centering
 \includegraphics[width=\columnwidth]{texobjs/cudash-help.png}
@@ -324,12 +325,26 @@ region of memory in one context, and operated on it. We then ensured that a
 distinct, simultaneous context failed accessing any possible address. This
 suggests that some manner of unforgeable \textit{capability}\cite{capability}
 lies at the heart of a CUDA context.
+
+Here, we make a controversial conjecture: these capabilities \textit{can}
+be forged. We draw this conclusion from the interaction of CUDA and the \texttt{fork}
+system call. A CUDA application's system resources are wholly accessible by a
+child process up until being unmapped via \texttt{exec} or some other system call.
+Furthermore, we verified allocations or kernels executed in either process following the
+\texttt{fork} to be visible in the other. We were unable to forge a context,
+but think it likely that disassembly of the CUDA stack would make a method plain.
+It is likely that some memory-mapped I/O is involved independent of the context
+object itself; \texttt{fork}, which preserves maps, thus naturally facilitates
+context-forging (the \texttt{/dev/nvidiaX} maps, as can be seen in \texttt{/proc/X/maps},
+are mapped \texttt{MAP\_SHARED} and thus not subject to Copy-on-Write behavior).
 \subsection{Is memory scrubbed between kernels?}
 \textit{CUDA does not scrub memory.} This was demonstrated conclusively by
 verifying that a large (8MB) random string could be recovered, contiguously and
 in its entirety, by a subsequent kernel. It was not possible to determine
 whether code regions were scrubbed, since CUDA does not support indirect
-branches.
+branches. The \texttt{cudawrapper}\cite{cudawrapper} tool has been
+developed to provide scrubbing, but the authors consider it highly dubious
+that this userspace wrapper could successfully deal with an uncatchable signal.
 \subsection{Can kernels disassociate from processes?}
 \textit{The CUDA kernelspace tracks processes.} This was conclusively
 demonstrated by sending SIGKILL signals to CUDA processes after they had
@@ -366,7 +381,7 @@ CUDA neither honors the existing infrastructure, nor provides any of its own.
 Device memory allocations do not count against \texttt{RLIMIT\_AS}, kernel
 execution time does not count against \texttt{RLIMIT\_CPU}, and executing
 kernels are not bounded by \texttt{RLIMIT\_NPROC}.
-\subsection{Can other system resources be monopolized through CUDA?}
+\subsection{Can CUDA deny access to system resources?}
 \textit{CUDA allows system RAM to be monopolized.} Devices of Compute Capability
 1.2 or higher support mapping host memory into a device's address space. For this
 to be done, the memory must be \textit{pinned} (also known as \textit{locked}), and
@@ -384,11 +399,19 @@ attacks, leaving the user open to trojans. Even if the download was signed,
 running the downloader as root leaves the system vulnerable to user agent
 exploits.
 
+The \texttt{nvcc} compiler does not support a \texttt{-pipe} option ala GCC,
+instead forcing use of temporary files for multiphase operations. The temporary
+names used are wholly predictable, suggesting vulnerability to a class of
+symlink attack. Successfully attacking this scheme via named FIFOs, and thus
+providing a \texttt{-pipe} capability for \texttt{nvcc}, is left as an exercise
+for the reader.
+
 The ability of any CUDA application to monopolize device memory facilitates
 ``use-of-NULL'' attacks throughout the graphics stack, much like those which have plagued
 the Linux kernel in 2009 and 2010. Below, see two corrupted displays. It is doubtful that
 our CUDA application actively molested the display, since it simply allocated
 device memory; more likely, the programs ignored some allocation failure.
+
 Behold the grim visage of undefined behavior:
 
 \begin{figurehere}
@@ -464,6 +487,9 @@ Furthermore, rate-limiting ought use the standard, configurable klogd policies.
 \item CUDA resources ought be accounted for by the \texttt{rlimit} infrastructure.
 It is absolutely critical that this be done for mapped host memory.
 \squishend
+
+% do we really want this?
+\begin{comment}
 \section{Related work}
 Our research in this area is focused on the possibility of security
 vulnerabilities against the GPU itself, an area which we were unable to find
@@ -514,10 +540,7 @@ sciences, medical imaging, defense, and more\footnote{For a full list, see \url{
   allow for significant decreases in computation time
   \cite{gpuids}.
 
-\subsection{GPU security}
- There were a few instances of prior art that actually consider the idea of security on the GPU.  An implementation of a wrapper library for the CUDA SDK features the use of memory-scrubbing for the specific purpoes of wiping the GPU memory after use to provide security from subsequent users\cite{cudawrapper}.  This indicates that while it has not been a subject of much discussion in literature, there are some developers that are starting to consider the security implications of developing applications for GPUs.
- 
- During the course of our research we also found a debian bug report for a severe security problem in nvidia-kernel-common\cite{bugreport}.  The security implications of the bug were severe: each user registered with consolekit automatically receives read/write access for every device on the system.  As this applies to devices such as /dev/sda, it constituted a serious security problem.  While programming errors resulting in security vulnerabilities are nothing new, we believe this provides yet another example of how security must be on the forefront of designers' and developers' minds whenever new avenues are explored.
+\end{comment}
 
  \section{Conclusions} 
 The recommendations of the Orange Book\cite{orangebook}, requirements of the Common Criteria\cite{ccrit},
@@ -587,4 +610,6 @@ would immediately address most issues.
 \VerbatimInput[fontsize=\scriptsize,numbers=left,framerule=.8mm,label=dynamic symbols]{texobjs/cudasymbols}
 \section{\texttt{dmesg} output from hung task}\label{oops}
 \VerbatimInput[fontsize=\scriptsize,numbers=left,framerule=.8mm,label=dmesg]{texobjs/crash}
+\section{\texttt{dmesg} output from wayward OOM killer}\label{oops}
+\VerbatimInput[fontsize=\scriptsize,numbers=left,framerule=.8mm,label=dmesg]{texobjs/oom}
 \end{document}
