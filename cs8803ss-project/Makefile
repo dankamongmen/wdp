@@ -1,6 +1,6 @@
 .DELETE_ON_ERROR:
 .PHONY: all bin doc ptx preview profile test fulltest clean
-.DEFAULT_GOAL:=test
+.DEFAULT_GOAL:=preview
 
 include Makefile.local
 
