@@ -296,8 +296,10 @@ protection to be effective beyond the combined capacities of the TLBs, and
 note a L2 TLB miss to be only about half again as expensive as a L2 TLB hit.
 Thus we assert that memory protection is performed independently of, and in
 parallel with, address translation. This requires virtual- (and thus per-context)
-indexing; we consider this to imply a backing store in video RAM, and that
-protection bits are copied into the TLBs.
+indexing; together with a memory protection granularity (1MB) distinct from
+either TLB size (4KB and 8MB), we consider this to imply a backing store in
+video RAM, and that memory protection is a single bit per entry.
+
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
