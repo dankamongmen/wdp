@@ -267,7 +267,7 @@ Beyond the basic toolchain, we made use of:
 \centering
 \includegraphics[width=\columnwidth]{texobjs/cudash-help.png}
 \end{figurehere}
-\section{Attacking CUDA (A Socratic dialogue)}
+\section{Attacking CUDA (A dialogue)}
 We now move beyond the realm of the documented.
 \subsection{Von Neumann or Harvard architecture?}
 \textit{CUDA appears to be a Harvard architecture.} Kernels do occupy
@@ -290,7 +290,12 @@ by examining allocation results in multiple concurrent CUDA contexts. Returned
 device pointers are equivalent for equivalent allocations in multiple contexts.
 Allocations begin at 0x101000, honor a minimum alignment of 256 bytes (larger
 alignments are honored for very large allocations), and otherwise move
-contiguously through memory. Freed regions can be reclaimed.
+contiguously through memory. Freed regions can be reclaimed. This suggests
+multilevel memory allocation, split between user and kernelspace.
+
+Physical memory cannot be aliased or oversubscribed; multiple contexts'
+maximum allocations cannot add up to more than a single context's maximum
+possible allocations.
 \subsection{Does memory protection exist?}
 \textit{CUDA enforces memory protection in hardware.} Use of a general-purpose,
 word-sized register when referencing the global space means kernels' memory
@@ -324,6 +329,12 @@ verifying that a large (8MB) random string could be recovered, contiguously and
 in its entirety, by a subsequent kernel. It was not possible to determine
 whether code regions were scrubbed, since CUDA does not support indirect
 branches.
+\subsection{Can kernels disassociate from processes?}
+\textit{The CUDA kernelspace tracks processes.} This was conclusively
+demonstrated by sending SIGKILL signals to CUDA processes after they had
+performed large allocations and launched intense, long-running kernels. There
+was no opportunity for userspace code to run, yet these resources were properly
+freed upon process termination.
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
@@ -372,6 +383,9 @@ under Compute Capability 2.0's concurrent kernels.
 hardware. It is necessary that these mechanisms be properly configured,
 and that proper invalidations are performed in the face of remappings. Concurrent
 kernels must not be able to freely read each other's memory.
+\item CUDA monitors processes from within kernelspace, freeing their device
+resources on termination. This must be duplicated, and must be performed in
+kernelspace to be effective.
 \squishend
 \section{Related work}
 Our research in this area is focused on the possibility of security
