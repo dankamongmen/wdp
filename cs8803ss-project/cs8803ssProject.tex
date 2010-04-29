@@ -306,11 +306,19 @@ parallel with, address translation. This requires virtual- (and thus per-context
 indexing; together with a memory protection granularity (1MB) distinct from
 either TLB size (4KB and 8MB), we consider this to imply a backing store in
 video RAM, and that memory protection is a single bit per entry.
+
+The \texttt{cuMemset*} family of functions, when given an invalid device address,
+neither returns an error nor segfaults. Instead, later context functions return
+a 700 (previous kernel failed) error. This strongly suggests that memory
+protection is \textit{not} modeled in software. Further research, especially
+involving shared, pinned maps, ought investigate this further.
 \subsection{Does memory protection incorporate contexts?}
 \textit{CUDA hardware considers contexts.} To ensure that memory isolation
 was not being implemented purely through translation, we allocated a large
 region of memory in one context, and operated on it. We then ensured that a
-distinct, simultaneous context failed accessing any possible address.
+distinct, simultaneous context failed accessing any possible address. This
+suggests that some manner of unforgeable \textit{capability}\cite{capability}
+lies at the heart of a CUDA context.
 \subsection{Is memory scrubbed between kernels?}
 \textit{CUDA does not scrub memory.} This was demonstrated conclusively by
 verifying that a large (8MB) random string could be recovered, contiguously and
