@@ -1,5 +1,6 @@
 \documentclass[letterpaper,10pt]{article}
 \usepackage{fullpage}
+\usepackage{subfigure}
 \usepackage{textcomp}
 \usepackage{times}
 \usepackage{cite}
@@ -162,7 +163,7 @@ from another?
 \item Can one CUDA kernel manipulate another's data set?
 \item Is it possible to construct a debugging environment around other CUDA kernels?
 \item Can a CUDA kernel modify the active display?
-\item Is it possible to pervert \texttt{nvcc}'s or the JIT compilation processes?
+\item Is it possible to pervert compilation processes, either \texttt{nvcc} or JIT?
 \squishend
 \subsection{Repudiation}
 \squishlist
@@ -353,6 +354,57 @@ into the process accounting mechanism. Exceptions are delivered to klogd, but
 rate-limited within the kernel itself; it would be trivial to hide a meaningful
 exception behind a flurry of meaningless ones, as this policy cannot be
 overridden. No system exists to log who ran what kernel, or for how long.
+
+The \texttt{nvidia-smi} tool claims to decode and report exceptions as stored
+in a hardware buffer, similar to the Machine Check Exception registers of x86.
+We were not, however, able to generate any informative output using \texttt{nvidia-smi}.
+\subsection{Does CUDA enforce resource limits?}
+\textit{CUDA provides no resource limits.} UNIX provides a rich set of resource
+limits via the \texttt{rlimit} mechanism. These are just as important for
+protecting against programming errors as assuring fair resource distribution.
+CUDA neither honors the existing infrastructure, nor provides any of its own.
+Device memory allocations do not count against \texttt{RLIMIT\_AS}, kernel
+execution time does not count against \texttt{RLIMIT\_CPU}, and executing
+kernels are not bounded by \texttt{RLIMIT\_NPROC}.
+\subsection{Can other system resources be monopolized through CUDA?}
+\textit{CUDA allows system RAM to be monopolized.} Devices of Compute Capability
+1.2 or higher support mapping host memory into a device's address space. For this
+to be done, the memory must be \textit{pinned} (also known as \textit{locked}), and
+thus protected against swapping. Since this makes physical memory unusable by the
+rest of the system, memory pinning is strictly limited using the \texttt{RLIMIT\_MEMLOCK}
+limit (the default value on Debian Linux is 64KB). CUDA, allocating system memory
+from within kernelspace, does not honor this limit. This more than once resulted in
+Linux's ``OOM (Out-of-Memory) killer'' delivering SIGKILL to Firefox or even sshd
+processes during testing.
+\subsection{Any miscellaneous security issues?}
+\textit{CUDA introduces sundry security issues.} The CUDA installer (which
+must be run as root throughout) contacts an anonymous FTP server to check for
+updated versions of the driver. This is open to any number of classic man-in-the-middle
+attacks, leaving the user open to trojans. Even if the download was signed,
+running the downloader as root leaves the system vulnerable to user agent
+exploits.
+
+The ability of any CUDA application to monopolize device memory facilitates
+``use-of-NULL'' attacks throughout the graphics stack, much like those which have plagued
+the Linux kernel in 2009 and 2010. Below, see two corrupted displays. It is doubtful that
+our CUDA application actively molested the display, since it simply allocated
+device memory; more likely, the programs ignored some allocation failure.
+Behold the grim visage of undefined behavior:
+
+\begin{figurehere}
+\centering
+\subfigure[Corrupted AA]
+{
+    \label{fig:sub:a}
+    \includegraphics[width=4cm,height=2.25cm]{texobjs/fuckedterminal.png}
+}
+\subfigure[Pixellated VDPAU]
+{
+    \label{fig:sub:b}
+    \includegraphics[width=4cm]{texobjs/shitfuckedup.png}
+}
+\end{figurehere}
+%%%%%
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
@@ -409,6 +461,8 @@ code via a secondary mapping. This code must be located in kernelspace.
 \item It would be valuable for CUDA to make available more forensic information.
 In particular, the standard UNIX process accounting mechanism ought be honored.
 Furthermore, rate-limiting ought use the standard, configurable klogd policies.
+\item CUDA resources ought be accounted for by the \texttt{rlimit} infrastructure.
+It is absolutely critical that this be done for mapped host memory.
 \squishend
 \section{Related work}
 Our research in this area is focused on the possibility of security
