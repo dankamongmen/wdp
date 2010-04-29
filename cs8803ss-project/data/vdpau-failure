@@ -1,0 +1,30 @@
+nvalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_block_until_surface_idle: An invalid handle value was provided.
+[vdpau] Error when calling vdp_video_mixer_render: An invalid handle value was provided.
+[vdpau] Error when calling vdp_presentation_queue_display: An invalid handle value was provided.
+[vdpau] Error when calling vdp_output_surface_destroy: An invalid handle value was provided.
+[vdpau] Error when calling vdp_output_surface_destroy: An invalid handle value was provided.
+

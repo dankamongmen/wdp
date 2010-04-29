@@ -1,0 +1,17 @@
+0x7f000 + 0xe00 fit into 0x181200, but 0x7fe00 could not
+(it was moved to 0xa81000)
+
+cudash> maps
+(   0)    1052672 (0x00101000) @ 0x000000000000 unallocated
+(   0)        512 (0x00000200) @ 0x000000101000 cudash result buffer
+(   0)     524288 (0x00080000) @ 0x000000101200 user alloc #5
+(   0)     520192 (0x0007f000) @ 0x000000181200 user alloc #8
+(   0)       3584 (0x00000e00) @ 0x000000200200 user alloc #9
+(   0)    1048576 (0x00100000) @ 0x000000201000 user alloc #1
+(   0)    1048576 (0x00100000) @ 0x000000301000 user alloc #2
+(   0)    3145728 (0x00300000) @ 0x000000401000 user alloc #3
+(   0)    3145728 (0x00300000) @ 0x000000701000 user alloc #4
+(   0)     524288 (0x00080000) @ 0x000000a01000 user alloc #6
+(   0)     523776 (0x0007fe00) @ 0x000000a81000 user alloc #7
+(   0) 4283429376 (0xff4ff200) @ 0x000000b00e00 unallocated
+cudash> 
