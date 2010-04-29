@@ -189,6 +189,12 @@ system process's code maps from a CUDA kernel?
 \squishend
 
 \section{Methodology}
+Some of the questions asked by our threat model can be answered via simple
+experiments (others, such as whether the driver might be exploited, are
+essentially undecidable). Describing the internal mechanisms implementing these
+externally-visible properties generally requires disassembly, and is the object
+of further work.
+
 It is first necessary to develop a model of memory protection, multiple user
 contexts, and memory layout in CUDA. Few details have been made public
 regarding these topics; what public knowledge exists takes the form of
@@ -207,6 +213,14 @@ all but ring 0 operations (recall that our threat model does not assume access
 to ring 0). It is unlikely that protection on the card itself can be generally
 circumvented. Furthermore, this is the only place to protect memory from CUDA
 kernels.
+
+As an example of the futility of userspace protection, we were trivially able
+(contrary to NVIDIA documentation) to control multiple devices from a single
+host thread. Use of the \texttt{ltrace} library call tracer indicated CUDA
+context association to be performed via \texttt{pthread\_key\_t} thread-specific
+data. By interpositioning ourselves between the binary and \texttt{libpthread.so},
+we implemented a context-multiplexing system under our own control.
+
 \subsection{Tools}
 We developed
 \squishlist
