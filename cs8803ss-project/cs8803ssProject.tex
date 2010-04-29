@@ -78,7 +78,7 @@ GT 9600. Our source code can be found on GitHub\footnote{\url{http://github.com/
 A GPU-accelerated CUDA application on Linux adds four component parts to
 a typical process:
 \squishlist
-\item A ``fat binary'' containing host and guest object code, typically x86 and PTX.
+\item A ``fat binary'' containing host and guest object code, typically x86 and PTX\cite{ptxguide}.
 Note that PTX is a mere intermediate representation, converted to the native
 CUBIN format at runtime.
 \item The CUDA userspace library \texttt{libcuda.so}. This closed-source archive
@@ -220,11 +220,9 @@ to explore memory protection.
 We developed
 \squishlist
 \item \texttt{cudadump} (and its helper binary, \texttt{cudaranger}) to
-discover readable regions in a given virtual memory. If there is an error
-reading a specified range, that range is recursively bisected down to some
-granularity. Output is a map of accessible and inaccessible ranges of memory.
+discover readable regions in a given virtual memory,
 \item \texttt{cudash}, the CUDA Shell, to perform close-in experiments and
-prototype attacks.
+prototype attacks, and
 \item \texttt{cudabounder}, \texttt{cudaminimal}, \texttt{cudapinner}, \texttt{cudaquirky},
 \texttt{cudaspawner}, and \texttt{cudastuffer}, a series of single-purpose attack tools.
 \squishend
@@ -234,14 +232,12 @@ We made use of
 \item \texttt{cuda-gdb}\cite{cudagdb} to debug CUDA programs,
 \item \texttt{strace}\cite{stracecode} to track system calls,
 \item \texttt{nv50dis}\cite{nv50dis} to disassemble nv50 binaries,
-\item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl(2)}s
-issued to the NVIDIA proprietary driver, and
-\item The Linux kernel's MMIOTrace\cite{mmiotrace}
-infrastructure to track memory-mapped I/O operations.
+\item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl}s issued to the NVIDIA proprietary driver, and
+\item the Linux kernel's MMIOTrace\cite{mmiotrace} infrastructure to track memory-mapped I/O operations.
 \squishend
 
 \section{Attacking CUDA}
-Some addressing details are definitively declared in the PTX Reference\cite{ptxguide}.
+Some addressing details are definitively declared in the PTX Reference.
 Through Compute Capability 1.3, load and store instructions require a "state space"
 modifier in addition to an address. General-purpose registers (\texttt{r0}--\texttt{r127}) are
 indexed via a 7-bit immediate. Global memory, accessed via one of 16 linear ranges
