@@ -298,7 +298,7 @@ word-sized register when referencing the global space means kernels' memory
 accesses cannot be preverified, and the possibility of software-assisted memory
 protection can be eliminated by analyzing details of memory transactions
 relative to the device clock\cite{microbenchmarks}. The use of two-level TLBs
-has been illustrated in previous work\cite{demmel}. We verified memoryy
+has been illustrated in previous work\cite{demmel}. We verified memory
 protection to be effective beyond the combined capacities of the TLBs, and
 note a L2 TLB miss to be only about half again as expensive as a L2 TLB hit.
 Thus we assert that memory protection is performed independently of, and in
@@ -306,6 +306,13 @@ parallel with, address translation. This requires virtual- (and thus per-context
 indexing; together with a memory protection granularity (1MB) distinct from
 either TLB size (4KB and 8MB), we consider this to imply a backing store in
 video RAM, and that memory protection is a single bit per entry.
+\subsection{Does memory protection incorporate contexts?}
+\subsection{Is memory scrubbed between kernels?}
+\textit{CUDA does not scrub memory.} This was demonstrated conclusively by
+verifying that a large (8MB) random string could be recovered, contiguously and
+in its entirety, by a subsequent kernel. It was not possible to determine
+whether code regions were scrubbed, since CUDA does not support indirect
+branches.
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
@@ -355,9 +362,6 @@ hardware. It is necessary that these mechanisms be properly configured,
 and that proper invalidations are performed in the face of remappings. Concurrent
 kernels must not be able to freely read each other's memory.
 \squishend
-\section{Other Vendors}
-Examining graphics architectures of other vendors was outside the scope of our research.  NVIDIA's leading competitor, ATI, provides a similar framework, ATI Stream\footnote{\url{http://www.amd.com/US/PRODUCTS/TECHNOLOGIES/STREAM-TECHNOLOGY/Pages/stream-technology.aspx}}.  We feel that similar security issues have been overlooked in ATI's model as well given the lack of security discussion in this area.  Additionally, the high-performance and cut-throat nature of the graphics card market has likely precluded any thoughts on security implementations.  We believe that if ATI Stream was examined with the same threat model in mind it is certainly possible that similar security concerns would come to light.
-
 \section{Related work}
 Our research in this area is focused on the possibility of security
 vulnerabilities against the GPU itself, an area which we were unable to find
