@@ -3,6 +3,8 @@
 \usepackage{textcomp}
 \usepackage{times}
 \usepackage{cite}
+\usepackage[small,compact]{titlesec}
+\usepackage{caption}
 \usepackage{fancyvrb}
 \usepackage{moreverb}
 \usepackage{graphicx}
@@ -21,6 +23,15 @@
   } }
 
 \newcommand{\squishend}{\end{list}}
+
+\makeatletter
+\newenvironment{tablehere}
+{\def\@captype{table}}
+{}
+\newenvironment{figurehere}
+{\def\@captype{figure}}
+{}
+\makeatother
 
 \title{My Other Computer is your GPU:\\
 System-Centric CUDA Threat Modeling with CUBAR}
@@ -240,7 +251,11 @@ We made use of
 \item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl}s issued to the NVIDIA proprietary driver, and
 \item the Linux kernel's MMIOTrace\cite{mmiotrace} infrastructure to track memory-mapped I/O operations.
 \squishend
-
+\begin{figurehere}
+\centering
+\includegraphics[width=\columnwidth]{texobjs/cudash-help.png}
+\caption{\small The CUDA shell}
+\end{figurehere}
 \section{Attacking CUDA}
 Some addressing details are definitively declared in the PTX Reference.
 Through Compute Capability 1.3, load and store instructions require a ``state space''
