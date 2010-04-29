@@ -335,6 +335,24 @@ demonstrated by sending SIGKILL signals to CUDA processes after they had
 performed large allocations and launched intense, long-running kernels. There
 was no opportunity for userspace code to run, yet these resources were properly
 freed upon process termination.
+\subsection{Can a kernel fork?}
+\textit{CUDA kernels do not appear capable of forking}. A \textit{primum movens} in the
+form of a host-system CPU is required to launch a CUDA kernel. The kernel-launching
+interface must, therefore, be visible to the host. There is no compelling reason to
+then duplicate this interface within the GPU.
+
+Until the mechanism used to launch a kernel is known, however, we cannot be sure
+that the following loophole does not exist: devices of Compute Capability 1.2 or higher
+can map host memory into a context's address space. If kernels are launched
+entirely via memory-mapped I/O transactions, and the map through which this is
+done is mapped again, this time into shared memory, device code might be able
+to manipulate the device. At this point, all bets are off.
+\subsection{Does CUDA produce forensics?}
+\textit{CUDA provides insufficient forensic data.} CUDA kernels are not tied
+into the process accounting mechanism. Exceptions are delivered to klogd, but
+rate-limited within the kernel itself; it would be trivial to hide a meaningful
+exception behind a flurry of meaningless ones, as this policy cannot be
+overridden. No system exists to log who ran what kernel, or for how long.
 \begin{comment}
 One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
@@ -386,6 +404,11 @@ kernels must not be able to freely read each other's memory.
 \item CUDA monitors processes from within kernelspace, freeing their device
 resources on termination. This must be duplicated, and must be performed in
 kernelspace to be effective.
+\item It ought be ensured that device control maps are not shared with device
+code via a secondary mapping. This code must be located in kernelspace.
+\item It would be valuable for CUDA to make available more forensic information.
+In particular, the standard UNIX process accounting mechanism ought be honored.
+Furthermore, rate-limiting ought use the standard, configurable klogd policies.
 \squishend
 \section{Related work}
 Our research in this area is focused on the possibility of security
