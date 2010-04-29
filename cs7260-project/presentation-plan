@@ -1,0 +1,55 @@
+-----------------------------------------------------------------------------
+
+								LRUMAP
+					A combinatorial data structure
+					    for extremely scalable LRU 
+
+           We want to provide LRU across a very large number
+	   of states. This could be to:
+
+		- effect fairness, or
+		- discover points of intensity
+   
+
+-----------------------------------------------------------------------------
+
+		Existing techniques include
+
+		PPE - Good for achieving fairness
+		Hash table - Good for isolating intensity
+
+
+		...but these systems don't scale in the extreme!
+
+
+-----------------------------------------------------------------------------
+
+	Perfect N-slot LRU for M sets is traditionally achieved in
+
+		- O(N) work (each must be updated), and
+		- O(M*NlgN) space.
+
+	We want extremely scalable performance:
+
+		- O(1) work, and
+		- O(M*lgN) space
+
+-----------------------------------------------------------------------------
+
+	LRUMAP achieves this, via a large fixed cost:
+
+	- Possible LRU orders can be placed on a bijection with permutations
+		of N integers
+	- This set is closed under any of N possible slots being used
+	- Precompute a table of size O(N! * NlgN), containing the N
+		possible transitions from each of N! permutations.
+	- Time is always O(1): always a win
+	- Space win as O(M*lgN) grows past O(N! * NlgN)
+
+-----------------------------------------------------------------------------
+
+	Compare LRUMAP to PPE and hash table (BRICK)?
+
+	Emphasize that m >>> n
+
+-----------------------------------------------------------------------------
