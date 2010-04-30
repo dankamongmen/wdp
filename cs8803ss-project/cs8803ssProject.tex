@@ -184,6 +184,7 @@ calls through the CUDA intermediary?
 \item Is it possible to reconstruct the system's video channel from an arbitrary
 CUDA kernel? Can the same be done for textures?
 \squishend
+
 \subsection{Denial of service}
 \squishlist
 \item Can a CUDA kernel monopolize resources in the face of competitors?
@@ -257,6 +258,8 @@ Beyond the basic toolchain, we made use of:
 \item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl}s issued to the NVIDIA proprietary driver, and
 \item the Linux kernel's MMIOTrace\cite{mmiotrace} infrastructure to track memory-mapped I/O operations.
 \squishend
+
+
 We then developed some tools:
 \squishlist
 \item \texttt{cudadump} (and its helper binary, \texttt{cudaranger}) to
@@ -267,11 +270,12 @@ prototype attacks, and
 \squishend
 
 % Fixme: The caption displays on the next page.
-\begin{figurehere}
+\begin{figure*}[t!]
 \centering
 \includegraphics[width=0.5\textwidth]{texobjs/cudash-help.png}
 \caption{The list of commands supported by our CUDA shell, \texttt{cudash}}
-\end{figurehere}
+\end{figure*}
+
 
 \section{Attacking CUDA (A dialogue)}
 % We now move beyond the realm of the documented.
@@ -336,9 +340,7 @@ However, CUDA provides both read and write access to video memory, and the frame
 
 %WTF happened on my system - artifacting.  Could this be exploited somehow?%
 
-While we were unable to specifically locate the framebuffer in memory, during our tests we did encounter several cases of video artifacting on our displays (Figure 2).  As of the writing of this paper we have been unable to isolate the circumstances that led to the artifacting and to reproduce them in a controlled manner.  We hypothesize either that the artifacting is due to the fact that the framebuffer is actually modifiable by a CUDA kernel, or that the artifacting is simply a side-effect of unhandled allocation failures.  However, we feel it is unlikely that our CUDA application actively modified the display, as simple memory reads and allocations were being performed, and with future work it should be possible to determine whether the framebuffer is readily modifiable by CUDA kernels or whether the artifacting was simply due to the programs ignoring some allocation failure.
-
-\begin{figurehere}
+\begin{figure*}[ht]
 \centering
 \subfigure[Corrupted AA]
 {
@@ -351,7 +353,13 @@ While we were unable to specifically locate the framebuffer in memory, during ou
     \includegraphics[width=4cm]{texobjs/shitfuckedup.png}
 }
 \caption{Examples of display artifacting experienced during testing that may indicate a CUDA kernel can arbitrarily modify the framebuffer.}
-\end{figurehere}
+\end{figure*}
+
+
+While we were unable to specifically locate the framebuffer in memory, during our tests we did encounter several cases of video artifacting on our displays (Figure 2).  As of the writing of this paper we have been unable to isolate the circumstances that led to the artifacting and to reproduce them in a controlled manner.  We hypothesize either that the artifacting is due to the fact that the framebuffer is actually modifiable by a CUDA kernel, or that the artifacting is simply a side-effect of unhandled allocation failures.  However, we feel it is unlikely that our CUDA application actively modified the display, as simple memory reads and allocations were being performed, and with future work it should be possible to determine whether the framebuffer is readily modifiable by CUDA kernels or whether the artifacting was simply due to the programs ignoring some allocation failure.
+
+
+
 
 %Hopefully the above section can be updated, but as of now I have no clue what happened on my system to produce the artifacting.  I'll take another look at it but it'll probably have to wait until after my take-home final is done%
 
