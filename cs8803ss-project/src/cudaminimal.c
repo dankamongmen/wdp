@@ -14,6 +14,7 @@ usage(const char *argv){
 int main(int argc,char **argv){
 	unsigned long zul;
 	CUresult cerr;
+	int count;
 
 	if(argc > 2){
 		usage(*argv);
@@ -29,6 +30,11 @@ int main(int argc,char **argv){
 		exit(EXIT_FAILURE);
 	}
 	printf("CUDA initialized.\n");
+	if( (cerr = cuDeviceGetCount(&count)) ){
+		fprintf(stderr,"Couldn't get CUDA dev count (%d)\n",cerr);
+		exit(EXIT_FAILURE);
+	}
+	printf("%d devices\n",count);
 	if(argc == 2){
 		sigset_t s;
 		int sig;

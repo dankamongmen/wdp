@@ -1,6 +1,6 @@
 .DELETE_ON_ERROR:
 .PHONY: all preview test clean
-.DEFAULT_GOAL:=test
+.DEFAULT_GOAL:=preview
 
 VPDF:=evince
 
@@ -51,7 +51,7 @@ $(OUT)/%.o: src/%.c $(INC) $(TAGS)
 	pdflatex $<
 	pdflatex $<
 
-preview: test
+preview: all
 	$(VPDF) $(PDF)
 
 test: all $(BIN)
