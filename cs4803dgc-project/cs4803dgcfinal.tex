@@ -32,7 +32,7 @@
 
 \title{Freeing CUDA}
 \author{Nick Black\\
-Project Proposal, CS4803DGC Spring 2010}
+Project Report, CS4803DGC Spring 2010}
 \date{}
 
 \begin{document}
@@ -112,11 +112,48 @@ clear that other elements were at work. Examining the \texttt{strace} output
 more closely, it became clear that a great deal of memory-mapped I/O was at
 work.
 
+\vspace{3 mm}
 \begin{figurehere}
 \centering
 \includegraphics[width=\columnwidth]{texobjs/cudashmaps.png}
 \caption{Device mappings of a sample CUDA process}
 \end{figurehere}
+\vspace{3 mm}
+
+Eventually, it became clear that a proper implementation would require full
+binary analysis. \texttt{objdump} with the \texttt{-T} switch generated a list
+of dynamic symbols, from which all exported functions were extracted. The
+\texttt{-D} switch was then used to generate a full disassembly of the \texttt{.text}
+and \texttt{.plt} sections. By sorting and counting \texttt{call} instructions,
+I was able to determine the most frequently-called internal routines. I began
+building a new library up from these, until I had reverse engineered all internal
+routines called by \texttt{cuInit()}; I then reversed \texttt{cuInit()} itself,
+and implemented my own.
+
+This time, \texttt{libcudest}'s \texttt{cuMalloc()} implementation successfully allocated memory,
+as verified using my \texttt{cudash} tool. I thus consider my concept effectively proved. All that remains is to flush
+out the CUDA API.
+
+\vspace{3 mm}
+\begin{figurehere}
+\centering
+\includegraphics[width=\columnwidth]{texobjs/libcudestalloc.png}
+\caption{\texttt{maxalloc} before, during, and after successful 16MB \texttt{libcudest} allocation}
+\end{figurehere}
+\section{Status}
+\texttt{libcudest} is an active project which I will be working on well into the
+summer. Current code can always be found on GitHub\footnote{\url{http://github.com/dankamongmen/wdp/tree/master/cs4803dgc-project/}}.
+In addition, up-to-date status can be found on my wiki\footnote{\url{http://dank.qemfd.net/dankwiki/index.php/Libcudest}}.
+
+Currently, only three exported functions---\texttt{cuInit()}, \texttt{cuMemAlloc()}, and
+\texttt{cuCtxCreate()}---are implemented. Despite this, a significant portion of
+the library seems emulated, due to implementing the internal functions first.
+
+Once \texttt{libcudest} is complete, I will know precisely where lies the line
+dividing userspace and kernelspace functionality. At that point, it will be time
+to add CUDA support to the Nouveau driver, testing it with \texttt{libcudest} to
+ensure (at least initially) that binary compatibility has been maintained. At
+that point, GNU/Linux will possess a fully open source CUDA solution.
 \section{Related work}
 Albert Exojo's master's thesis implemented \texttt{libecuda}\cite{exojo}, a replacement for
 the CUDA Runtime API library mentioned above. The Ocelot\cite{ocelot} binary translation
