@@ -9,6 +9,15 @@
 \usepackage{hyperref}
 \usepackage{multicol}
 
+\makeatletter
+\newenvironment{tablehere}
+{\def\@captype{table}}
+{}
+\newenvironment{figurehere}
+{\def\@captype{figure}}
+{}
+\makeatother
+
 \newcommand{\squishlist}{\begin{list}{$\bullet$}
   {\setlength{\itemsep}{0pt}
     \setlength{\parsep}{3pt}
@@ -74,6 +83,40 @@ existing NVIDIA \texttt{libcudart.so} is unfortunately closed source. Any
 application making correct use of the Driver API ought perform equivalently atop
 our infrastructure. Note that it is possible to compile \texttt{.cu} files down
 to C source and Driver API calls via the \texttt{--cuda} flag to \texttt{nvcc}\cite{nvcc}.
+\section{Tools}
+I've interposed numerous functions to perform context-sensitive
+reverse-engineering. Below is an example of \texttt{iocular}, a tool to track
+changes in the memory regions passed to \texttt{ioctl}.
+
+\begin{figurehere}
+\centering
+\includegraphics[width=\columnwidth]{texobjs/iocular.png}
+\caption{The \texttt{iocular} tool}
+\end{figurehere}
+Further use has then been made of:
+\squishlist
+\item \texttt{vbtracetool}\cite{vbtrace} to dump video BIOS,
+\item \texttt{cuda-gdb}\cite{cudagdb} to debug CUDA programs,
+\item \texttt{strace}\cite{stracecode} to track system calls,
+\item \texttt{nv50dis}\cite{nv50dis} to disassemble nv50 binaries,
+\item \texttt{nvtrace}\cite{nvtrace} to decipher \texttt{ioctl}s issued to the NVIDIA proprietary driver, and
+\item the Linux kernel's MMIOTrace\cite{mmiotrace} infrastructure to track memory-mapped I/O operations.
+\squishend
+\section{Methodology}
+Initially, I proceeded via high-level analysis, using \texttt{strace} and
+\texttt{iocular} to monitor \texttt{ioctl}s. I collected a database of ioctls
+issued, the device node(s) and CUDA function(s) with which they were associated,
+parameter lengths and sample inputs/outputs. I then implemented \texttt{cuInit}
+based off these ioctls. Subsequent functions failed, however, and it became
+clear that other elements were at work. Examining the \texttt{strace} output
+more closely, it became clear that a great deal of memory-mapped I/O was at
+work.
+
+\begin{figurehere}
+\centering
+\includegraphics[width=\columnwidth]{texobjs/cudashmaps.png}
+\caption{Device mappings of a sample CUDA process}
+\end{figurehere}
 \section{Related work}
 Albert Exojo's master's thesis implemented \texttt{libecuda}\cite{exojo}, a replacement for
 the CUDA Runtime API library mentioned above. The Ocelot\cite{ocelot} binary translation
