@@ -52,7 +52,7 @@ dr_init(client_id_t id){
 #ifdef SHOW_RESULTS
 	/* also give notification to stderr */
 	if (dr_is_notify_on())
-	dr_fprintf(STDERR, "Client daytripper is %s\n",enable == DAYTRIPPER_NOLSD ? 
+	dr_fprintf(STDERR, "Client daytripper is %s\n",enable == DAYTRIPPER_NOLSD ?
 					"inactive" : "active");
 #endif
 	/* initialize our global variables */
