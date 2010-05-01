@@ -11,7 +11,11 @@
 # define ATOMIC_INC(var) __asm__ __volatile__("lock incl %0" : "=m" (var) : : "memory")
 #endif
 
-static bool enable;
+static enum {
+	DAYTRIPPER_NOLSD,
+	DAYTRIPPER_CONROE,
+	DAYTRIPPER_NEHALEM,
+} enable;
 
 /* use atomic operations to increment these to avoid the hassle of locking. */
 static int num_examined, num_converted;
@@ -26,24 +30,34 @@ static void
 event_exit(void);
 
 DR_EXPORT void 
-dr_init(client_id_t id)
-{
-    dr_register_exit_event(event_exit);
-    dr_register_trace_event(event_trace);
-    /* this optimization is only worthwhile on the Pentium 4, where
-     * an add of 1 is faster than an inc
-     */
-    enable = (proc_get_family() == FAMILY_PENTIUM_4);
-    /* make it easy to tell, by looking at log file, which client executed */
-    dr_log(NULL, LOG_ALL, 1, "Client 'daytripper' initializing\n");
+dr_init(client_id_t id){
+	dr_log(NULL, LOG_ALL, 1, "Client 'daytripper' initializing\n");
+	dr_register_exit_event(event_exit);
+	dr_register_trace_event(event_trace);
+	// LSD was introduced on the Conroe, and improved on Nehalem.
+	if(proc_get_family() == FAMILY_CORE_2 &&
+			(proc_get_model() == MODEL_CORE_2)){
+		dr_log(NULL, LOG_ALL, 1, "daytripper: Found a Core 2 processor\n");
+		enable = DAYTRIPPER_CONROE;
+	}else if(proc_get_family() == FAMILY_CORE_I7 &&
+			(proc_get_model() == MODEL_I7_GAINESTOWN ||
+			 proc_get_model() == MODEL_I7_CLARKSFIELD)){
+		dr_log(NULL, LOG_ALL, 1, "daytripper: Found a Core i7 processor\n");
+		enable = DAYTRIPPER_NEHALEM;
+	}else{
+		dr_log(NULL, LOG_ALL, 1, "daytripper: Unsupported processor\n");
+		enable = DAYTRIPPER_NOLSD;
+	}
+	/* make it easy to tell, by looking at log file, which client executed */
 #ifdef SHOW_RESULTS
-    /* also give notification to stderr */
-    if (dr_is_notify_on())
-	dr_fprintf(STDERR, "Client daytripper is running\n");
+	/* also give notification to stderr */
+	if (dr_is_notify_on())
+	dr_fprintf(STDERR, "Client daytripper is %s\n",enable == DAYTRIPPER_NOLSD ? 
+					"inactive" : "active");
 #endif
-    /* initialize our global variables */
-    num_examined = 0;
-    num_converted = 0;
+	/* initialize our global variables */
+	num_examined = 0;
+	num_converted = 0;
 }
 
 static void 
