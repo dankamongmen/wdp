@@ -21,8 +21,22 @@ static int num_examined, num_converted;
 static dr_emit_flags_t
 bbcb(void *drcontext,void *tag,instrlist_t *bb,bool tracep,bool transp){
 	if(dr_is_notify_on()){
-		dr_printf("in dynamorio_trace(tag="PFX")\n", tag);
-		instrlist_disassemble(drcontext, tag, bb, STDOUT);
+		// dr_printf("bbcb: tag="PFX")\n",tag);
+		// instrlist_disassemble(drcontext, tag, bb, STDOUT);
+	}
+	return DR_EMIT_DEFAULT;
+}
+
+static dr_emit_flags_t
+trcb(void *drcontext,void *tag,instrlist_t *bb,bool transp){
+	if(dr_is_notify_on()){
+		instr_t *i;
+
+		// dr_printf("trcb: tag="PFX")\n",tag);
+		for(i = instrlist_first(bb); i != instrlist_last(bb); i = instr_get_next(i)){
+			dr_print_instr(drcontext,STDOUT,i,__func__);
+		}
+		printf("\n");
 	}
 	return DR_EMIT_DEFAULT;
 }
@@ -39,6 +53,7 @@ DR_EXPORT void
 dr_init(client_id_t id){
 	dr_log(NULL, LOG_ALL, 1, "Client 'daytripper' initializing\n");
 	dr_register_bb_event(bbcb);
+	dr_register_trace_event(trcb);
 	dr_register_exit_event(event_exit);
 	// LSD was introduced on the Conroe, and improved on Nehalem.
 	if(proc_get_family() == FAMILY_CORE_2 &&
