@@ -5,7 +5,7 @@
 
 VPDF:=evince
 
-PRO:=cs8803dcfinal
+PRO:=cs8803dcproject
 TEX:=$(PRO).tex
 PDF:=$(PRO).pdf
 TEXOBJS:=$(wildcard texobjs/*)
