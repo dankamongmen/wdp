@@ -7,7 +7,8 @@
 int ioctl(int fd,int req,uintptr_t op){//,unsigned o1,unsigned o2){
 	static int (*shim_ioctl)(int,int,uintptr_t,int,int);
 	static int (*shim_ioctl3)(int,int,uintptr_t);
-	int r;
+	const uint32_t *dat = (const uint32_t *)op;
+	int r,s,z;
 
 	if(shim_ioctl == NULL){
 		const char *msg;
@@ -34,15 +35,29 @@ int ioctl(int fd,int req,uintptr_t op){//,unsigned o1,unsigned o2){
 			return -1;
 		}
 	}
-	/*if(o1){
-		printf("5-IOCTL[%d]: 0x%x (%x, %x, %x)\n",fd,req,op,o1,o2);
-		r = shim_ioctl(fd,req,op,o1,o2);
-	}else{*/
-		printf("3-IOCTL[%d]: 0x%x (%jx)\n",fd,req,op);
-		r = shim_ioctl3(fd,req,op);
-	//}
-	// r = 0;
-	printf("RESULT: %d\n",r);
+	s = (req >> 16u) & 0x3fff;
+	printf("ioctl %x, %d-byte param, fd %d\t",req & 0xff,s,fd);
+	r = shim_ioctl3(fd,req,op);
+	if(r == 0){
+		for(z = 0 ; z < s ; z += 4){
+			printf("\x1b[1m");
+			if(z % 16 == 0 && z){
+				printf("0x%04x\t\t\t\t",z);
+			}
+			if(dat[z / 4]){
+				printf("\x1b[32m");
+			}
+			printf("0x%08x ",dat[z / 4]);
+			printf("\x1b[0m");
+			if(z % 16 == 12){
+				printf("\n");
+			}
+		}
+		if(z % 16){
+			printf("\n");
+		}
+	}
+	printf("\x1b[1m\x1b[32m\tRESULT: %d\x1b[0m\n",r);
 	return r;
 }
 
