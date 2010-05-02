@@ -9,6 +9,8 @@ extern "C" {
 #include <stdio.h>
 #include <stdint.h>
 
+int kernel_registry(void);
+int kernel_version_str(void);
 int init_cuda_alldevs(int *);
 int init_cuda(int,CUdevice *);
 int init_cuda_ctx(int,CUcontext *);

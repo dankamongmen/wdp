@@ -9,6 +9,7 @@
 #include "cuda8803ss.h"
 
 #define PROC_VERFILE "/proc/driver/nvidia/version"
+#define PROC_REGISTRY "/proc/driver/nvidia/registry"
 
 int init_cuda(int devno,CUdevice *c){
 	int attr,cerr;
@@ -124,8 +125,20 @@ int getzul(const char *arg,unsigned long *zul){
 	return 0;
 }
 
-static int
-kernel_version_str(void){
+int kernel_registry(void){
+	int fd;
+
+	if((fd = open(PROC_VERFILE,O_RDONLY)) < 0){
+		fprintf(stderr,"Couldn't open %s (%s)\n",PROC_VERFILE,strerror(errno));
+		return -1;
+	}
+	// FIXME mmap and display
+	printf("%d\n",fd);
+	close(fd);
+	return 0;
+}
+
+int kernel_version_str(void){
 #define VERFILEMAX ((size_t)1024)
 #define NVRMTAG "NVRM version: "
 	char *nvrmver,*tok;

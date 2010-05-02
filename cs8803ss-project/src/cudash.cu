@@ -896,6 +896,26 @@ getdev(unsigned devno){
 	return d;
 }
 
+#define ENFORCE_ARGEND(c,cmdline)					\
+	do{								\
+	while(isspace(*cmdline)){ ++cmdline; }				\
+	if(strcmp(cmdline,"")){						\
+		if(fprintf(stderr,"too many options to %s\n") < 0){	\
+			return -1;					\
+		}							\
+		return 0;						\
+	}								\
+	}while(0)
+
+static int
+cudash_registry(const char *c,const char *cmdline){
+	ENFORCE_ARGEND(c,cmdline);
+	if(kernel_registry()){
+		return -1;
+	}
+	return 0;
+}
+
 static int
 cudash_pokectx(const char *c,const char *cmdline){
 	unsigned long long devno,value,off;
@@ -923,6 +943,8 @@ cudash_pokectx(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid value: %s\n",cmdline);
 		return 0;
 	}
+	cmdline = ep;
+	ENFORCE_ARGEND(c,cmdline);
 	while(off < CUCTXSIZE){
 		if(value > 0xffu){
 			fprintf(stderr,"Invalid value: 0x%llx\n",value);
@@ -980,6 +1002,7 @@ static const struct {
 	{ "pokectx",	cudash_pokectx,	"poke values into CUcontext objects",	},
 	{ "quit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "read",	cudash_read,	"read device memory in CUDA",	},
+	{ "registry",	cudash_registry,"dump the driver's registry",	},
 	{ "verify",	cudash_verify,	"verify all mapped memory is readable",	},
 	{ "write",	cudash_write,	"write device memory in CUDA",	},
 	{ "wverify",	cudash_wverify,	"verify all mapped memory is writeable",	},
