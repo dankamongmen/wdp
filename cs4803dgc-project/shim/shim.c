@@ -57,7 +57,27 @@ int ioctl(int fd,int req,uintptr_t op){//,unsigned o1,unsigned o2){
 			printf("\n");
 		}
 	}
-	printf("\x1b[1m\x1b[34mRESULT: %d\x1b[0m\n\n",r);
+	printf("\x1b[1m\x1b[34mRESULT: %d\x1b[0m\t\t\t",r);
+	if(r == 0){
+		for(z = 0 ; z < s ; z += 4){
+			printf("\x1b[1m");
+			if(z % 16 == 0 && z){
+				printf("0x%04x\t\t\t\t",z);
+			}
+			if(dat[z / 4]){
+				printf("\x1b[32m");
+			}
+			printf("0x%08x ",dat[z / 4]);
+			printf("\x1b[0m");
+			if(z % 16 == 12){
+				printf("\n");
+			}
+		}
+		if(z % 16){
+			printf("\n");
+		}
+	}
+	printf("\n");
 	return r;
 }
 
