@@ -37,26 +37,24 @@ int ioctl(int fd,int req,uintptr_t op){//,unsigned o1,unsigned o2){
 	}
 	s = (req >> 16u) & 0x3fff;
 	printf("ioctl %x, %d-byte param, fd %d\t",req & 0xff,s,fd);
-	r = shim_ioctl3(fd,req,op);
-	if(r == 0){
-		for(z = 0 ; z < s ; z += 4){
-			printf("\x1b[1m");
-			if(z % 16 == 0 && z){
-				printf("0x%04x\t\t\t\t",z);
-			}
-			if(dat[z / 4]){
-				printf("\x1b[32m");
-			}
-			printf("0x%08x ",dat[z / 4]);
-			printf("\x1b[0m");
-			if(z % 16 == 12){
-				printf("\n");
-			}
+	for(z = 0 ; z < s ; z += 4){
+		printf("\x1b[1m");
+		if(z % 16 == 0 && z){
+			printf("0x%04x\t\t\t\t",z);
 		}
-		if(z % 16){
+		if(dat[z / 4]){
+			printf("\x1b[32m");
+		}
+		printf("0x%08x ",dat[z / 4]);
+		printf("\x1b[0m");
+		if(z % 16 == 12){
 			printf("\n");
 		}
 	}
+	if(z % 16){
+		printf("\n");
+	}
+	r = shim_ioctl3(fd,req,op);
 	printf("\x1b[1m\x1b[34mRESULT: %d\x1b[0m\t\t\t",r);
 	if(r == 0){
 		for(z = 0 ; z < s ; z += 4){

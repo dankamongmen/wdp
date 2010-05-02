@@ -49,7 +49,7 @@ typedef struct type5 {
 } type5;
 
 typedef struct type6 {
-	uint32_t ob[12];	// 0x30 (48) bytes
+	uint32_t ob[18];	// 0x30 (72) bytes
 } type6;
 
 typedef struct typed0 {
@@ -112,18 +112,32 @@ init_ctlfd(int fd){
 	if(ioctl(fd,NV_FOURTH,&t4)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	// FIXME ought be setting the rest of this up
 	t5.ob[0] = t4.ob[0];
 	t5.ob[1] = t4.ob[0];
+	t5.ob[2] = 0x215u;
+	t5.ob[4] = 0xcf43fd00u;
+	t5.ob[5] = 0x00007fffu;
+	t5.ob[6] = 0x84u;
 	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
+	t6.ob[0] = t4.ob[0];
+	t6.ob[1] = t4.ob[0];
+	t6.ob[2] = 0x1u;
+	t6.ob[8] = 0xa14b1233u;
+	t6.ob[9] = 0x00007feeu;
+	t6.ob[10] = 0xfu;
 	if(ioctl(fd,NV_I6,&t6)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
+	t5.ob[2] = 0x215u;
+	t5.ob[3] = 0x0;
+	t5.ob[6] = 0x80u;
+	t5.ob[7] = 0x0;
 	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
+	t5.ob[4] = 0xcf43fac0;
 	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
