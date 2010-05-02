@@ -1,9 +1,14 @@
 #include <cuda.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
+#include <string.h>
 #include <stdint.h>
 #include <limits.h>
 #include "cuda8803ss.h"
+
+#define PROC_VERFILE "/proc/driver/nvidia/version"
 
 int init_cuda(int devno,CUdevice *c){
 	int attr,cerr;
@@ -119,6 +124,50 @@ int getzul(const char *arg,unsigned long *zul){
 	return 0;
 }
 
+static int
+kernel_version_str(void){
+#define VERFILEMAX ((size_t)1024)
+#define NVRMTAG "NVRM version: "
+	char *nvrmver,*tok;
+	ssize_t b,nl;
+	int fd;
+
+	if((fd = open(PROC_VERFILE,O_RDONLY)) < 0){
+		fprintf(stderr,"Couldn't open %s (%s)\n",PROC_VERFILE,strerror(errno));
+		return -1;
+	}
+	if((nvrmver = (char *)malloc(VERFILEMAX)) == NULL){
+		fprintf(stderr,"Couldn't allocate %zub readbuf (%s)\n",VERFILEMAX,strerror(errno));
+		close(fd);
+		return -1;
+	}
+	if((b = read(fd,nvrmver,VERFILEMAX)) < 0){
+		fprintf(stderr,"Error reading %s (%s)\n",PROC_VERFILE,strerror(errno));
+		free(nvrmver);
+		close(fd);
+		return -1;
+	}
+	for(nl = 0 ; nl < b ; ++nl){
+		if(nvrmver[nl] == '\n'){
+			nvrmver[nl] = '\0';
+			break;
+		}
+	}
+	if(nl == b || (tok = strstr(nvrmver,NVRMTAG)) == NULL){
+		fprintf(stderr,"Badly-formed version file at %s\n",PROC_VERFILE);
+		free(nvrmver);
+		close(fd);
+		return -1;
+	}
+	tok += strlen(NVRMTAG);
+	printf("%s\n",tok);
+	free(nvrmver);
+	close(fd);
+	return 0;
+#undef NVRMTAG
+#undef VERFILEMAX
+}
+
 #define CUDAMAJMIN(v) v / 1000, v % 1000
 
 int init_cuda_alldevs(int *count){
@@ -126,11 +175,14 @@ int init_cuda_alldevs(int *count){
 
 	if((cerr = cuInit(0)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't initialize CUDA (%d)\n",cerr);
-		return cerr;
+		return -1;
+	}
+	if(kernel_version_str()){
+		return -1;
 	}
 	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't get CUDA driver version (%d)\n",cerr);
-		return cerr;
+		return -1;
 	}
 	printf("Compiled against CUDA version %d.%d. Linked against CUDA version %d.%d.\n",
 			CUDAMAJMIN(CUDA_VERSION),CUDAMAJMIN(attr));
@@ -140,11 +192,11 @@ int init_cuda_alldevs(int *count){
 	}
 	if((cerr = cuDeviceGetCount(count)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't get CUDA device count (%d)\n",cerr);
-		return cerr;
+		return -1;
 	}
 	if(*count <= 0){
 		fprintf(stderr,"No CUDA devices found, exiting.\n");
 		return -1;
 	}
-	return CUDA_SUCCESS;
+	return 0;
 }
