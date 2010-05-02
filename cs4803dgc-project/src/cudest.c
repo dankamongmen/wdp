@@ -27,37 +27,6 @@ typedef enum {
 	NV_D1		= 0xc0144632,
 } nvdevioctls;
 
-static int
-Ioctl(int fd,int req,void *arg){
-	uint32_t *dat = arg;
-	int r,s,z;
-
-	s = (req >> 16u) & 0x3fff;
-	r = ioctl(fd,req,arg);
-	printf("ioctl %x, %d-byte param, fd %d\t",req & 0xff,s,fd);
-	if(r == 0){
-		for(z = 0 ; z < s ; z += 4){
-			printf("\x1b[1m");
-			if(z % 16 == 0 && z){
-				printf("0x%04x\t\t\t\t",z);
-			}
-			if(dat[z / 4]){
-				printf("\x1b[32m");
-			}
-			printf("0x%08x ",dat[z / 4]);
-			printf("\x1b[0m");
-			if(z % 16 == 12){
-				printf("\n");
-			}
-		}
-		if(z % 16){
-			printf("\n");
-		}
-	}
-	printf("\n");
-	return r;
-}
-
 // FIXME we'll almost certainly need a rwlock protecting this
 static int nvctl = -1;
 
@@ -110,11 +79,11 @@ init_dev(unsigned dno){
 	td0.ob[2] = 1;
 	td0.ob[3] = 0;
 	td0.ob[4] = 0;
-	if(Ioctl(dfd,NV_D0,&td0)){
+	if(ioctl(dfd,NV_D0,&td0)){
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(dfd,NV_D0,&td0)){
+	if(ioctl(dfd,NV_D0,&td0)){
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
@@ -130,59 +99,59 @@ init_ctlfd(int fd){
 	memset(&hshake,0,sizeof(hshake));
 	hshake.ob[2] = 0x35ull;
 	hshake.ob[1] = 0x312e36332e353931ull;
-	if(Ioctl(fd,NV_HANDSHAKE,&hshake)){
+	if(ioctl(fd,NV_HANDSHAKE,&hshake)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_SECOND,&result0xca)){
+	if(ioctl(fd,NV_SECOND,&result0xca)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	t3.ob[0] = (uint32_t)-1;
-	if(Ioctl(fd,NV_THIRD,&t3)){
+	if(ioctl(fd,NV_THIRD,&t3)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FOURTH,&t4)){
+	if(ioctl(fd,NV_FOURTH,&t4)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	// FIXME ought be setting the rest of this up
 	t5.ob[0] = t4.ob[0];
 	t5.ob[1] = t4.ob[0];
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_I6,&t6)){
+	if(ioctl(fd,NV_I6,&t6)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_IA,&ta)){
+	if(ioctl(fd,NV_IA,&ta)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if((r = init_dev(0)) != CUDA_SUCCESS){
 		return r;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_I7,&t7)){
+	if(ioctl(fd,NV_I7,&t7)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
-	if(Ioctl(fd,NV_FIFTH,&t5)){
+	if(ioctl(fd,NV_FIFTH,&t5)){
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	return CUDA_SUCCESS;
