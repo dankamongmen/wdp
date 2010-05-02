@@ -589,11 +589,11 @@ cudash_free(const char *c,const char *cmdline){
 	}
 	m = &curdev->map;
 	while(*m){
-		if((*m)->base >= base && base + size >= (*m)->base + (*m)->s){
+		if((*m)->base >= base && base + size >= (*m)->base + (*m)->s
+				&& (*m)->allocno){ // don't free internalallocs
 			CUresult cerr;
 			cudamap *tmp;
 
-			// FIXME don't free our internal allocs!
 			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
 				curdev->devno,(*m)->s,(*m)->s,(uintmax_t)(*m)->base) < 0){
 				return -1;
