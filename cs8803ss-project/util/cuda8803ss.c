@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <limits.h>
+#include <sys/stat.h>
 #include "cuda8803ss.h"
 
 #define PROC_VERFILE "/proc/driver/nvidia/version"
@@ -126,14 +127,27 @@ int getzul(const char *arg,unsigned long *zul){
 }
 
 int kernel_registry(void){
+	char c[256];
+	ssize_t r;
 	int fd;
 
-	if((fd = open(PROC_VERFILE,O_RDONLY)) < 0){
-		fprintf(stderr,"Couldn't open %s (%s)\n",PROC_VERFILE,strerror(errno));
+	if((fd = open(PROC_REGISTRY,O_RDONLY)) < 0){
+		fprintf(stderr,"Couldn't open %s (%s)\n",PROC_REGISTRY,strerror(errno));
 		return -1;
 	}
-	// FIXME mmap and display
-	printf("%d\n",fd);
+	while((r = read(fd,c,sizeof(c))) > 0){
+		if(printf("%.*s",(int)r,c) < r){
+			close(fd);
+			return -1;
+		}
+		if((size_t)r < sizeof(c)){
+			break;
+		}
+	}
+	if(fflush(stdout)){
+		close(fd);
+		return -1;
+	}
 	close(fd);
 	return 0;
 }
