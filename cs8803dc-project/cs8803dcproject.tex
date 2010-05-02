@@ -17,7 +17,7 @@
 %-----------------------------------------------------------------------------
 
 
-\documentclass[preprint]{sigplanconf}
+\documentclass[]{sigplanconf}
 
 % The following \documentclass options may be useful:
 %
@@ -25,22 +25,23 @@
 % 11pt          To set in 11-point type instead of 9-point.
 % authoryear    To obtain author/year citation style instead of numeric.
 
+\usepackage{graphicx}
 \usepackage{amsmath}
 
 \begin{document}
 
 \conferenceinfo{CS8803DC 2010}{May 6, Atlanta.} 
 \copyrightyear{2010} 
-\copyrightdata{[to be supplied]} 
-
-\titlebanner{CS8803DC, Spring 2010, Georgia Institute of Technology}        % These are ignored unless
-\preprintfooter{short description of paper}   % 'preprint' option specified.
+\toappear{Copyright is held by the author.\\
+\textit{CS8803DC} May 6, Atlanta.}
+%\authorpermission
+%\titlebanner{CS8803DC, Spring 2010, Georgia Institute of Technology}        % These are ignored unless
+%\preprintfooter{Dynamic Translation for Intel's Loop Stream Decoder}   % 'preprint' option specified.
 
 \title{Daytripper}
 \subtitle{Dynamic Translation for Intel's Loop Stream Decoder}
 
 \authorinfo{Nick Black}
-           {Up in it}
            {nickblack@linux.com}
 
 \maketitle
@@ -49,7 +50,7 @@
 This is the text of the abstract.
 \end{abstract}
 
-\category{CR-number}{subcategory}{third-level}
+\category{D.3.4}{Processors}{Compilers}
 
 \terms
 term1, term2
@@ -74,22 +75,13 @@ latter recompiles PTX for NVIDIA and x86.
 This is the text of the appendix, if you need one.
 
 \acks
-
-Acknowledgments, if needed.
+Brought to you by Purple Drank\texttrademark. Code like a Champion Today!
+\includegraphics[width=\columnwidth]{texobjs/drank.jpg}
 
 % We recommend abbrvnat bibliography style.
 
 \bibliographystyle{abbrvnat}
-\bibliography{cs8803dcproject}
-
 % The bibliography should be embedded for final submission.
-
-\begin{thebibliography}{}
-\softraggedright
-
-\bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
-P. Q. Smith, and X. Y. Jones. ...reference text...
-
-\end{thebibliography}
+\bibliography{cs8803dcproject}
 
 \end{document}
