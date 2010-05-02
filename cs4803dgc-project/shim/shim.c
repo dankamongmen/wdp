@@ -57,7 +57,7 @@ int ioctl(int fd,int req,uintptr_t op){//,unsigned o1,unsigned o2){
 			printf("\n");
 		}
 	}
-	printf("\x1b[1m\x1b[32m\tRESULT: %d\x1b[0m\n",r);
+	printf("\x1b[1m\x1b[34mRESULT: %d\x1b[0m\n\n",r);
 	return r;
 }
 
