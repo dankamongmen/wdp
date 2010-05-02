@@ -11,10 +11,12 @@ PDF:=$(PRO).pdf
 INC:=$(wildcard src/*.h)
 TEXOBJS:=$(wildcard texobjs/*)
 SRC:=$(notdir $(wildcard src/*.c))
+SHIMSRC:=$(notdir $(wildcard shim/*.c))
 OBJ:=$(addsuffix .o,$(addprefix $(OUT)/,$(basename $(SRC))))
+SHIMOBJ:=$(addsuffix .o,$(addprefix $(OUT)/,$(basename $(SHIMSRC))))
 MINSRC:=bin/cudaminimal.c
 SPAWNSRC:=bin/cudaspawner.c
-LIB:=$(OUT)/libcudest.so
+LIB:=$(OUT)/libcudest.so $(OUT)/shim.so
 TAGBIN:=ctags
 TAGS:=.tags
 
@@ -26,7 +28,7 @@ BIN:=$(OUT)/cudaminimal $(OUT)/cudaspawner
 
 all: $(LIB) $(PDF)
 
-$(TAGS): $(addprefix src/,$(SRC)) $(INC)
+$(TAGS): $(addprefix src/,$(SRC)) $(addprefix shim/,$(SHIMSRC)) $(INC)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(TAGBIN) -f $@ $^
 
@@ -36,9 +38,17 @@ $(OUT)/cudaminimal: $(MINSRC) $(LIB)
 $(OUT)/cudaspawner: $(SPAWNSRC) $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
 
+$(OUT)/shim.so: $(SHIMOBJ)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LFLAGS) -ldl
+
 $(OUT)/libcudest.so: $(OBJ)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LFLAGS)
+
+$(OUT)/%.o: shim/%.c $(INC) $(TAGS)
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OUT)/%.o: src/%.c $(INC) $(TAGS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
