@@ -1,5 +1,5 @@
 .DELETE_ON_ERROR:
-.PHONY: all preview profile test clean
+.PHONY: all preview test clean
 # FIXME switch to test once we have binaries
 .DEFAULT_GOAL:=preview
 
@@ -12,12 +12,12 @@ TEXOBJS:=$(wildcard texobjs/*)
 
 all: $(PDF)
 
-%.pdf: %.tex %.bib $(TEXOBJS) $(MAKEFILES)
+%.pdf: clean %.tex %.bib $(TEXOBJS) $(MAKEFILES)
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	pdflatex $<
-	bibtex $(basename $<)
-	pdflatex $<
-	pdflatex $<
+	pdflatex $(basename $@)
+	bibtex $(basename $@)
+	pdflatex $(basename $@)
+	pdflatex $(basename $@)
 
 preview: test
 	$(VPDF) $(PDF)
