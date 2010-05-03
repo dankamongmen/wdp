@@ -1,0 +1,91 @@
+CONFIGURATION
+ Processing Elements:  15
+ trace file:           ./super_easy.txt
+  size:              1024 bytes
+  assoc:             4-way
+  blocksize:         32 bytes
+NETWORK SPECS
+ Link (Flit) width:         64 bits
+ Number of virtual channels:         2
+ Buffer entries per virtual channel:         6
+	Network Enqueue  (cycle    100) - src: 3 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		105, node 3: Flit SA going LOCAL to WEST  - is HEAD, is TAIL, src: 3 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		111, node 2: Flit SA going EAST  to WEST  - is HEAD, is TAIL, src: 3 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		117, node 1: Flit SA going EAST  to WEST  - is HEAD, is TAIL, src: 3 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		123, node 0: Flit SA going EAST  to LOCAL - is HEAD, is TAIL, src: 3 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+	Network Dequeue  (cycle    125) - src: 3 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+	Network Enqueue  (cycle    125) - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		130, node 0: Flit SA going LOCAL to EAST  - is HEAD, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		131, node 0: Flit SA going LOCAL to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		132, node 0: Flit SA going LOCAL to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		133, node 0: Flit SA going LOCAL to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		134, node 0: Flit SA going LOCAL to EAST  - is TAIL, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		136, node 1: Flit SA going WEST  to EAST  - is HEAD, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		137, node 1: Flit SA going WEST  to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		138, node 1: Flit SA going WEST  to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		139, node 1: Flit SA going WEST  to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		140, node 1: Flit SA going WEST  to EAST  - is TAIL, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		142, node 2: Flit SA going WEST  to EAST  - is HEAD, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		143, node 2: Flit SA going WEST  to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		144, node 2: Flit SA going WEST  to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		145, node 2: Flit SA going WEST  to EAST  - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		146, node 2: Flit SA going WEST  to EAST  - is TAIL, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		148, node 3: Flit SA going WEST  to LOCAL - is HEAD, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		149, node 3: Flit SA going WEST  to LOCAL - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		150, node 3: Flit SA going WEST  to LOCAL - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		151, node 3: Flit SA going WEST  to LOCAL - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		152, node 3: Flit SA going WEST  to LOCAL - is TAIL, src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+	Network Dequeue  (cycle    154) - src: 0 dest: 3 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+	Network Enqueue  (cycle    300) - src: 12 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		305, node 12: Flit SA going LOCAL to NORTH - is HEAD, is TAIL, src: 12 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		311, node 8: Flit SA going SOUTH to NORTH - is HEAD, is TAIL, src: 12 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		317, node 4: Flit SA going SOUTH to NORTH - is HEAD, is TAIL, src: 12 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+		323, node 0: Flit SA going SOUTH to LOCAL - is HEAD, is TAIL, src: 12 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+	Network Dequeue  (cycle    325) - src: 12 dest: 0 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS
+	Network Enqueue  (cycle    325) - src: 0 dest: 3 fwd: 12 addr 0xc0d1f1ed msg: READ_MISS_FORWARD
+		330, node 0: Flit SA going LOCAL to EAST  - is HEAD, is TAIL, src: 0 dest: 3 fwd: 12 addr 0xc0d1f1ed msg: READ_MISS_FORWARD
+		336, node 1: Flit SA going WEST  to EAST  - is HEAD, is TAIL, src: 0 dest: 3 fwd: 12 addr 0xc0d1f1ed msg: READ_MISS_FORWARD
+		342, node 2: Flit SA going WEST  to EAST  - is HEAD, is TAIL, src: 0 dest: 3 fwd: 12 addr 0xc0d1f1ed msg: READ_MISS_FORWARD
+		348, node 3: Flit SA going WEST  to LOCAL - is HEAD, is TAIL, src: 0 dest: 3 fwd: 12 addr 0xc0d1f1ed msg: READ_MISS_FORWARD
+	Network Dequeue  (cycle    350) - src: 0 dest: 3 fwd: 12 addr 0xc0d1f1ed msg: READ_MISS_FORWARD
+	Network Enqueue  (cycle    350) - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		355, node 3: Flit SA going LOCAL to SOUTH - is HEAD, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		356, node 3: Flit SA going LOCAL to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		357, node 3: Flit SA going LOCAL to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		358, node 3: Flit SA going LOCAL to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		359, node 3: Flit SA going LOCAL to SOUTH - is TAIL, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		361, node 7: Flit SA going NORTH to SOUTH - is HEAD, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		362, node 7: Flit SA going NORTH to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		363, node 7: Flit SA going NORTH to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		364, node 7: Flit SA going NORTH to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		365, node 7: Flit SA going NORTH to SOUTH - is TAIL, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		367, node 11: Flit SA going NORTH to SOUTH - is HEAD, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		368, node 11: Flit SA going NORTH to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		369, node 11: Flit SA going NORTH to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		370, node 11: Flit SA going NORTH to SOUTH - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		371, node 11: Flit SA going NORTH to SOUTH - is TAIL, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		373, node 15: Flit SA going NORTH to WEST  - is HEAD, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		374, node 15: Flit SA going NORTH to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		375, node 15: Flit SA going NORTH to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		376, node 15: Flit SA going NORTH to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		377, node 15: Flit SA going NORTH to WEST  - is TAIL, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		379, node 14: Flit SA going EAST  to WEST  - is HEAD, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		380, node 14: Flit SA going EAST  to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		381, node 14: Flit SA going EAST  to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		382, node 14: Flit SA going EAST  to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		383, node 14: Flit SA going EAST  to WEST  - is TAIL, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		385, node 13: Flit SA going EAST  to WEST  - is HEAD, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		386, node 13: Flit SA going EAST  to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		387, node 13: Flit SA going EAST  to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		388, node 13: Flit SA going EAST  to WEST  - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		389, node 13: Flit SA going EAST  to WEST  - is TAIL, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		391, node 12: Flit SA going EAST  to LOCAL - is HEAD, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		392, node 12: Flit SA going EAST  to LOCAL - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		393, node 12: Flit SA going EAST  to LOCAL - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		394, node 12: Flit SA going EAST  to LOCAL - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+		395, node 12: Flit SA going EAST  to LOCAL - is TAIL, src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+	Network Dequeue  (cycle    397) - src: 3 dest: 12 fwd: 0 addr 0xc0d1f1ed msg: READ_MISS_REPLY_DATA
+FINAL DIRECTORY CONTENTS
+Block: 0xc0d1f1ed Head: 12 Sharers: 3
+Final Message Count: 5
+Average Message Latency: 30.20

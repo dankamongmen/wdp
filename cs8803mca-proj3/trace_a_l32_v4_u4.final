@@ -1,0 +1,72 @@
+CONFIGURATION
+ Processing Elements:  15
+ trace file:           ./trace_a.txt
+  size:              1024 bytes
+  assoc:             4-way
+  blocksize:         32 bytes
+NETWORK SPECS
+ Link (Flit) width:         32 bits
+ Number of virtual channels:         4
+ Buffer entries per virtual channel:         4
+FINAL DIRECTORY CONTENTS
+Block: 0xd4055d0 Head: 1 Sharers:
+Block: 0xc3501570 Head: 1 Sharers:
+Block: 0xce9693c0 Head: 1 Sharers:
+Block: 0xce977580 Head: 1 Sharers:
+Block: 0x1c2361e0 Head: 2 Sharers:
+Block: 0x5badf980 Head: 2 Sharers:
+Block: 0x5bae19e0 Head: 2 Sharers:
+Block: 0x8d879f0 Head: 3 Sharers:
+Block: 0x6eb76fb0 Head: 3 Sharers:
+Block: 0x6eb76ff0 Head: 3 Sharers:
+Block: 0xb75bb7f0 Head: 3 Sharers:
+Block: 0xce9591a0 Head: 3 Sharers:
+Block: 0xd4055da0 Head: 3 Sharers:
+Block: 0x5baddbe0 Head: 4 Sharers:
+Block: 0x6eb77010 Head: 4 Sharers:
+Block: 0x6eb77070 Head: 4 Sharers:
+Block: 0xb75bb7d0 Head: 4 Sharers: 13 3 6
+Block: 0x5bae0340 Head: 5 Sharers: 9
+Block: 0x6eb76fd0 Head: 5 Sharers:
+Block: 0x89bf1a70 Head: 5 Sharers:
+Block: 0xce958440 Head: 5 Sharers:
+Block: 0x5badf1c0 Head: 6 Sharers:
+Block: 0x5bae0a20 Head: 6 Sharers:
+Block: 0x89bf50b0 Head: 6 Sharers:
+Block: 0x3846c3c0 Head: 7 Sharers:
+Block: 0x6eb77050 Head: 8 Sharers:
+Block: 0x89bff8d0 Head: 8 Sharers:
+Block: 0x5badfd60 Head: 9 Sharers:
+Block: 0x708d8790 Head: 9 Sharers:
+Block: 0x86a02ae0 Head: 9 Sharers:
+Block: 0xc2361e70 Head: 9 Sharers: 11 7 10 4 13 8 15 14 1 6 5
+Block: 0xdd6edf90 Head: 9 Sharers:
+Block: 0xdd6edfb0 Head: 9 Sharers: 2
+Block: 0xdd6edff0 Head: 9 Sharers:
+Block: 0xdd6edf70 Head: 10 Sharers:
+Block: 0x6eb77030 Head: 11 Sharers:
+Block: 0xb75bb810 Head: 11 Sharers:
+Block: 0xb75bb830 Head: 11 Sharers:
+Block: 0x5bae1320 Head: 12 Sharers:
+Block: 0x61a80ab0 Head: 12 Sharers: 3 6 14 8 11 10 5 15 13
+Block: 0xce959920 Head: 12 Sharers:
+Block: 0xce95a0e0 Head: 12 Sharers:
+Block: 0xce969820 Head: 12 Sharers:
+Block: 0xce977200 Head: 12 Sharers:
+Block: 0x1a80abb0 Head: 13 Sharers: 10 11 2 12 6
+Block: 0x5badea20 Head: 13 Sharers:
+Block: 0x89bff450 Head: 13 Sharers:
+Block: 0x89bff4d0 Head: 13 Sharers: 2
+Block: 0xce957fc0 Head: 13 Sharers: 11 2 14 3 6 8 12 15 1 10 5 4 7
+Block: 0xdd6edfd0 Head: 13 Sharers: 3 5 1 12 9 6 4 14 8
+Block: 0x846c3cf0 Head: 14 Sharers:
+Block: 0xe11b0f30 Head: 14 Sharers:
+Block: 0x35015760 Head: 15 Sharers:
+Block: 0x5bae0d80 Head: 15 Sharers:
+Block: 0x6a02aed0 Head: 15 Sharers:
+Block: 0x89bff4b0 Head: 15 Sharers:
+Block: 0xb75bb850 Head: 15 Sharers:
+Block: 0xce958a80 Head: 15 Sharers:
+Block: 0xce977b40 Head: 15 Sharers:
+Final Message Count: 372
+Average Message Latency: 36.65
