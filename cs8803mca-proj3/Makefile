@@ -1,9 +1,11 @@
 #.DELETE_ON_ERROR:
-.PHONY: default clean FORCE
+.PHONY: all default clean FORCE
 
 SOURCES=router.cpp project2.cc interface.cpp
 
-default: .tags easytest testtraceab testtraceb testtracea report.pdf
+default: all
+
+all: .tags easytest testtraceab testtraceb testtracea report.pdf
 
 easytest: super_easy.txt sim FORCE
 	./sim -f ./$< -P 15 -C 10 -B 5 -S 2 -l 64 -v 2 -u 6 > $@
