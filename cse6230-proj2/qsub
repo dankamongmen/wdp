@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+set -o nounset
+set -o pipefail
+
+usage () { echo "usage: `basename $0` [--cluster]" ; }
+usageerr () { usage >&2 ; return 1 ; }
+
+P=/nethome/nblack6/hw2
+
+if [ $# -eq 1 ] ; then
+	[ "$1" = "--cluster" ] || usageerr
+	qsub -q class $0
+else
+	uname -a
+	cat /proc/cpuinfo
+	cat -n /sys/devices/system/cpu/*/cache/*/*
+	cd "$P"
+	make clean
+	make
+fi

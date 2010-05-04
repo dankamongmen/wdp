@@ -1,0 +1,4 @@
+Run in a 16x16 core, and only then handle sidescrot
+Can we use matmult16 even on fringes? What if we padded them out further to
+	assure zeros?
+We need to copy-and-pack for TLB purposes!!

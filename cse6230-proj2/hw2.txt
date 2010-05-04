@@ -1,0 +1,398 @@
+CSE 6230, Fall 2009, Vuduc
+Homework 2, Part II Writeup
+Daniel C. Browne and Nick Black
+
+II Part A -- Details of the machine.
+------------------------------------
+
+             "Remember, nothing that's good works by itself, just to please you.
+                                        You've got to make the damn thing work."
+                                                            - Thomas Alva Edison
+
+We targeted the Intel i7 "Nehalem-EP"-based machines of the Hogwarts cluster.
+We discovered it to be populated by at least two types of machines; both head
+and compute nodes appear to be Dell PowerEdge R710 packagings, using the Intel
+Xeon 5500 line ("Gainestown", CPUID.DisplayFamily == 0x06_1A):
+
+ http://www.dell.com/us/en/enterprise/servers/server-poweredge-r710/pd.aspx?refid=server-poweredge-r710&cs=555&s=biz
+
+Head nodes employ 2 HyperThreaded quad-core Intel Xeon E5520's, running at a
+peak of 2.27GHz and actively employing both P- and C-state ACPI power
+management. They run RedHat Enterprise Linux 5's 2.6.18-164.el5 kernel in em64t
+("long mode"). Compute nodes employ Intel Xeon X5570's, running at a static
+2.93GHz. All machines appear to be configured with 12GB of 1066-GHz DRAM spread
+across 3 DDR3 banks; these connect via an Intel X58 IO Hub to the 5.86GT/s
+Intel Quick Path Interconnect. HyperThreading is enabled, and thus 16 logical
+processors are available (and certain capacities are diminished for singly-
+threaded code such as ours). Both processor types provide 8MB of unified,
+inclusive L3 cache shared across all cores. Each core enjoys its own unified,
+exclusive 256KB L2 cache, and 32KB of both instruction and data L1 cache. The
+L1 and L2 caches are both 8-way set associative, while the L3 is 16-way. All
+are writeback caches with 64-byte lines. Minimum latencies range from 4, to 10,
+to 35 cycles. The two-level TLB provides 64 L0 entries for 4KB data pages
+(Hogwarts does not provide user access to Linux's HugeTLBfs capabilities),
+while 512 pages can be tracked in the (unified) L1 TLB. Thus, your Northbridge.
+
+   "...bloody instructions which, being taught, return to plague their inventor"
+                                          - Shakespeare, Macbeth, Act 1, Scene 7
+
+At the ISA level, the full complement of 16 128-bit XMM registers introduced
+with SSE2 are available, as are the Streaming SIMD Extensions through version
+4.2. This includes SSE4.1's DPPx packed dot-product instructions, of which DPPD
+seemed admirably suited to the task at hand (perhaps, perhaps *too* admirably;
+read on), as well as SSE3's HADDPx for horizontal additions with write masking.
+Intel has documented latencies and throughputs of these instructions for the
+Nehalem microarchitecture in their most recent "Optimization Reference Manual":
+
+                        latency       throughput         min/max (no prefixes)
+        ADDPD                 3                1         4/8
+        DPPD                  9                2         6/9
+        DPPS                 11                2         6/9
+        HADDPD                5                2         4/8
+        MOVAPD                1             0.33         4/8
+        MOVUPD                1             0.33         4/8
+        MOVSD                 1             0.33         4/8
+        MULPD                 5                1         4/8
+        ORPD                  1             0.33         4/8
+
+Note that instructions referencing the upper half of the XMM register file
+(XMM8..15) must use the REX.r opcode prefix, adding a byte to the instruction
+and (more importantly) restricting it to the (single) complex instruction
+decoder. MOVUPD allows unaligned 128-bit loads, at the heavy cost of further
+uops to adjust addresses and combine read data (and possibly split cache lines).
+Prefetching to L1 only, L2 only, or both is available. In addition, processors
+with SSE4.2 support (such as Nehalem) can perform 128-bit shuffling/unpacking
+in single instructions via the "SuperShuffler".
+
+         "A game where men throw ducks at balloons, and nothing is as it seems."
+                                                                 - Homer Simpson
+
+Unfortunately, Intel has not documented the write ports and execution units
+each instruction can use on Nehelam, nor released details of the execution core
+save some general schematics. Likewise, Agner Fog's Instruction Timing Tables
+have yet to be updated with Nehelem data. We assumed the 2 "SSE Logic" units
+shown in these schemata could handle any SSE logic or arithmetic instruction;
+experience with our SSE kernel, however, suggests an "SSE_Add/SSE_Mul" split,
+of which the dot product instructions can only run on SSE_Mul.
+
+Peak double precision floating point ops per second is thus 8.92: a 2.23GHz
+clock drives two floating point arithmetic units capable of SIMD operation on
+2 64-bit IEEE 754 values. Due to the divergent capabilities of the two units,
+this is more accurately 2.23GFlops of 2-unit additions and 2.23GFlops of 2-unit
+multiplications. Naive matrix multiply pairs additions off with
+multiplications, so a combined peak of 8.92GFlops indeed ought be attainable.
+
+The precise details of branch prediction and instruction fetch are similarly
+unavailable, or at least unverifiable. While DGEMM ought need very few branches
+in its core, instruction fetch will be quite important (especially given an
+SSE-dense instruction flow).
+
+   "We always strain at the limits of our ability to comprehend the artifacts we
+                  construct — and that's true for software and for skyscrapers."
+                                                                 - James Gosling
+
+We extracted a long series of animadversions from the Optimization Reference
+Manual, Systems Programming References, and Instruction Set References; some of
+these nuggets are listed below:
+
+Page considerations
+===================
+1. Hardware prefetching follows only within a page.
+2. Only one hardware prefetcher can track on a given page at once.
+3. Prefetching does not initiate page table walks. Explicitly prime the TLBs.
+
+Hardware Prefetching Considerations
+===================================
+1. L1 data prefetching does not run in the presence of continuous stores.
+2. L1 lines will be evicted by prefetching. This affects tuning for L1 size.
+3. Both data- and instruction pointer-based L1 prefetching.
+4. L1 prefetching is ascending-only; L2 prefetching works both ways, but
+    dedicates 3x resources to detecting ascending accesses.
+5. Eight stride analyzers exist.
+
+ISA Considerations
+==================
+1. Software prefetching is available, but use is discouraged given extensive
+    use of (and transistor dedication to) hardware prefetching.
+2. Micro-fused Reg-Mem instructions encode to less bytes than load + Reg-Reg.
+3. Macro-fusable CMP/TEST+conditional branch sequences are flattened to 1 op.
+    This requires unsigned comparisons.
+4. Avoid Length Code Prefixes (6 cycle stall in ILD!) for immediate arguments
+    to instructions or addressing displacements. em64t uses 32-bit immediates.
+
+µarch Considerations
+====================
+1. Store-forwarding aliasing issue on 4k strides.
+2. Double-pumped FP SSE + integer SSE/x87 + load + store units (see p. 2-26).
+3. Fetch up to 16 bytes of aligned instructions from cache per cycle.
+4. Up to 4 instructions, no more than 1 complex (this does not necessarily
+    mean 1 µop), decoded per cycle. 64-bit macro-fusion (p. 2-24).
+5. Instructions with more than 4 µops are fed from MSROM, and will take more
+    than one cycle in the Instruction Decoder Queue.
+6. Forwarding results between integer, integer SIMD, and FP units adds latency
+    compared to forwards within the domain.
+7. One register may be written per cycle.
+8. 48 load buffers, 32 store buffers, 10 fill buffers.
+9. 36 reservation stations, 96 ROB entries.
+10. Calltrace cache of 16 entries.
+11. 2-way loop end BTB for every 16 bytes, 4-way general BTB.
+12. Loop Stream Detector replays from IDQ if the loop consists of:
+     - 4 16-byte icache fetches or less
+     - 28 total µops or less
+     - 4 taken branches or less, none of them a RET
+     - preferably more than 64 iterations(? 3-23)
+13. Be sure to use register parameter-passing conventions, not the stack, to
+     avoid stalls on store-forward of high-latency floating point stores.
+14. Peak issue rate of 1 128-bit load and 1 128-bit store per cycle.
+
+II Part B -- Implementation Writeup
+-----------------------------------
+
+ "Optimism is an occupational hazard of programming. Feedback is the treatment."
+                                    - Kent Beck, "Extreme Programming Explained"
+
+We narrowly missed the 2/3 objective. So it goes; this project took on many
+forms in its gestation, finally emerging as a study into how far we can go
+without accounting for TLB via copy-and-pack.
+
+All of the following were compiled with the same options, using GCC 4.3.2
+20081007, from the Red Hat 4.3.2-7 package:
+
+                    |basic3loop |karma1  |karma2  |doyen   |peak |
+--------------------+-----------+--------+--------+--------+-----+
+Size: 1     mflop/s:|    281.89 |27.9997 |1.37261 |1.36205 |4540 |
+Size: 2     mflop/s:|   728.737 |208.078 |10.9154 |10.8499 |9080 |
+Size: 8     mflop/s:|    1478.5 |1850.82 |673.807 |669.489 |9080 |
+Size: 15    mflop/s:|   1878.91 |2139.33 |4130.04 |4107.21 |9080 |
+Size: 16    mflop/s:|   1835.18 |3507.85 |4983.72 |5623.56 |9080 |
+Size: 17    mflop/s:|   2355.05 |2486.57 |846.822 |843.356 |9080 |
+Size: 18    mflop/s:|    2304.3 |2701.54 |1002.36 |997.105 |9080 |
+Size: 31    mflop/s:|   2007.62 |2694.51 |4970.49 |4941.23 |9080 |
+Size: 32    mflop/s:|   1672.21 |3571.68 |5433.84 |5722.55 |9080 |
+Size: 64    mflop/s:|   1954.77 |3501.25 |5409.1  |5466.44 |9080 |
+Size: 69    mflop/s:|   1745.68 |3183.16 |3529.74 |3520.5  |9080 |
+Size: 80    mflop/s:|    1656.5 |3488.89 |5420.32 |5510.3  |9080 |
+Size: 96    mflop/s:|   1903.14 |3460.22 |5409.97 |5501.28 |9080 |
+Size: 97    mflop/s:|    1648.2 |3196.46 |3543.08 |3507.09 |9080 |
+Size: 112   mflop/s:|   1714.41 |3438.55 |5321.03 |5472.13 |9080 |
+Size: 127   mflop/s:|   962.258 |3163.64 |5192.29 |5186.22 |9080 |
+Size: 128   mflop/s:|   1797.96 |3460.44 |5351.72 |5426.81 |9080 |
+Size: 129   mflop/s:|   1767.64 |3330.32 |3889.55 |3881.64 |9080 |
+Size: 130   mflop/s:|   1667.11 |3361.7  |3976.99 |3967.94 |9080 |
+Size: 144   mflop/s:|   1660.87 |3496.83 |5390.43 |5453.9  |9080 |
+Size: 191   mflop/s:|   924.494 |3339.22 |5330.52 |5342.6  |9080 |
+Size: 192   mflop/s:|   1610.52 |3518.87 |5434.07 |5510.11 |9080 |
+Size: 229   mflop/s:|   1587.68 |3357.12 |4716.02 |4716.88 |9080 |
+Size: 255   mflop/s:|    761.48 |2937.86 |4135.69 |4136.14 |9080 |
+Size: 256   mflop/s:|   1598.87 |3406.62 |5401.83 |4906.48 |9080 |
+Size: 257   mflop/s:|   1600.41 |3352.7  |4577.47 |4571.07 |9080 |
+Size: 258   mflop/s:|   1589.66 |3386.75 |4628.74 |4634.14 |9080 |
+Size: 260   mflop/s:|   1533.92 |3400.86 |4736.14 |4746.56 |9080 |
+Size: 319   mflop/s:|   839.049 |3388.7  |5353.92 |5343.99 |9080 |
+Size: 320   mflop/s:|   1459.84 |3507.51 |5415.51 |5436.83 |9080 |
+Size: 420   mflop/s:|   1086.47 |3428.23 |4942.78 |4941.66 |9080 |
+Size: 479   mflop/s:|   831.439 |3370.21 |5306.34 |5293.71 |9080 |
+Size: 480   mflop/s:|   1276.29 |3488.34 |5329.11 |5403.65 |9080 |
+Size: 511   mflop/s:|   714.033 |2506.24 |3007.68 |2998.29 |9080 |
+Size: 512   mflop/s:|   502.903 |2556.87 |5292.39 |3036.96 |9080 |
+Size: 528   mflop/s:|   237.661 |3454.39 |5297.84 |5354.9  |9080 |
+Size: 639   mflop/s:|   221.752 |3278.1  |5110.11 |5075.69 |9080 |
+Size: 640   mflop/s:|   194.502 |3393.08 |5200.17 |5233.34 |9080 |
+Size: 767   mflop/s:|   198.033 |2945.32 |4102.65 |4093.37 |9080 |
+Size: 768   mflop/s:|   193.529 |3327.47 |5165.8  |4777.36 |9080 |
+Size: 777   mflop/s:|   198.497 |3273.56 |5031.92 |4989.4  |9080 |
+Size: 1024  mflop/s:|   165.915 |2480.19 |5055.53 |2985.76 |9080 |
+Size: 1911  mflop/s:|   169.634 |3253.02 |5039.73 |5006.09 |9080 |
+Size: 2000  mflop/s:|   165.789 |3207.81 |3894.98 |4844.42 |9080 |
+Size: 2048  mflop/s:|   164.549 |2319.48 |4532.71 |2830.18 |9080 |
+--------------------+-----------+--------+--------+--------+-----+
+
+ "Intrinsic functions and vector classes are highly recommended because they are
+                    much easier and safer to use than assembly language syntax."
+                      - Agner Fog, "Optimizing Subroutines in Assembly Language"
+
+Our plans were to work inside-out:
+
+ a) Select and prepare for use profiling and optimization tools. Daniel looked
+    into Intel VTune and Oprofile, preparing a set of useful events and rates
+    for the latter in consultation with Optimization Reference Guide's Appendix
+    B. Nick familiarized himself with Ingo Molnar's "perf" tool, found in the
+    tools/perf subdirectory of Linux kernel trees since 2.6.30. We then
+    realized that, without weakening cluster security, read access could not be
+    provided to the Performance Counter MSRs (Model Specific Registers) on
+    Hogwarts. perf and oprofile were used with the naive implementation (see
+    the annotations/ directory in this tarball), but they fell out of employ as
+    development moved to Hogwarts and SSE4.1.
+
+ b) Find a winning set of compiler options for our expected code set. This
+    consumed a full two days of writing test case and submitting them to
+    selections of plausible GCC optimization and submodel-specific flags.
+    Daniel collected extensive timing results, while Nick inspected the
+    assembly output generated via GCC's -s option. Results confirmed what we'd
+    suspected: without -O2 or higher, or -Os, performance is execrable indeed.
+    With -Os, performance was highest for the C versions. Adding -march=native
+    allowed full Nehalem instruction selection, adding ~15% to results once -Os
+    was converted back to -O2 or -O3 (the lack of alignment efforts in -Os
+    sinks SSE performance; we didn't explore -Os with -falign-{jumps, labels,
+    etc}). GCC's auto-vectorization capabilities aren't mature in the 4.3
+    version on Hogwarts, and thus it generated only scalar SSE. At least half
+    of peak performance (due to 64-bit SIMD's 2x operation) was thus definitely
+    on the floor unless we used assembly, or intrinsics.
+
+    We ended up going with -O2 and a smattering of -f options, primarily those
+    related to floating-point (we enter DAZ mode via -ffast-math, shielding us
+    from the performance impacts of any denormalized numerics). Along the way,
+    we found many options which wrecked performance, and some which crashed GCC
+    (bugs were filed, but closed due to the venerable nature of Hogwarts's GCC).
+
+                          "If you lie to the compiler, it will get its revenge."
+                                                                 - Henry Spencer
+
+ c) At this point, frustrated with GCC's set of intrinsics and their decided
+    inferiority to the Intel C++ Compiler's, a fateful decision was made: we
+    implemented an unrolled, modulo-scheduled, fully-aligned primitive kernel
+    entirely in GNU assembly (surely the 1958 Ford Edsel of x86 assemblers).
+
+    In an attempt to win back SIMD's 2x multiplier, we thus made every bit of
+    debugging, reasoning and experimenting many times more difficult (peak
+    difficulty?). x86 assembly language isn't so tough to write, or even
+    update; if nothing else, it's well-specified. Unfortunately, GCC will not
+    optimize across and through anything but its inline and extended assembly
+    extensions to C/C++. Furthermore, optimization cannot be effective unless
+    all register usages are made through a baroque register-renaming mechanism.
+    This mechanism has no general way to indicate store patterns, and thus
+    enforce safe use of memory-backed values (only a "memory" clobber can be
+    used, requiring reload of *all* memory-backed registers from memory on
+    sequence exit). An attempt to enumerate the 16 memory addresses we'd store
+    resulted in gas printing "No more than 30 arguments allowed", and the
+    second GCC crash of the project. We're still not precisely sure how the
+    register constraints interact, despite a rude hour spent in GCC sources.
+    We don't think anyone else understands them completely, either.
+
+    The amount of time we wasted screwing around with this was formidable;
+    together with loop unrolling (which GCC turned out to do just as well via
+    -funroll-loops, and was handwritten into the SIMD kernel), it ate the
+    majority of our coding time. We ought have abandoned efforts here, or
+    junked the unwieldy beast entirely, several days ago.
+
+"Good judgement comes from experience, and experience comes from bad judgement."
+                                                                Fred Brooks, Jr.
+
+ d) We blocked for the SIMD registers; L0_BLOCK is defined to 16, and all our
+    kernels perform 1x16x16xN operations. This, plus the handwritten assembly,
+    is responsible for the vast majority of our speedup.
+
+ e) We blocked for L2 cache at 112x112. This allowed a common case of an L0
+    block multiple, simplifying loops (less fringe handling) and taking
+    fullest advantage of our most powerful SIMD primitive, transmul1x16x16x4().
+    This accomplished very little with the current code, as TLB issues and, to
+    a lesser degree, instruction fetch / execution unit utilization seem our
+    current limiters.
+
+ f) We took a no-holds barred, damn-sizes-modulo-16 approach to loop unrolling;
+    padding allowed us to treat all matrices as sized some multiple of 16, fit
+    for feeding directly into our SIMD kernel. This boosted performance most
+    for sizes naturally 0 modulo 16, and reduced performance most for those
+    naturally 1 modulo 16. Somewhere between them, loop elimination wins back
+    the extra ops. This could be rolled back for better performance across a
+    wider range of matrices, retained for peak performance on a small, periodic
+    set of sizes, or met in the middle (especially with transmul1x8x8x2())
+    (this technique is advocated by the relevant Intel Application Note).
+
+ g) We eliminated use of the dot-product SSE4.1 instruction. It suffered from
+    a multitude of problems: ability to use only one execution unit, extreme
+    latency, irregular size (ie, not congruent to 0 modulo 4, and thus difficult
+    to effectively schedule given properties of instruction fetch and decode)
+    and massive encoding, and poor understanding from GCC. Effective use would
+    have saved us the per-column HADDPD in transmul1x16x16x4(), and one cycle
+    relative to a MULPD + ADDPD pair; this would require instruction fetch and
+    decoding issues to be addressed, and also some schedule determined which
+    could make full use of the add-only SSE execution unit while DPPx executed.
+    We conjecture that such a schedule does not exist on Nehalem for the DGEMM
+    problem as fed to transmul1x16x16x4(). Future Intel architectures such as
+    Sandy Bridge might be capable of more effective use of DPPx (Haswell's
+    planned deployment includes a FMA3 instruction set; all bets are then off).
+
+ h) We copied-and-packed in the hope of minimizing TLB misses. To simplify
+    implementation, we wanted to copy-and-pack along with L2 block iterations,
+    but 3 112x112 matrices couldn't fit in the 64 available 4k pages. See the
+    file copy-and-pack.patch. We backed this out due to instability in corner
+    cases (argh!).
+
+ -=+ WHAT WE WOULD DO NEXT +=-
+
+ i) We designed an ambitious, if in the end entirely left aside, scheme which
+    turned on the properties of Nehalem's advanced hardware prefetching. It'd
+    be investigating to research this further.
+
+ j) L1 is useless enough here relative to L0 and L2 that there seems little
+    use in blocking on it. Were we to do so, we'd try blocking at 32x32 (see
+    the calculations in doyen.c or garuda.c). L3, on the other hand, would be
+    well-worth blocking for, were we worried about sufficiently large matrices.
+    Were we to do so, we'd try blocking at 512x512.
+
+ k) Our entire inner kernel does way too many stores into [C]; We're not sure
+    how to work around this, and yet still give safe constraints to GCC. Argh!
+
+ l) Currently, we throw away each copied-and-packed block of the input matrices
+    after they're used, rebuilding them each iteration of L2 blocking -- ie,
+    (M/L2)^3 times. We could trade space for time by memoizing these packed
+    forms. While there'd still be a number of TLB misses bringing these pages
+    in, we'd save the repeated TLB misses necessary to rebuild them and the
+    operations necessary to copy them. It might be true that these operations
+    could be hidden in the first wave of lower-level blocking, but this would
+    likely impact complexity and instruction cache footprint more negatively
+    than the simple index necessary for B's memos. Assuming the underlying
+    memory management to be sane, we could memoize through the difference of
+    physical memory and the machine's active set (if copying-and-packing
+    outweighed loading a page from disk, we could memoize through all of
+    virtual memory. This is unlikely on 4KB pages, but possible for 4MB...).
+
+This was a fun project -- exhilarating when it wasn't frustrating, and
+certainly humbling. Team members were in regular communication, contributed
+comparable amounts of time and ideas, and achieved peak learning.
+
+References
+==========
+
+http://www.cs.berkeley.edu/~demmel/cs267_Spr05/Lectures/Lecture02/lecture_02_MemHierarchyMatMul_jd05.ppt
+http://vuduc.org/teaching/cse8803-pna-sp08/slides/cse8803-pna-sp08-16.pdf
+http://www.cs.utexas.edu/users/pingali/CS378/2008sp/lectures/goto.pdf
+
+[2000] Abderdeen, Baxter - Emmerald: A Fast Matrix-Matrix Multiply Using Intel's SSE Instructions.pdf
+[2004] Nishtala, Vuduc, Demmel, Yelick - When Cache Blocking of Sparse Matrix Vector Multiply Works, and Why
+[2004] Kakaradov - Ultra-Fast Matrix Multiplication: An Empirical Analysis of Highly Optimized Vector Algorithms.pdf
+[2005] D'Alberto, Nicolau - Adaptive Strassen and ATLAS's DGEMM: A Fast Square Matrix Multiply for Modern High-Performance Systems.pdf
+[2005] D'Alberto, Nicolau - Using Recursion to Boost ATLAS's Performance.pdf
+[2006] Adams, Wise - Seven at One Stroke: Results from a Cache-Oblivious Paradigm for Scalable Matrix Algorithms.pdf
+[2007] D'Alberto, Nicolau - Adaptive Strassen's Matrix Multiplication.pdf
+[2007] Gottschling, Wise, Adams - Representation-Transparent Matrix Algorithms with Scalable Performance.pdf
+[2008] D'Alberto, Nicolau - Adaptive Winograd Matrix Multiplication.pdf
+[2008] Goto, van de Geijn - Anatomy of High Performance Matrix Multiplication.pdf
+[2008] Goto, van de Geijn - High-Performance Implementation of the Level-3 BLAS.pdf
+
+"Instruction Tables for Intel and AMD CPU's". Agner Fog. 2009-05-05.
+
+"Improvements to the Intel Core 2 Processor Family: Introduction to SSE4.1".
+ Intel Technology Journal. Volume 12, Issue 3, 2008-11-07.
+
+Intel Application Note AP-929/930, "Streaming SIMD Extensions - Matrix
+ Multiplication". June 1999.
+
+"Intel 64 and IA-32 Architectures Optimization Reference Manual". Intel Order
+ Number 248966-018, March 2009.
+
+"Intel 64 and IA-32 Architectures Software Developer's Manual, Vol 2A". Intel
+ Order Number 253666-031US, June 2009 (Instruction Set Reference, A-M).
+
+"Intel 64 and IA-32 Architectures Software Developer's Manual, Vol 2B". Intel
+ Order Number 253667-031US, June 2009 (Instruction Set Reference, N-Z).
+
+"Intel SSE4 Programming Reference". Intel Order Number D91561-003, July 2007.
+
+"Nehalem Optimization with the Intel Software Tools". Dr. Mario Deilmann, Intel
+ Compiler Lab. Jülich Supercomputing Center workshop: Introduction to the 
+ Programming and Usage of the Supercomputing Resources in Jülich. 2009.
+
+"Using Inline Assembly with GCC". Clark Coleman ("plagiarist/researcher").
+ Includes the GCC Inline Assembly HOWTO of Sandeep S.

@@ -1,0 +1,113 @@
+DRAM bank considerations
+========================
+1. When streaming from memory, alternate banks to hide CAS recharge latency.
+
+Page considerations
+===================
+1. Hardware prefetching follows only within a page.
+2. Only one hardware prefetcher may work on a given page.
+3. Prefetching does not initiate page table walks (TLB priming).
+4. Number of pages being used at one time is constrained by TLB size.
+5. Pages other than our data exist and will be used.
+6. Try to use no more than maximum(hardware prefetchers, DRAM banks) data
+    pages concurrently.
+7. 64 entries for 4k pages in both DTLB0 and ITLB.
+8. 512 entries for 4k pages in unified TLB, with 7 cycle latency.
+
+Hardware Prefetching Considerations
+===================================
+1. L1 data prefetching does not run in the presence of continuous stores.
+2. L1 lines will be evicted by prefetching. This affects tuning for L1 size.
+3. Both data- and instruction pointer-based L1 prefetching.
+4. L1 prefetching is ascending-only; L2 prefetching works both ways, but
+    dedicates 3x resources to detecting ascending accesses.
+5. Eight stride analyzers exist.
+
+Data Cache Considerations
+=========================
+1. L1: 32K, 8-way, 64-byte lines, writeback, 4 cycle latency, 1 cycle throughput
+2. L2: 256K, 8-way, 64-byte lines, writeback, ~10 cycle latency, non-inclusive
+3. L3: 8M, 16-way, 64-byte lines, writeback, 35+ cycle latency, inclusive, shared
+4. Avoid more than 8/16 simultaneous references to large power-of-2 strides
+    (when working with page blocks, stagger streams by 128 bytes).
+
+ISA Considerations
+==================
+1. 16 XMM registers. XMM8..XMM15 require a 1-byte prefix to access.
+2. SSE through 4.2 is available.
+3. SuperShuffler is available.
+4. Software prefetching is available, but use is discouraged given extensive
+    use of (and transistor dedication to) hardware prefetching.
+5. Micro-fused Reg-Mem instructions encode to less bytes than load + Reg-Reg
+    counterparts (but we have high locality...)
+6. Macro-fusable CMP/TEST+conditional branch sequences are flattened to 1 op.
+    This requires unsigned comparisons.
+7. Avoid Length Code Prefixes (6 cycle stall in ILD!)
+
+SIMD considerations
+===================
+1. Kernel accepts only 16-byte aligned, non-aliased addresses.
+2. Assuming pagesize < min(L1, L2) (not true for large pages!)...
+3. We want to work on page-sized units at a time, but we minimize hierarchy
+    transfers by working on blocks. Reorganize the initial data into blocks?
+4. Peak issue rate of 1 128-bit load and 1 128-bit store per cycle.
+
+µarch Considerations
+====================
+1. Store-forwarding aliasing issue on 4k strides.
+2. Double-pumped FP SSE + integer SSE/x87 + load + store units (see p. 2-26).
+3. Fetch up to 16 bytes of aligned instructions from cache per cycle.
+4. Up to 4 instructions, no more than 1 complex (this does not necessarily
+    mean 1 µop), decoded per cycle. 64-bit macro-fusion (p. 2-24).
+5. Instructions with more than 4 µops are fed from MSROM, and will take more
+    than one cycle in the Instruction Decoder Queue.
+6. Forwarding results between integer, integer SIMD, and FP units adds latency
+    compared to forwards within the domain.
+7. One register may be written per cycle.
+8. 48 load buffers, 32 store buffers, 10 fill buffers.
+9. 36 reservation stations, 96 ROB entries.
+10. Calltrace cache of 16 entries.
+11. 2-way loop end BTB for every 16 bytes, 4-way general BTB.
+12. Loop Stream Detector replays from IDQ if the loop consists of:
+     - 4 16-byte icache fetches or less
+     - 28 total µops or less
+     - 4 taken branches or less, none of them a RET
+     - preferably more than 64 iterations(? 3-23)
+13. Be sure to use register parameter-passing conventions, not the stack, to
+     avoid stalls on store-forward of high-latency floating point stores.
+
+Pipeline Frontend
+=================
+1. Instruction Fetch Unit fetches up to 16 aligned bytes from instruction
+   cache, feeding it into the...
+2. Instruction Length Decoder delivers up to 4 instructions per cycle to the...
+3. Instruction Decoder, which decodes up to
+    - 3 instructions of 1 µop each using 3 simple units, and
+    - 1 instruction of any number of µops using a complex unit.
+4. Instruction Decoder Queue fetches and detects loops in up to
+    - 1 µop each from the 3 simple units, and
+    - 4 µops from the complex unit or MSROM,
+   then issues up to 4 µops into the...
+5. Reservation Station Allocator's 36 reservation stations, from which up to
+    6 ready-to-execute µops are issued to the 12 execution clusters through
+    5 ports, 1 op per port per cycle. Each execution cluster may be reached
+    through only one port (p. 2-26).
+
+Algorithmic considerations
+==========================
+1. Emmerald paper says Strassen's is no until we get to larger sizes, as does
+    Kakaradov. I'm not sure that's accurate; it needs more investigation, with
+    cross-analysis against the SSE latency/decoding tables.
+2. Any kind of recursion needs be explicitly implemented as a stack plus
+    iteration. x86 doesn't deal well with deep recursions.
+3. D'Alberto and Nicolau recommend Winograd + Strassen's.
+
+GCC considerations
+==================
+1. -Os was best at first, but was worse with other gcc options (probably when
+   SSE was turned on via -march=native)
+2. Use -mfast-math to enable SSE's DAZ mode.
+3. Use -march=native (implies -mtune=native) to generate target-specific code.
+4. Use the sseregparam function attribute, especially in inlining's absence.
+5. Profile-guided optimization would be worth checking out. No time!
+6. Use full interprocedural analysis.

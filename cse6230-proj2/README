@@ -1,0 +1,19 @@
+New files:
+* hw2.txt -- writeup for HW2, Problem II
+* doyen.h -- public declaration of square_dgemm() and dgemm_name.
+* doyen.c -- doyen dgemm implementation. pretty sucky today. better tomorrow!
+* garuda.c -- aborted attempt at iterative, n-level blocking (overengineering)
+* asm/karma.h -- static inline assembly routines for matrix multiply kernels
+* asm/karma.c -- unit testing and benchmarking driver for the same
+* annotations/* -- perf-annotated source files from early on (Core 2)
+* stats/* -- perf- and oprofile-generated statistics from early on (Core 2)
+* mmult-nahelem-notes -- research into the past
+* TODO -- research into the future
+* qsub -- trivial utility script for hogwarts cluster
+* copy-and-pack.patch -- backed-out patch for copy-and-pack
+
+Modified files:
+* Makefile: driver makefile, to be used with GNU make
+* Makefile.inc: build definitions. we went hogwild on gcc.
+* matmul.c: the driver program, only negligibly changed (includes doyen.h)
+* README: this file
