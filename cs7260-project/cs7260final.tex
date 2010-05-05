@@ -118,7 +118,10 @@ of logarithms:
 \section{Comparison to Classic LRU}
 The essential time and space complexities of classic LRU and LRUMAP are
 captured in Table ~\ref{tab:lru}, allowing for $p$ updates performed in
-parallel:
+parallel. $p$ can be made as large as $r$ for those low values of $r$ with
+which LRUMAP is applicable, but likely only at substantial unit cost. This is
+all the more true if multiple LRU sets are themselves to be searched and
+updated in parallel.
 \begin{center}
 \begin{tablehere}
 	\begin{tabular}{|l|l|l|}
