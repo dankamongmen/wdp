@@ -95,15 +95,22 @@ well-defined functions \begin{equation*}
 permutations of $r$ integers, and has $r!$ members. As it requires $\lceil\lg{r!}\rceil$
 bits to encode $p$, the total size of this table is $r!r\lceil\lg{r!}\rceil$ bits.
 
-Just as in classic LRU, metastate has a variable cost linearly dependent on $n$.
-Each set in classic LRU requires $\lg{r}$ bits to represent the relative age
-of each of its $r$ members. In LRUMAP, each set as a whole maps into the
-precomputed permutation table using $\lceil\lg{r!}\rceil$ bits. It is simple to prove that
-the latter is strictly less than the former by properties of logarithms:
+True LRU assigns to each member in each set an index $l$, $0\le{l}\le{r-1}$.
+Each set thus requires $\lg{r}$ bits to represent the relative ages of its $r$
+members. The central insight behind LRUMAP is that these members have been
+placed on a bijection against $0\dotsc{r-1}$; this is the classic definition of
+a \textit{permutation} mapping. Each set's metastate can thus be considered
+completely described by a permutation of $r$, and $\lg{r!}$ bits are obviously
+sufficient to identify a set's LRU state. Just as in classic LRU, metastate has
+a variable cost linearly dependent on $n$, but each set as a whole maps into
+the precomputed permutation table using $\lceil\lg{r!}\rceil$ bits. It is
+simple to prove that the latter is strictly less than the former by properties
+of logarithms:
 \begin{align*}
 \lg{ab} &= \lg{a} + \lg{b} \\
 \lg{r!} &= \lg{(1*2*\dotsb*r-1*r)} \\
-\lg{r!} &= \sum_{i=1}^{r}{\lg{i}} \le \sum_{i=1}^{r}{\lg{r}}
+\lg{r!} &= \sum_{i=1}^{r}{\lg{i}} \\
+&= \sum_{i=1}^{r}{\lg{i}} \le \sum_{i=1}^{r}{\lg{r}}
 \end{align*}
 \section{LRUMAP Algorithms}
 \textbf{WRITE ME!}
