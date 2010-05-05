@@ -1,4 +1,6 @@
 \documentclass[letterpaper,10pt]{article}
+\usepackage{hyperref}
+\usepackage[scriptsize,bf]{caption}
 \usepackage{fullpage}
 \usepackage{textcomp}
 \usepackage{times}
@@ -6,8 +8,13 @@
 \usepackage{fancyvrb}
 \usepackage{moreverb}
 \usepackage{graphicx}
-\usepackage{hyperref}
 \usepackage{multicol}
+
+\makeatletter
+\newenvironment{figurehere}
+{\def\@captype{figure}}
+{}
+\makeatother
 
 \newcommand{\squishlist}{\begin{list}{$\bullet$}
   {\setlength{\itemsep}{0pt}
@@ -55,6 +62,12 @@ which could be benefited by this novel data structure.
 
 \begin{multicols}{2}
 \section{Introduction}
+
+\begin{figurehere}
+	\centering
+	\includegraphics[width=\columnwidth]{out/lrumap8.pdf}
+	\caption{Eighth-order LRU}
+\end{figurehere}
 
 \cite{varghese}
 \bibliographystyle{acm}
