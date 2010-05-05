@@ -605,38 +605,43 @@ cudash_free(const char *c,const char *cmdline){
 	}
 	m = &curdev->map;
 	while(*m){
-		if((*m)->base >= base && base + size >= (*m)->base + (*m)->s
-				&& (*m)->allocno){ // don't free internalallocs
-			CUresult cerr;
-			cudamap *tmp;
+		CUresult cerr;
+		cudamap *tmp;
 
-			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
-				curdev->devno,(*m)->s,(*m)->s,(uintmax_t)(*m)->base) < 0){
-				return -1;
-			}
-			if((*m)->maps != MAP_FAILED){
-				if(printf(" maps %012p",(*m)->maps) < 0){
-					return -1;
-				}
-				fprintf(stderr,"Freeing mappings is not yet implemented\n");
-				return -1; // FIXME not yet supported...
-			}else{
-				cerr = cuMemFree((*m)->base);
-			}
-			if(printf("\n") < 0){
-				return -1;
-			}
-			if(cerr){
-				if(fprintf(stderr,"Error freeing device region (%d)\n",cerr)){
-					return -1;
-				}
-			}
-			tmp = *m;
-			*m = (*m)->next;
-			free(tmp);
-		}else{
+		if(!(*m)->allocno){ // don't free internalallocs
 			m = &(*m)->next;
+			continue;
 		}
+		// The rule here is that we don't free unless the to-free span
+		// completely covers the allocation...is that what we want?
+		if((*m)->base < base || base + size < (*m)->base + (*m)->s){
+			m = &(*m)->next;
+			continue;
+		}
+		if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+			curdev->devno,(*m)->s,(*m)->s,(uintmax_t)(*m)->base) < 0){
+			return -1;
+		}
+		if((*m)->maps != MAP_FAILED){
+			if(printf(" maps %012p",(*m)->maps) < 0){
+				return -1;
+			}
+			fprintf(stderr,"Freeing mappings is not yet implemented\n");
+			return -1; // FIXME not yet supported...
+		}else{
+			cerr = cuMemFree((*m)->base);
+		}
+		if(printf("\n") < 0){
+			return -1;
+		}
+		if(cerr){
+			if(fprintf(stderr,"Error freeing device region (%d)\n",cerr)){
+				return -1;
+			}
+		}
+		tmp = *m;
+		*m = (*m)->next;
+		free(tmp);
 	}
 	return 0;
 }
