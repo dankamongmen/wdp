@@ -1,5 +1,6 @@
 \documentclass[letterpaper,10pt]{article}
 \usepackage{hyperref}
+\usepackage{amsmath,amsthm,amssymb}
 \usepackage[scriptsize,bf]{caption}
 \usepackage{fullpage}
 \usepackage{textcomp}
@@ -53,7 +54,7 @@ Especially among environments heterogeneous in ownership or architecture (data c
 development firms, etc), the likelihood of a given service (identified by host
 and transport addresses, and network protocol) existing can vary widely from
 host to host. Tracking these services dynamically is a natural fit for LRU, but
-traditional $O(N)$ or even $O(lgN)$ LRU implementations are too slow for
+traditional $O(n)$ or even $O(\lg{(n)})$ LRU implementations are too slow for
 backbone routers and IPS devices. We introduce LRUSET, a $O(1)$ true LRU scheme
 which becomes more space-efficient as the number of monitored hosts increases.
 We then illustrate several other counting problems from networking algorithmics
@@ -62,8 +63,33 @@ which could be benefited by this novel data structure.
 
 \begin{multicols}{2}
 \section{Introduction}
+\cite{varghese}
+\cite{xu}
 
-\section{LRUMAP Data Structure}
+\section{Conventions}
+We will speak of $n$ independent \textit{sets}. It is assumed that all possible
+input values are somehow partitioned among these sets. For a set of TCP/UDP
+endpoint pairs, a set might be associated with each observed IP address pair
+(perhaps themselves backed by a one- or two-leveled LRU). For an associative
+cache, some subset of the address bits are used to index into a fixed number of
+sets. In an \textit{order-$r$ LRU}, each set contains $r$ members. When $r=1$,
+the system is said to be \textit{direct-mapped}: replacement always occurs, and
+the number of sets $n$ is equivalent to the system capacity. When $r$ equals
+the capacity of the system, there can likewise be at most one set; such a system
+is said to be \textit{fully associative}. Since $\lg{(r)}$ is a frequent term in
+LRU's complexity analysis, a system's order is almost always a power of 2\footnote{Though
+wasteful of space, other orders have been infrequently used to improve latency\cite{intelcpuid}.}.
+\section{LRUMAP Data Structures}
+Just as in classic LRU, metastate has a variable cost linearly dependent on $n$.
+Each set in classic LRU requires $\lg{(r)}$ bits to represent the relative age
+of each of its $r$ members. In LRUMAP, each set as a whole maps into the
+precomputed permutation table using $\lg{(r!)}$ bits. It is simple to prove that
+the latter is strictly less than the former by properties of logarithms:
+\begin{align*}
+\lg{(ab)} &= \lg{(a)} + \lg{(b)} \\
+\lg{(r!)} &= \lg{(1*2*\dotsb*r-1*r)} \\
+\lg{(r!)} &= \sum_{i=1}^{r}{\lg{(i)}} \le \sum_{i=1}^{r}{\lg{(r)}}
+\end{align*}
 \section{LRUMAP Algorithms}
 \section{Comparison to Classic LRU}
 \begin{figurehere}
@@ -71,6 +97,8 @@ which could be benefited by this novel data structure.
 	\includegraphics[width=\columnwidth]{out/lrumap8.pdf}
 	%\caption{Eighth-order LRU}
 \end{figurehere}
+LRUMAP is even more effective at fourth order, requiring less space than LRU
+for all but trivially small $n$:
 \begin{figurehere}
 	\centering
 	\includegraphics[width=\columnwidth]{out/lrumap4.pdf}
@@ -82,7 +110,7 @@ It may not be necessary to perform true, precise LRU. An entire family of
 schemes have been presented, approximating LRU in less time and/or space.
 Intel\cite{shanley} and Via processors of the Pentium era made use of
 \textit{pseudo-LRU}, a direction vector-based scheme which requires only
-$O(\lg{r})$ bits per set\cite{handy}. The PA-RISC 8600\cite{hurd} likewise used
+$O(\lg{(r)})$ bits per set\cite{handy}. The PA-RISC 8600\cite{hurd} likewise used
 a proprietary \textit{quasi-LRU} algorithm, with a similar reduction in bits
 per set. These schemes can be straightforwardly combined with LRUMAP to yield a
 new variant, wherein the LRUMAP entries represent and map among these
@@ -90,10 +118,10 @@ algorithms' direction vectors rather than an order's permutations. There seems
 no advantage in doing so, however; Pseudo-LRUMAP will consume strictly more space
 than Pseudo-LRU, and is unlikely to provide a speed advantage.
 
-A direction vector is $\lg{r}$ bits, and the set of direction vectors is thus
-composed of $2^{\lg{r}}$ ($r$) members. Just as before, we precompute a constant
-table, this time containing $r \lg{r}$-bit transitions for each of $r$
-entries. Each of $n$ sets will require a $\lg{r}$-bit encoding of its current
+A direction vector is $\lg{(r)}$ bits, and the set of direction vectors is thus
+composed of $2^{\lg{(r)}}$ ($r$) members. Just as before, we precompute a constant
+table, this time containing $r \lg{(r)}$-bit transitions for each of $r$
+entries. Each of $n$ sets will require a $\lg{(r)}$-bit encoding of its current
 pseudo-LRU state. A single operation still suffices to update the metastate.
 Again allowing for $p$ updates in parallel:
 \begin{center}
@@ -101,13 +129,13 @@ Again allowing for $p$ updates in parallel:
 \hline
  & Pseudo-LRU & Pseudo-LRUMAP \\
 \hline
-Time & $O(\frac{\lg{r}}{p}), 1\le{p}\le{\lg{r}}$ & O(1) \\
+Time & $O(\frac{\lg{(r)}}{p}), 1\le{p}\le{\lg{(r)}}$ & O(1) \\
 \hline
-Space & $O(n\lg{r})$ & $O(r^{2}\lg{r}) + O(n\lg{r})$ \\
+Space & $O(n\lg{(r)})$ & $O(r^{2}\lg{(r)}) + O(n\lg{(r)})$ \\
 \hline
 \end{tabular}
 \end{center}
-In this case, however, the updates being performed are $\lg{r}$ single bits.
+In this case, however, the updates being performed are $\lg{(r)}$ single bits.
 We've assumed $r$ to be less than or equal to 8; even an 8-bit embedded processor
 could thus perform the updates in parallel. Pseudo-LRUMAP cannot be expected to
 provide any improvement over Pseudo-LRU.
@@ -115,8 +143,6 @@ provide any improvement over Pseudo-LRU.
 It is trivial to adapt LRUMAP to the Most-Recently-Used methodology, employed
 by page caches when a ``looping sequential''\cite{dewitt} access pattern is
 detected.
-\cite{varghese}
-\cite{xu}
 \bibliographystyle{acm}
 \bibliography{cs7260final}
 \end{multicols}
