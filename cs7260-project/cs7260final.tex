@@ -136,7 +136,7 @@ small, well within the range required by LRUMAP.
 
 \texttt{update()} is the central interface to LRUMAP, and uniquely served. Rather
 than operating upon and updating a self-sufficient metastate description within
-the set, the single $\lceil\lg{r!}\rceil$-bit set value $idx_set$ is used to index into
+the set, the single $\lceil\lg{r!}\rceil$-bit set value is used to index into
 the shared PPT. This uniquely identifies a function $\sigma_{idx}(l)$, to which
 the result from \texttt{lookup()} is provided. Functions from $\Sigma$ are
 closed on $P$: this new result identifies a new permutation. Evaluation of
