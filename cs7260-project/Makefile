@@ -29,7 +29,6 @@ $(OUT)/%.svg: %.pl $(MAKEFILES)
 	gnuplot $<
 
 preview: test
-	$(VSVG) $(SVG)
 	$(VPDF) $(PDF)
 
 test: all

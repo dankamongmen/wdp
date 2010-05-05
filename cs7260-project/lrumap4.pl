@@ -1,13 +1,13 @@
-set xrange [1000:1000000]
+set xrange [0:10000000]
 set terminal svg
-set title "LRUMAP vs Classic True LRU, Order 8"
-set xtics 300000
+set title "LRUMAP vs Classic True LRU, Order 4"
+set xtics 3000000
 set xlabel "LRU sets"
 set ylabel "Bytes used"
 set key left box
 # can we not parameterize these two? ugh
-set out "out/lrumap8.svg"
-lruorder = 8
+set out "out/lrumap4.svg"
+lruorder = 4
 lg2(x) = log(x) / log(2)
 fac(n) = int(n)!
 lruspace(n,r) = n * r * lg2(r)
