@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include "cuda8803ss.h"
 
+#define NVPROCDIR "/proc/driver/nvidia"
 #define PROC_VERFILE "/proc/driver/nvidia/version"
 #define PROC_REGISTRY "/proc/driver/nvidia/registry"
 
@@ -126,13 +127,14 @@ int getzul(const char *arg,unsigned long *zul){
 	return 0;
 }
 
-int kernel_registry(void){
+static int
+dumpprocfile(const char *fn){
 	char c[256];
 	ssize_t r;
 	int fd;
 
-	if((fd = open(PROC_REGISTRY,O_RDONLY)) < 0){
-		fprintf(stderr,"Couldn't open %s (%s)\n",PROC_REGISTRY,strerror(errno));
+	if((fd = open(fn,O_RDONLY)) < 0){
+		fprintf(stderr,"Couldn't open %s (%s)\n",fn,strerror(errno));
 		return -1;
 	}
 	while((r = read(fd,c,sizeof(c))) > 0){
@@ -144,12 +146,37 @@ int kernel_registry(void){
 			break;
 		}
 	}
+	if(r < 0){
+		fprintf(stderr,"Error reading %s (%s)\n",fn,strerror(errno));
+		close(fd);
+		return -1;
+	}
 	if(fflush(stdout)){
 		close(fd);
 		return -1;
 	}
-	close(fd);
+	if(close(fd)){
+		fprintf(stderr,"Error closing %s (%s)\n",fn,strerror(errno));
+		return -1;
+	}
 	return 0;
+}
+
+int kernel_cardinfo(unsigned idx){
+	char fn[NAME_MAX];
+	int r;
+
+	if((r = snprintf(fn,sizeof(fn),"%s/cards/%u",NVPROCDIR,idx)) < 0){
+		return -1;
+	}
+	if((unsigned)r >= sizeof(fn)){
+		return -1;
+	}
+	return dumpprocfile(fn);
+}
+
+int kernel_registry(void){
+	return dumpprocfile(PROC_REGISTRY);
 }
 
 int kernel_version_str(void){
