@@ -718,7 +718,22 @@ cudash_exec(const char *c,const char *cmdline){
 	}else{
 		int status;
 
-		waitpid(pid,&status,0); // FIXME check result code
+		while(waitpid(pid,&status,0) != pid){
+			if(errno != EINTR){
+				fprintf(stderr,"Couldn't wait for child %ju (%s)\n",
+					(uintmax_t)pid,strerror(errno));
+				return -1;
+			}
+		}
+		if(WIFEXITED(status)){
+			if(WEXITSTATUS(status)){
+				printf("Child %ju terminated with status %d\n",
+						(uintmax_t)pid,WEXITSTATUS(status));
+			}
+		}else if(WIFSIGNALED(status)){
+			printf("Child %ju killed with signal %d\n",
+					(uintmax_t)pid,WTERMSIG(status));
+		}
 	}
 	return 0;
 }
