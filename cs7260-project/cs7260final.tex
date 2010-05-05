@@ -12,15 +12,6 @@
 \usepackage{graphicx}
 %\usepackage{multicol}
 
-\makeatletter
-\newenvironment{tablehere}
-{\def\@captype{table}}
-{}
-\newenvironment{figurehere}
-{\def\@captype{figure}}
-{}
-\makeatother
-
 \newcommand{\squishlist}{\begin{list}{$\bullet$}
   {\setlength{\itemsep}{0pt}
     \setlength{\parsep}{3pt}
@@ -124,7 +115,17 @@ of logarithms:
 &= \sum_{i=1}^{r}{\lg{i}} \le \sum_{i=1}^{r}{\lg{r}}
 \end{align*}
 \section{LRUMAP Algorithms}
-\textbf{WRITE ME! -- NICK}
+There are two fundamental operations defined by an LRU system, which might be
+performed in a fused manner:
+\squishlist
+\item \texttt{lookup(set,val)}$\rightarrow{r}$. Takes a value and searches the
+set's content for it, usually in parallel. If the value is not present, the
+least-recently used (most stale) member will be replaced with this value.
+Returns the slot in which the value can now be found.
+\item \texttt{update(set,r)}$\rightarrow{\emptyset}$. Takes a set and
+position, and updates the set's metastate based off a most recent reference to
+that position.
+\squishend
 \section{Comparison to Classic LRU}
 The essential time and space complexities of classic LRU and LRUMAP are
 captured in Table ~\ref{tab:lru}, allowing for $p$ updates performed in
@@ -133,7 +134,7 @@ which LRUMAP is applicable, but likely only at substantial unit cost. This is
 all the more true if multiple LRU sets are themselves to be searched and
 updated in parallel.
 
-\begin{table}
+\begin{table}[h]
 \begin{center}
 	\begin{tabular}{|l|l|l|}
 	\hline
@@ -153,7 +154,7 @@ As expected, we see in Figure ~\ref{fig:lru8} that LRUMAP saves significant spac
 values of $n$ and small values of $r$. At eighth order, LRUMAP takes over
 from LRU at $n=111217$.
 
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 	\includegraphics[width=\columnwidth]{out/lrumap8.pdf}
 	\caption{Eighth-order LRU}
@@ -164,13 +165,14 @@ from LRU at $n=111217$.
 LRUMAP is even more effective at fourth order, requiring less space than LRU
 for all but trivially small $n$ (see Figure ~\ref{fig:lru4}).
 
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 	\includegraphics[width=\columnwidth]{out/lrumap4.pdf}
 	\caption{Fourth-order LRU}
 \label{fig:lru4}
 \end{center}
 \end{figure}
+
 \section{Beyond LRUMAP}
 \subsection{Optimizations}
 It may not be necessary to perform true, precise LRU. An entire family of
@@ -190,8 +192,9 @@ composed of $2^{\lg{r}}=r$ members. Just as before, we precompute a constant
 table, this time containing $r \lg{r}$-bit transitions for each of $r$
 entries. Each of $n$ sets will require a $\lg{r}$-bit encoding of its current
 pseudo-LRU state. A single operation still suffices to update the metastate.
-Again allowing for $p$ updates in parallel:
-\begin{table}
+Again allowing for $p$ updates in parallel, we derive Table ~\ref{tab:plru}.
+
+\begin{table}[h]
 \begin{center}
 	\begin{tabular}{|l|l|l|}
 	\hline
@@ -203,9 +206,10 @@ Again allowing for $p$ updates in parallel:
 	\hline
 	\end{tabular}
 	\caption{Essential properties of Pseudo-LRU/LRUMAP}
-\label{tab:pseudolru}
+\label{tab:plru}
 \end{center}
 \end{table}
+
 In this case, however, the updates being performed involve $\lg{r}$ single bits.
 We've assumed $r$ to be less than or equal to 8; even an 8-bit embedded processor
 could thus perform the updates in parallel. Pseudo-LRUMAP cannot be expected to
