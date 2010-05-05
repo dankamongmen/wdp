@@ -192,6 +192,17 @@ for all but trivially small $n$ (see Figure ~\ref{fig:lru4}).
 
 \section{Beyond LRUMAP}
 \subsection{Optimizations}
+LRUMAP as stated assigns no meaning to the relative locations of the permutation
+functions within $\Sigma$; the only requirement is that they occupy contiguous
+memory. This ensures that the \texttt{update()} function can be evaluated in
+constant time. By carefully placing the functions within the PPT, we can cut its
+size. For instance, every $\sigma\in\Sigma$ will map some input to itself; this
+corresponds to the case of the most recently used item being referenced. For each
+valid $l$, this will be true for exactly $\frac{r!}/r$ elements. Thus, by sorting
+the permutations by the $l$ which they map to themselves, we can remove these
+elements---$\frac{1}{r}$ of the entries! This saves 25\% and 12.5\% of the space
+used by LRUMAP for $r=4$ and $r=8$, respectively.
+\subsection{Approximation}
 It may not be necessary to perform true, precise LRU. An entire family of
 schemes have been presented, approximating LRU in less time and/or space.
 VIA C3\textsuperscript{\textregistered} and Intel processors of the Pentium\textsuperscript{\textregistered} era\citep{shanley} made use of
