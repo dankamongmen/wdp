@@ -82,8 +82,11 @@ wasteful of space, other orders have been infrequently used to improve latency\c
 \section{LRUMAP Data Structures}
 At LRUMAP's core lies a transition table shared among all sets. This transition
 table is set up at startup, and can be placed into constant memory once
-assembled. Alternatively, it can be cast into cheap hardware using masked,
-extremely reliable ROM (MROM) technology\cite{ice}.
+assembled (alternatively, it can be cast into cheap hardware using masked,
+extremely reliable ROM (MROM) technology\cite{ice}). By \textit{transition table},
+we mean a family of well-defined functions \begin{equation*}
+\sigma_{1}(l),\dotsc,\sigma_{p}(l)\longrightarrow{P}
+\end{equation*} where $p\in{P}$ and $1\le{l}\le{r}$.
 
 Just as in classic LRU, metastate has a variable cost linearly dependent on $n$.
 Each set in classic LRU requires $\lg{(r)}$ bits to represent the relative age
