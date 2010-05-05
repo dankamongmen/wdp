@@ -127,27 +127,6 @@ check_const_ram(const unsigned *max){
 	return 0;
 }
 
-// Returns the maxpoint of the first of at most two ranges into which the
-// region will be divided, where a premium is placed on the first range being
-// a multiple of gran.
-static uintmax_t
-carve_range(uintmax_t min,uintmax_t max,unsigned gran){
-	uintmax_t mid;
-
-	if(max < min){
-		return 0;
-	}
-	// This way, we can't overflow given proper arguments. Simply averaging
-	// min and max could overflow, resulting in an incorrect midpoint.
-	mid  = min + (max - min) / 2;
-	if((mid - min) % gran){
-		if((mid += gran - ((mid - min) % gran)) > max){
-			mid = max;
-		}
-	}
-	return mid - min;
-}
-
 #define RANGER "out/cudaranger"
 
 static int
@@ -158,25 +137,32 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 	char * const argv[] = { RANGER, dev, min, max, NULL };
 	pid_t pid;
 
-	if((size_t)snprintf(min,sizeof(min),"0x%jx",off) >= sizeof(min) ||
-			(size_t)snprintf(max,sizeof(max),"0x%jx",off + s) >= sizeof(max) ||
-			(size_t)snprintf(dev,sizeof(dev),"%d",devno) >= sizeof(dev)){
-		fprintf(stderr,"  Invalid arguments: %d 0x%jx 0x%jx\n",devno,off,off + s);
+	if((size_t)snprintf(dev,sizeof(dev),"%d",devno) >= sizeof(dev)){
+		fprintf(stderr,"  Invalid device argument: %d\n",devno);
 		return -1;
 	}
-	//printf("CALL: %s %s %s\n",dev,min,max);
-	if((pid = fork()) < 0){
-		fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
-		return -1;
-	}else if(pid == 0){
-		if(execvp(RANGER,argv)){
-			fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
-		}
-		exit(CUDARANGER_EXIT_ERROR);
-	}else{
+	while(s){
+		uintmax_t ts;
 		int status;
 		pid_t w;
 
+		ts = s > gran ? gran : s;
+		s -= ts;
+		if((size_t)snprintf(min,sizeof(min),"0x%jx",off) >= sizeof(min) ||
+			(size_t)snprintf(max,sizeof(max),"0x%jx",off + ts) >= sizeof(max)){
+			fprintf(stderr,"  Invalid arguments: 0x%jx 0x%jx\n",off,off + ts);
+			return -1;
+		}
+		//printf("CALL: %s %s %s\n",dev,min,max);
+		if((pid = fork()) < 0){
+			fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
+			return -1;
+		}else if(pid == 0){
+			if(execvp(RANGER,argv)){
+				fprintf(stderr,"  Couldn't exec %s (%s?)!\n",RANGER,strerror(errno));
+			}
+			exit(CUDARANGER_EXIT_ERROR);
+		}
 		while((w = wait(&status)) != pid){
 			if(w < 0){
 				fprintf(stderr,"  Error waiting (%s?)!\n",
@@ -189,25 +175,13 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 					argv[0],argv[1],argv[2],argv[3]);
 			return -1;
 		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_SUCCESS){
-			*worked += s;
-		}else if(WEXITSTATUS(status) == CUDARANGER_EXIT_CUDAFAIL){
-			uintmax_t mid;
-
-			mid = carve_range(off,off + s,gran);
-			if(mid != s){
-				if(divide_address_space(devno,off,mid,unit,gran,results,worked)){
-					return -1;
-				}
-				if(divide_address_space(devno,off + mid,s - mid,unit,gran,results,worked)){
-					return -1;
-				}
-			}
-		}else{
+			*worked += ts;
+		}else if(WEXITSTATUS(status) != CUDARANGER_EXIT_CUDAFAIL){
 			fprintf(stderr,"  Unknown result code %d running"
-				       " %s %s %s %s\n",WEXITSTATUS(status),
-				       argv[0],argv[1],argv[2],argv[3]);
+				" %s %s %s %s\n",WEXITSTATUS(status),
+				argv[0],argv[1],argv[2],argv[3]);
 			return -1;
-		}
+		} // otherwise, normal failure
 	}
 	return 0;
 }
