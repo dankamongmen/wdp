@@ -12,6 +12,9 @@
 \usepackage{multicol}
 
 \makeatletter
+\newenvironment{tablehere}
+{\def\@captype{table}}
+{}
 \newenvironment{figurehere}
 {\def\@captype{figure}}
 {}
@@ -103,16 +106,22 @@ the latter is strictly less than the former by properties of logarithms:
 \end{align*}
 \section{LRUMAP Algorithms}
 \section{Comparison to Classic LRU}
+The essential time and space complexities of classic LRU and LRUMAP are
+captured in Table ~\ref{tab:lru}:
 \begin{center}
-\begin{tabular}{|l|l|l|}
-\hline
- & LRU & LRUMAP \\
-\hline
-Time & $O(\lceil\frac{r}{p}\rceil), {p}\le{r}$ & O(1) \\
-\hline
-Space & $O(nr\lg{r})$ & $O(r!r\lceil\lg{r!}\rceil) + O(n\lceil\lg{r!}\rceil)$ \\
-\hline
-\end{tabular}
+\begin{tablehere}
+	\begin{tabular}{|l|l|l|}
+	\hline
+	& LRU & LRUMAP \\
+	\hline
+	Time & $O(\lceil\frac{r}{p}\rceil), {p}\le{r}$ & O(1) \\
+	\hline
+	Space & $O(nr\lg{r})$ & $O(r!r\lceil\lg{r!}\rceil) + O(n\lceil\lg{r!}\rceil)$ \\
+	\hline
+	\end{tabular}
+	\caption{Essential properties of LRU/LRUMAP}
+	\label{tab:lru}
+\end{tablehere}
 \end{center}
 As expected, we see that LRUMAP saves significant space over LRU for large
 values of $n$ and small values of $r$. At eighth order, LRUMAP takes over
@@ -150,17 +159,21 @@ entries. Each of $n$ sets will require a $\lg{r}$-bit encoding of its current
 pseudo-LRU state. A single operation still suffices to update the metastate.
 Again allowing for $p$ updates in parallel:
 \begin{center}
-\begin{tabular}{|l|l|l|}
-\hline
- & Pseudo-LRU & Pseudo-LRUMAP \\
-\hline
-Time & $O(\lceil\frac{\lg{r}}{p}\rceil), {p}\le{\lg{r}}$ & O(1) \\
-\hline
-Space & $O(n\lg{r})$ & $O(r^{2}\lg{r}) + O(n\lg{r})$ \\
-\hline
-\end{tabular}
+\begin{tablehere}
+	\begin{tabular}{|l|l|l|}
+	\hline
+	& Pseudo-LRU & Pseudo-LRUMAP \\
+	\hline
+	Time & $O(\lceil\frac{\lg{r}}{p}\rceil), {p}\le{\lg{r}}$ & O(1) \\
+	\hline
+	Space & $O(n\lg{r})$ & $O(r^{2}\lg{r}) + O(n\lg{r})$ \\
+	\hline
+	\end{tabular}
+	\caption{Essential properties of Pseudo-LRU/LRUMAP}
+	\label{tab:pseudolru}
+\end{tablehere}
 \end{center}
-In this case, however, the updates being performed are $\lg{r}$ single bits.
+In this case, however, the updates being performed involve $\lg{r}$ single bits.
 We've assumed $r$ to be less than or equal to 8; even an 8-bit embedded processor
 could thus perform the updates in parallel. Pseudo-LRUMAP cannot be expected to
 provide any improvement over Pseudo-LRU.
