@@ -569,7 +569,18 @@ cudash_fork(const char *c,const char *cmdline){
 	}else{
 		int status;
 
-		waitpid(pid,&status,0); // FIXME check result code
+		while(waitpid(pid,&status,0) != pid){
+			if(errno != EINTR){
+				fprintf(stderr,"Couldn't wait for child %ju (%s)\n",
+					(uintmax_t)pid,strerror(errno));
+				return -1;
+			}
+		}
+		if(!WIFEXITED(status) || WEXITSTATUS(status)){
+			fprintf(stderr,"Child %ju terminated abnormally, exiting\n",
+					(uintmax_t)pid);
+			return -1;
+		}
 		printf("Returning to parent shell (PID %ju)\n",(uintmax_t)getpid());
 	}
 	return 0;
@@ -1090,16 +1101,17 @@ run_command(const char *cmd){
 		return 0;
 	}
 	gettimeofday(&t0,NULL);
-	r = fxn(toke,cmd);
-	gettimeofday(&t1,NULL);
-	timersub(&t1,&t0,&tsub);
-	if(tsub.tv_sec){
-		if(printf("Command took %u.%04us\n",tsub.tv_sec,tsub.tv_usec / 1000) < 0){
-			return -1;
-		}
-	}else if(tsub.tv_usec / 1000){
-		if(printf("Command took %ums\n",tsub.tv_usec / 1000) < 0){
-			return -1;
+	if((r = fxn(toke,cmd)) == 0){
+		gettimeofday(&t1,NULL);
+		timersub(&t1,&t0,&tsub);
+		if(tsub.tv_sec){
+			if(printf("Command took %u.%04us\n",tsub.tv_sec,tsub.tv_usec / 1000) < 0){
+				return -1;
+			}
+		}else if(tsub.tv_usec / 1000){
+			if(printf("Command took %ums\n",tsub.tv_usec / 1000) < 0){
+				return -1;
+			}
 		}
 	}
 	return r;
