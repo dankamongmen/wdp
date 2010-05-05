@@ -11,20 +11,20 @@ PRO:=cs7260final
 TEX:=$(PRO).tex
 PDF:=$(PRO).pdf
 TEXOBJS:=$(wildcard texobjs/*)
-SVG:=$(addsuffix .svg,$(addprefix $(OUT)/,$(basename $(wildcard *.pl))))
+IMG:=$(addsuffix .pdf,$(addprefix $(OUT)/,$(basename $(wildcard *.pl))))
 
 CFLAGS:=-O2 -W -Wall -Werror -Wextra -march=native -mtune=native
 
-all: $(SVG) $(PDF) $(BIN)
+all: $(IMG) $(PDF) $(BIN)
 
-%.pdf: %.tex %.bib $(SVG) $(TEXOBJS) $(MAKEFILES)
+%.pdf: %.tex %.bib $(IMG) $(TEXOBJS) $(MAKEFILES)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	pdflatex $<
 	#bibtex $(basename $<)
 	pdflatex $<
 	pdflatex $<
 
-$(OUT)/%.svg: %.pl $(MAKEFILES)
+$(OUT)/%.pdf: %.pl $(MAKEFILES)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	gnuplot $<
 
