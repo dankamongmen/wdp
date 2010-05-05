@@ -94,7 +94,8 @@ technology\citep{ice}). By \textit{transition table}, we mean a family $\Sigma$ 
 well-defined functions \begin{equation*}
 \sigma_{1}(l),\dotsc,\sigma_{p}(l)\longrightarrow{P}
 \end{equation*} where $p\in{P}$ and $1\le{l}\le{r}$. $P$ is the set of all
-permutations of $r$ integers, and has $r!$ members. As it requires $\lceil\lg{r!}\rceil$
+permutations of $r$ integers, and has $r!$ members. We call this the \textit{Precomputed
+Permutation Table} (PPT). As it requires $\lceil\lg{r!}\rceil$
 bits to encode $p$, the total size of this table is $r!r\lceil\lg{r!}\rceil$ bits.
 
 True LRU assigns to each member in each set an index $l$, $0\le{l}\le{r-1}$.
@@ -122,16 +123,25 @@ performed in a fused manner:
 set's content for it, usually in parallel. If the value is not present, the
 least-recently used (most stale) member will be replaced with this value.
 Returns the slot in which the value can now be found.
-\item \texttt{update(set,r)}$\rightarrow{\emptyset}$. Takes a set and
+\item \texttt{update(set,r)}$\rightarrow$\texttt{set}. Takes a set and
 position, and updates the set's metastate based off a most recent reference to
 that position.
 \squishend
-\texttt{lookup()} is unchanged by LRUMAP. The amount of content memory used
-remains the same, as does the space of search algorithms (and the
+\texttt{lookup()}'s functionality is unchanged by LRUMAP. The amount of content
+memory used remains the same, as does the space of search algorithms (and the
 associated performance space). Typically, $r$ is traded off against search
 latency and cost; a single-cycle search of more than a single SIMD unit is
 extremely expensive. As a result, $r$ values for classic LRU are typically
 small, well within the range required by LRUMAP.
+
+\texttt{update()} is the central interface to LRUMAP, and uniquely served. Rather
+than operating upon and updating a self-sufficient metastate description within
+the set, the single $\lceil\lg{r!}\rceil$-bit set value $idx_set$ is used to index into
+the shared PPT. This uniquely identifies a function $\sigma_{idx}(l)$, to which
+the result from \texttt{lookup()} is provided. Functions from $\Sigma$ are
+closed on $P$: this new result identifies a new permutation. Evaluation of
+$\sigma_{idx}(l)$ consists entirely of a small, constant number of arithmetic
+operations followed by a memory lookup, thus executing in $O(1)$ time.
 
 \section{Comparison to Classic LRU}
 The essential time and space complexities of classic LRU and LRUMAP are
