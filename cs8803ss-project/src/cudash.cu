@@ -90,7 +90,12 @@ list_cards(void){
 			c->devno,c->devname,c->major,c->minor,c->mpcount) < 0){
 			return -1;
 		}
-		// FIXME more detail
+		if(kernel_cardinfo(c->devno)){
+			return -1;
+		}
+		if(printf("\n") < 0){
+			return -1;
+		}
 	}
 	return 0;
 }
