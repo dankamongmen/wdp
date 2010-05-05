@@ -20,7 +20,7 @@ all: $(IMG) $(PDF) $(BIN)
 %.pdf: %.tex %.bib $(IMG) $(TEXOBJS) $(MAKEFILES)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	pdflatex $<
-	#bibtex $(basename $<)
+	bibtex $(basename $<)
 	pdflatex $<
 	pdflatex $<
 
