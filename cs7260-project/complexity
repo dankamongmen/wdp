@@ -1,6 +1,7 @@
 
 N: Number of LRU sets
 R: LRU order (R slots to a set)
+Time refers to state update, not search.
 
 Naive LRU:
 
@@ -8,7 +9,8 @@ Naive LRU:
 	N sets, each with R slots, each requiring lg(R) bits.
 
 	Time: R/P, 1 < = P <= R
-	R slots requiring an update, of which P can be performed in parallel.
+	R slots requiring an update, of which P can be performed in parallel
+	(assuming update happens at the same time as check).
 
 LRUMAP:
 
@@ -18,4 +20,18 @@ LRUMAP:
 	encoding a current state in lg(R!).
 
 	Time: 1
-	1 state being updated.
+	Only one state update.
+
+Pseudo LRU:
+
+	Space: N * lg(R)
+	N sets, each with a height-lg(R) tree.
+
+	Time: lg(R) / P, 1 <= P <= R
+	We update each direction bit. Since these are bits, not words,
+	P is almost certainly equal to R. 
+
+Pseudo-LRUMAP:
+
+	Space: 2^lg(R) * Rlg(R) + N * lg(R)
+	Time: 1
