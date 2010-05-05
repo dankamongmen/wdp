@@ -71,9 +71,11 @@ It is trivial to adapt LRUMAP to the Most-Recently-Used methodology, employed
 by page caches when a ``looping sequential''\cite{dewitt} access pattern is
 detected.
 \subsection{Optimizations}
-It may not be necessary to perform true, precise LRU. Many systems, including
-the cache controllers of Intel\cite{shanley} and Via processors, make use of
-approximation schemes such as \textit{pseudo-LRU}.
+It may not be necessary to perform true, precise LRU. An entire family of
+schemes have been presented, approximating LRU in less time and/or space.
+Intel\cite{shanley} and Via processors of the Pentium era made use of
+\textit{pseudo-LRU}, a tree-based scheme which requires only $O(\lg{r})$ bits
+per set\cite{handy}.
 \begin{figurehere}
 	\centering
 	\includegraphics[width=\columnwidth]{out/lrumap8.pdf}
