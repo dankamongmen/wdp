@@ -405,10 +405,32 @@ cudash_alloc(const char *c,const char *cmdline){
 	return 0;
 }
 
+typedef struct cudafl {
+	uintmax_t ptr,s;
+	struct cudafl *next;
+} cudafl; // cuda free-list
+
+static void
+free_cudaflist(cudafl *h){
+	while(h){
+		CUresult cerr;
+
+		cudafl *t = h;
+
+		h = h->next;
+		if((cerr = cuMemFree(t->ptr)) != CUDA_SUCCESS){
+			fprintf(stderr,"Warning: couldn't free %ju @ %ju (%d)\n",
+			       t->s,t->ptr,cerr);
+		}
+		free(t);
+	}
+}
+
 static int
 cudash_allocat(const char *c,const char *cmdline){
 	unsigned long long size,addr;
 	CUdeviceptr p = 0x101200; // FIXME massive hack
+	cudafl *head,**chain;
 	CUresult cerr;
 	char *ep;
 
@@ -427,28 +449,53 @@ cudash_allocat(const char *c,const char *cmdline){
 		fprintf(stderr,"Insufficiently aligned: 0x%llx\n",addr);
 		return 0;
 	}
-	do{
+	head = NULL;
+	chain = NULL;
+	while(1){
+		cudafl *t;
+
 		if(p != addr){
 			if(p > addr){
 				fprintf(stderr,"Couldn't place %llub at 0x%llx (got 0x%llx)\n",size,addr,p);
+				free_cudaflist(head);
 				return 0;
 			}else if(p + size > addr){
 				printf("fillin %llu 0x%llx\n",addr - p,addr - p);
 				if((cerr = cuMemAlloc(&p,addr - p)) != CUDA_SUCCESS){
 					fprintf(stderr,"Couldn't allocate %llub (%d)\n",addr - p,cerr);
+					free_cudaflist(head);
 					return 0;
 				}
 			}
 		}
+		// FIXME need do larger allocations to span voids
 		printf("gofor %llu 0x%llx\n",size,size);
 		if((cerr = cuMemAlloc(&p,size)) != CUDA_SUCCESS){
 			fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
+			free_cudaflist(head);
 			return 0;
 		}
 		printf("got %llu 0x%llx at %llu (0x%llx)\n",size,size,p,p);
-		// FIXME need keep a free-list, and also likely do larger
-		// allocations to span voids
-	}while(p != addr);
+		if((t = (cudafl *)malloc(sizeof(*t))) == NULL){
+			fprintf(stderr,"Couldn't allocate %zub (%s)\n",
+					sizeof(*t),strerror(errno));
+			free_cudaflist(head);
+			return 0;
+		}
+		if(p == addr){
+			break;
+		}
+		t->ptr = p;
+		t->s = size;
+		t->next = NULL;
+		if(chain == NULL){
+			head = t;
+		}else{
+			*chain = t;
+		}
+		chain = &t->next;
+	}
+	free_cudaflist(head);
 	if(create_ctx_map(&curdev->map,p,size)){
 		cuMemFree(p);
 		return 0;
