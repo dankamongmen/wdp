@@ -65,17 +65,7 @@ which could be benefited by this novel data structure.
 
 \section{LRUMAP Data Structure}
 \section{LRUMAP Algorithms}
-\section{Beyond LRUMAP}
-\subsection{Extensions}
-It is trivial to adapt LRUMAP to the Most-Recently-Used methodology, employed
-by page caches when a ``looping sequential''\cite{dewitt} access pattern is
-detected.
-\subsection{Optimizations}
-It may not be necessary to perform true, precise LRU. An entire family of
-schemes have been presented, approximating LRU in less time and/or space.
-Intel\cite{shanley} and Via processors of the Pentium era made use of
-\textit{pseudo-LRU}, a tree-based scheme which requires only $O(\lg{r})$ bits
-per set\cite{handy}.
+\section{Comparison to Classic LRU}
 \begin{figurehere}
 	\centering
 	\includegraphics[width=\columnwidth]{out/lrumap8.pdf}
@@ -86,7 +76,27 @@ per set\cite{handy}.
 	\includegraphics[width=\columnwidth]{out/lrumap4.pdf}
 	%\caption{Fourth-order LRU}
 \end{figurehere}
+\section{Beyond LRUMAP}
+\subsection{Optimizations}
+It may not be necessary to perform true, precise LRU. An entire family of
+schemes have been presented, approximating LRU in less time and/or space.
+Intel\cite{shanley} and Via processors of the Pentium era made use of
+\textit{pseudo-LRU}, a direction vector-based scheme which requires only
+$O(\lg{r})$ bits per set\cite{handy}. The PA-RISC 8600\cite{hurd} likewise used
+a proprietary \textit{quasi-LRU} algorithm, with a similar reduction in bits
+per set. These schemes can be straightforwardly combined with LRUMAP to yield a
+powerful new variant, wherein the LRUMAP entries represent and map among these
+algorithms' direction vectors rather than an order's permutations.
 
+A direction vector is $\lg{r}$ bits, and the set of direction vectors is thus
+composed of $2^{\lg{r}}$ members. Just as before, we precompute a constant
+table, this time containing $r \lg{r}$-bit transitions for each of $2^{\lg{r}}$
+entries. Each of $n$ sets will require a $\lg{r}$-bit encoding of its current
+pseudo-LRU state. A single operation still suffices to update the metastate.
+\subsection{Extensions}
+It is trivial to adapt LRUMAP to the Most-Recently-Used methodology, employed
+by page caches when a ``looping sequential''\cite{dewitt} access pattern is
+detected.
 \cite{varghese}
 \cite{xu}
 \bibliographystyle{acm}
