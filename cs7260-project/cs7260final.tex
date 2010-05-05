@@ -126,6 +126,13 @@ Returns the slot in which the value can now be found.
 position, and updates the set's metastate based off a most recent reference to
 that position.
 \squishend
+\texttt{lookup()} is unchanged by LRUMAP. The amount of content memory used
+remains the same, as does the space of search algorithms (and the
+associated performance space). Typically, $r$ is traded off against search
+latency and cost; a single-cycle search of more than a single SIMD unit is
+extremely expensive. As a result, $r$ values for classic LRU are typically
+small, well within the range required by LRUMAP.
+
 \section{Comparison to Classic LRU}
 The essential time and space complexities of classic LRU and LRUMAP are
 captured in Table ~\ref{tab:lru}, allowing for $p$ updates performed in
