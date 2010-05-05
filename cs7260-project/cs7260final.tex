@@ -124,7 +124,7 @@ captured in Table ~\ref{tab:lru}:
 	\hline
 	& LRU & LRUMAP \\
 	\hline
-	Time & $O(\lceil\frac{r}{p}\rceil), {p}\le{r}$ & O(1) \\
+	Time & $O(\lceil\frac{r}{p}\rceil), {p}\le{r}$ & $O(1)$ \\
 	\hline
 	Space & $O(nr\lg{r})$ & $O(r!r\lceil\lg{r!}\rceil) + O(n\lceil\lg{r!}\rceil)$ \\
 	\hline
@@ -174,7 +174,7 @@ Again allowing for $p$ updates in parallel:
 	\hline
 	& Pseudo-LRU & Pseudo-LRUMAP \\
 	\hline
-	Time & $O(\lceil\frac{\lg{r}}{p}\rceil), {p}\le{\lg{r}}$ & O(1) \\
+	Time & $O(\lceil\frac{\lg{r}}{p}\rceil), {p}\le{\lg{r}}$ & $O(1)$ \\
 	\hline
 	Space & $O(n\lg{r})$ & $O(r^{2}\lg{r}) + O(n\lg{r})$ \\
 	\hline
