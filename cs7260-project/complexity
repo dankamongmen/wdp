@@ -27,9 +27,9 @@ Pseudo LRU:
 	Space: N * lg(R)
 	N sets, each with a height-lg(R) tree.
 
-	Time: lg(R) / P, 1 <= P <= R
+	Time: lg(R) / P, 1 <= P <= lg(R)
 	We update each direction bit. Since these are bits, not words,
-	P is almost certainly equal to R. 
+	P is almost certainly equal to lg(R). 
 
 Pseudo-LRUMAP:
 
