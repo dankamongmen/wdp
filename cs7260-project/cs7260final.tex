@@ -37,6 +37,16 @@
 
 \maketitle
 \begin{abstract}
+Working on this now.
+\end{abstract}
+
+\category{I.5.3}{Clustering}{Algorithms}
+
+\terms{LRUMAP, networking algorithmics}
+
+\keywords{LRUMAP, LRU, Pseudo-LRU, MROM, Precomputed Permutation Table (PPT)}
+
+\section{Introduction}
 Network administrators, particularly in proactively secure environments such
 as military installations, banks and SCADA sites, seek to discriminate standard
 network accesses from reconnaissance. In both host-based intrusion prevention
@@ -47,7 +57,6 @@ host's successful accesses of the network to unsuccessful accesses. While a
 successful access will almost inevitably elicit some response packet, a
 reconnaissance may well receive no reply. Classification ought thus not be performed
 at reply time, but only upon a potential probe's ingress.
-
 First-packet classification requires predicting the success of a network access.
 Especially among environments heterogeneous in ownership or architecture (data centers, research facilities,
 development firms, etc), the likelihood of a given service (identified by host
@@ -56,21 +65,7 @@ host to host. Tracking these services dynamically is a natural fit for LRU, but
 traditional $O(n)$ or even $O(\lg{n})$ LRU implementations are too slow for
 backbone routers and IPS devices. We introduce LRUSET, a $O(1)$ true LRU scheme
 which becomes more space-efficient as the number of monitored hosts increases.
-We then illustrate several other counting problems from networking algorithmics
-which could be benefited by this novel data structure.
-\end{abstract}
-
-\category{I.5.3}{Clustering}{Algorithms}
-
-\terms{LRUMAP, networking algorithmics}
-
-\keywords{LRUMAP, LRU, Pseudo-LRU, MROM, Precomputed Permutation Table (PPT)}
-
-\section{Introduction}
-\textbf{WRITE ME! -- JOLENE}
-\textbf{can you also tighten up the abstract maybe?}
-Vargcite\citep{varghese}
-Xucite\citep{xu}
+The rest of the paper is organized as follows. In the next section, we present the conventions used in throughout the discussion of LRUMAP. Sections 3 and 4 introduce the LRUMAP data structure and algorithms. A comparison to the classical LRU is shown in Section 5. Section 6 details beyond LRUMAP, including possible improvements. Section 7 discusses other similar LRU type implementations that have been researched. Appendix A shows code used in the paper.
 
 \section{Conventions}
 We will speak of $n$ independent \textit{sets}. It is assumed that all possible
