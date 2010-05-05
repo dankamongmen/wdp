@@ -1,15 +1,16 @@
-\documentclass[letterpaper,10pt]{article}
+\documentclass[10pt]{sigplanconf}
+%\documentclass[letterpaper,10pt]{article}
 \usepackage{hyperref}
 \usepackage{amsmath,amsthm,amssymb}
-\usepackage[scriptsize,bf]{caption}
-\usepackage{fullpage}
+%\usepackage[scriptsize,bf]{caption}
+%\usepackage{fullpage}
 \usepackage{textcomp}
 \usepackage{times}
 \usepackage{cite}
 \usepackage{fancyvrb}
 \usepackage{moreverb}
 \usepackage{graphicx}
-\usepackage{multicol}
+%\usepackage{multicol}
 
 \makeatletter
 \newenvironment{tablehere}
@@ -32,14 +33,18 @@
 
 \newcommand{\squishend}{\end{list}}
 
-\title{LRUMAP: $O(1)$ LRU for Classifying Network Probes}
-\author{Nick Black and Jolene Tarosky\\
-CS7260 Project, Spring 2010}
-\date{}
-
 \begin{document}
-\maketitle
 
+\conferenceinfo{CS7260 2010}{May 5, Atlanta.}
+\copyrightyear{2010}
+\toappear{Copyright is held by the authors.\\
+\textit{CS7260} May 5, Atlanta.}
+
+\title{LRUMAP}
+\subtitle{$O(1)$ LRU for Classifying Network Probes}
+\authorinfo{Nick Black \and Jolene Tarosky}{Georgia Institute of Technology}{nickblack@linux.com \and jtarosky@gmail.com}
+
+\maketitle
 \begin{abstract}
 Network administrators, particularly in proactively secure environments such
 as military installations, banks and SCADA sites, seek to discriminate standard
@@ -64,12 +69,17 @@ We then illustrate several other counting problems from networking algorithmics
 which could be benefited by this novel data structure.
 \end{abstract}
 
-\begin{multicols}{2}
+\category{I.5.3}{Clustering}{Algorithms}
+
+\terms{LRUMAP, networking algorithmics}
+
+\keywords{LRUMAP, LRU, Pseudo-LRU, MROM, Precomputed Permutation Table (PPT)}
+
 \section{Introduction}
 \textbf{WRITE ME! -- JOLENE}
 \textbf{can you also tighten up the abstract maybe?}
-\cite{varghese}
-\cite{xu}
+Vargcite\citep{varghese}
+Xucite\citep{xu}
 
 \section{Conventions}
 We will speak of $n$ independent \textit{sets}. It is assumed that all possible
@@ -83,13 +93,13 @@ the number of sets $n$ is equivalent to the system capacity. When $r$ equals
 the capacity of the system, there can likewise be at most one set; such a system
 is said to be \textit{fully associative}. Since $\lg{r}$ is a frequent term in
 LRU's complexity analysis, a system's order is almost always a power of 2\footnote{Though
-wasteful of space, other orders have been infrequently used to improve latency\cite{intelcpuid}.}.
+wasteful of space, other orders have been infrequently used to improve latency\citep{intelcpuid}.}.
 \section{LRUMAP Data Structures}
 At LRUMAP's core lies a transition table shared among all sets, its size
 dependent upon $r$. This transition table is initialized at startup, and can be
 placed into constant memory once assembled (alternatively, it can be cast into
 cheap hardware using extremely reliable Masked-OR ROM (MROM)
-technology\cite{ice}). By \textit{transition table}, we mean a family $\Sigma$ of $|P|$
+technology\citep{ice}). By \textit{transition table}, we mean a family $\Sigma$ of $|P|$
 well-defined functions \begin{equation*}
 \sigma_{1}(l),\dotsc,\sigma_{p}(l)\longrightarrow{P}
 \end{equation*} where $p\in{P}$ and $1\le{l}\le{r}$. $P$ is the set of all
@@ -122,8 +132,9 @@ parallel. $p$ can be made as large as $r$ for those low values of $r$ with
 which LRUMAP is applicable, but likely only at substantial unit cost. This is
 all the more true if multiple LRU sets are themselves to be searched and
 updated in parallel.
+
+\begin{table}
 \begin{center}
-\begin{tablehere}
 	\begin{tabular}{|l|l|l|}
 	\hline
 	& LRU & LRUMAP \\
@@ -134,31 +145,39 @@ updated in parallel.
 	\hline
 	\end{tabular}
 	\caption{Essential properties of LRU/LRUMAP}
-	\label{tab:lru}
-\end{tablehere}
+\label{tab:lru}
 \end{center}
-As expected, we see that LRUMAP saves significant space over LRU for large
+\end{table}
+
+As expected, we see in Figure ~\ref{fig:lru8} that LRUMAP saves significant space over LRU for large
 values of $n$ and small values of $r$. At eighth order, LRUMAP takes over
-from LRU at $n=111217$:
-\begin{figurehere}
-	\centering
+from LRU at $n=111217$.
+
+\begin{figure}
+\begin{center}
 	\includegraphics[width=\columnwidth]{out/lrumap8.pdf}
-	%\caption{Eighth-order LRU}
-\end{figurehere}
+	\caption{Eighth-order LRU}
+\label{fig:lru8}
+\end{center}
+\end{figure}
+
 LRUMAP is even more effective at fourth order, requiring less space than LRU
-for all but trivially small $n$:
-\begin{figurehere}
-	\centering
+for all but trivially small $n$ (see Figure ~\ref{fig:lru4}).
+
+\begin{figure}
+\begin{center}
 	\includegraphics[width=\columnwidth]{out/lrumap4.pdf}
-	%\caption{Fourth-order LRU}
-\end{figurehere}
+	\caption{Fourth-order LRU}
+\label{fig:lru4}
+\end{center}
+\end{figure}
 \section{Beyond LRUMAP}
 \subsection{Optimizations}
 It may not be necessary to perform true, precise LRU. An entire family of
 schemes have been presented, approximating LRU in less time and/or space.
-VIA C3\textsuperscript{\textregistered} and Intel processors of the Pentium\textsuperscript{\textregistered} era\cite{shanley} made use of
+VIA C3\textsuperscript{\textregistered} and Intel processors of the Pentium\textsuperscript{\textregistered} era\citep{shanley} made use of
 \textit{pseudo-LRU}, a direction vector-based scheme which requires only
-$O(\lg{r})$ bits per set\cite{handy}. The PA-RISC 8600\cite{hurd} likewise used
+$O(\lg{r})$ bits per set\citep{handy}. The PA-RISC 8600\citep{hurd} likewise used
 a proprietary \textit{quasi-LRU} algorithm, with a similar reduction in bits
 per set. These schemes can be straightforwardly combined with LRUMAP to yield a
 new variant, wherein the LRUMAP entries represent and map among these
@@ -172,8 +191,8 @@ table, this time containing $r \lg{r}$-bit transitions for each of $r$
 entries. Each of $n$ sets will require a $\lg{r}$-bit encoding of its current
 pseudo-LRU state. A single operation still suffices to update the metastate.
 Again allowing for $p$ updates in parallel:
+\begin{table}
 \begin{center}
-\begin{tablehere}
 	\begin{tabular}{|l|l|l|}
 	\hline
 	& Pseudo-LRU & Pseudo-LRUMAP \\
@@ -184,20 +203,19 @@ Again allowing for $p$ updates in parallel:
 	\hline
 	\end{tabular}
 	\caption{Essential properties of Pseudo-LRU/LRUMAP}
-	\label{tab:pseudolru}
-\end{tablehere}
+\label{tab:pseudolru}
 \end{center}
+\end{table}
 In this case, however, the updates being performed involve $\lg{r}$ single bits.
 We've assumed $r$ to be less than or equal to 8; even an 8-bit embedded processor
 could thus perform the updates in parallel. Pseudo-LRUMAP cannot be expected to
 provide any improvement over Pseudo-LRU.
 \subsection{Extensions}
 It is trivial to adapt LRUMAP to the Most-Recently-Used methodology, employed
-by page caches when a ``looping sequential''\cite{dewitt} access pattern is
+by page caches when a ``looping sequential''\citep{dewitt} access pattern is
 detected.
 \section{Related Work}
 \textbf{WRITE ME! -- JOLENE}
-\bibliographystyle{acm}
+\bibliographystyle{abbrvnat}
 \bibliography{cs7260final}
-\end{multicols}
 \end{document}
