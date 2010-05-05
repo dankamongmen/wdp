@@ -80,6 +80,11 @@ is said to be \textit{fully associative}. Since $\lg{(r)}$ is a frequent term in
 LRU's complexity analysis, a system's order is almost always a power of 2\footnote{Though
 wasteful of space, other orders have been infrequently used to improve latency\cite{intelcpuid}.}.
 \section{LRUMAP Data Structures}
+At LRUMAP's core lies a transition table shared among all sets. This transition
+table is set up at startup, and can be placed into constant memory once
+assembled. Alternatively, it can be cast into cheap hardware using masked,
+extremely reliable ROM (MROM) technology\cite{ice}.
+
 Just as in classic LRU, metastate has a variable cost linearly dependent on $n$.
 Each set in classic LRU requires $\lg{(r)}$ bits to represent the relative age
 of each of its $r$ members. In LRUMAP, each set as a whole maps into the
