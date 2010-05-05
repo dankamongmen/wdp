@@ -89,7 +89,7 @@ At LRUMAP's core lies a transition table shared among all sets, its size
 dependent upon $r$. This transition table is initialized at startup, and can be
 placed into constant memory once assembled (alternatively, it can be cast into
 cheap hardware using extremely reliable Masked-OR ROM (MROM)
-technology\cite{ice}). By \textit{transition table}, we mean a family of $|P|$
+technology\cite{ice}). By \textit{transition table}, we mean a family $\Sigma$ of $|P|$
 well-defined functions \begin{equation*}
 \sigma_{1}(l),\dotsc,\sigma_{p}(l)\longrightarrow{P}
 \end{equation*} where $p\in{P}$ and $1\le{l}\le{r}$. $P$ is the set of all
