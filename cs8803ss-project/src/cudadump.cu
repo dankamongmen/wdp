@@ -153,6 +153,7 @@ divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
 			fprintf(stderr,"  Invalid arguments: 0x%jx 0x%jx\n",off,off + ts);
 			return -1;
 		}
+		off += ts;
 		//printf("CALL: %s %s %s\n",dev,min,max);
 		if((pid = fork()) < 0){
 			fprintf(stderr,"  Couldn't fork (%s?)!\n",strerror(errno));
