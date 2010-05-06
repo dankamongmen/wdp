@@ -8,12 +8,10 @@
 \usepackage{caption}
 \usepackage{fancyvrb}
 \usepackage{moreverb}
-\usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{multicol}
 \usepackage{verbatim}
-
 
 \newcommand{\squishlist}{\begin{list}{$\bullet$}
   {\setlength{\itemsep}{0pt}
@@ -96,7 +94,7 @@ a typical process:
 Note that PTX is a mere intermediate representation, converted to the native
 CUBIN format at runtime.
 \item The CUDA userspace library \texttt{libcuda.so}. This closed-source archive
-provides an interface to the NVIDIA driver and management of a CUDA instance.
+provides an interface to the NVIDIA driver, and management of a CUDA instance.
 \item The NVIDIA driver \texttt{nvidia.ko}. This closed-source module handles
 \texttt{ioctl}s issued by \texttt{libcuda.so}.
 \item The hardware, controlled by registers and memory-mapped IO.
@@ -149,11 +147,11 @@ Well-known threat taxonomies include the ``CIA Triad'' (extended by the
 Microsoft's Secure Product Lifecycle, is designed for system-centric threat
 modeling and suitable for our purposes. We assume that an attacker has access
 to the NVIDIA device node(s) (by default, \texttt{/dev/nvidiaX}); such privileges
-are necessary to compute on the device, and thus this represents a safe assumption. Escalation
-to device access is an attack on the operating system's access control, and therefore is 
+are necessary to compute on the device, and thus a safe assumption. Escalation
+to device access is an attack on the operating system's access control, and
 outside the scope of this paper.
 
-For machines with one more more CUDA-capable cards, we seek to answer the following questions:
+We seek to answer the following questions, for machines with one or more CUDA-capable
 cards:
 \subsection{Spoofing}
 \squishlist
@@ -165,7 +163,7 @@ from another?
 \item Can one CUDA kernel manipulate another's data set?
 \item Is it possible to construct a debugging environment around other CUDA kernels?
 \item Can a CUDA kernel modify the active display?
-\item Is it possible to pervert compilation processes, in relation to either \texttt{nvcc} or JIT?
+\item Is it possible to pervert compilation processes, either \texttt{nvcc} or JIT?
 \squishend
 \subsection{Repudiation}
 \squishlist
@@ -175,14 +173,14 @@ from another?
 \squishend
 \subsection{Information disclosure}
 \squishlist
-\item Can a CUDA kernel read another kernel's data set? If so, can this be done {\em ex-post} or need they be simultaneously
+\item Can a CUDA kernel read another kernel's data set? Need they be simultaneously
 scheduled for this to occur?
 \item Is it possible to read another CUDA kernel's code, even if it cannot be
 controlled?
 \item Is it possible to read the system memory of another CUDA application via
 calls through the CUDA intermediary?
 \item Is it possible to reconstruct the system's video channel from an arbitrary
-CUDA kernel? Can the same be done for textures?
+CUDA kernel? What about textures?
 \squishend
 \subsection{Denial of service}
 \squishlist
@@ -228,11 +226,12 @@ to ring 0). It is unlikely that protection on the card itself can be generally
 circumvented. Furthermore, this is the only place to protect memory from CUDA
 kernels.
 
-As an example of the futility of userspace protection, we were trivially able to control multiple devices from a single
-host thread, contrary to NVIDIA documentation. Use of the \texttt{ltrace} library call tracer indicated CUDA
+As an example of the futility of userspace protection, we were trivially able
+(contrary to NVIDIA documentation) to control multiple devices from a single
+host thread. Use of the \texttt{ltrace} library call tracer indicated CUDA
 context association to be performed via \texttt{pthread\_key\_t} thread-specific
 data. By interpositioning ourselves between the binary and \texttt{libpthread.so},
-we were able to implement our own context-multiplexing.
+we implemented our own context-multiplexing.
 
 The PTX Reference provides some details. Load and store instructions require a ``state space''
 modifier in addition to an address. General-purpose registers (\texttt{r0}--\texttt{r127}) are
@@ -261,20 +260,17 @@ We then developed some tools:
 \squishlist
 \item \texttt{cudadump} (and its helper binary, \texttt{cudaranger}) to
 discover readable regions in a given virtual memory,
-\item \texttt{cudash}, the CUDA Shell (Figure 1), to perform close-in experiments and
+\item \texttt{cudash}, the CUDA Shell, to perform close-in experiments and
 prototype attacks, and
 \item \texttt{cudabounder}, \texttt{cudaminimal}, \texttt{cudapinner}, \texttt{cudaquirky}, \texttt{cudaspawner}, and \texttt{cudastuffer}, a series of single-purpose attack tools.
 \squishend
-
-% Fixme: The caption displays on the next page.
+\vfill
 \begin{figurehere}
 \centering
-\includegraphics[width=0.5\textwidth]{texobjs/cudash-help.png}
-\caption{The list of commands supported by our CUDA shell, \texttt{cudash}}
+\includegraphics[width=\columnwidth]{texobjs/cudash-help.png}
 \end{figurehere}
-
 \section{Attacking CUDA (A dialogue)}
-% We now move beyond the realm of the documented.
+We now move beyond the realm of the documented.
 \subsection{Von Neumann or Harvard architecture?}
 \textit{CUDA appears to be a Harvard architecture.} Kernels do occupy
 video memory, as can be verified by dumping the video RAM. We assert that, by
@@ -287,7 +283,7 @@ series of calculations. It is possible that undocumented opcodes can retrieve
 or modify code.
 
 This is puzzling: the Harvard architecture's primary advantage is the ability
-to fetch instructions and data into the CPU simultaneously. We speculate that
+to fetch instructions and data into the CPU simultaneously. We suggest that
 coherence simplification, combined with the weak memory assurances of the global
 memory space, motivated this solution.
 \subsection{Is virtual memory implemented?}
@@ -302,10 +298,138 @@ multilevel memory allocation, split between user and kernelspace.
 Physical memory cannot be aliased or oversubscribed; multiple contexts'
 maximum allocations cannot add up to more than a single context's maximum
 possible allocations.
+\subsection{Does memory protection exist?}
+\textit{CUDA enforces memory protection in hardware.} Use of a general-purpose,
+word-sized register when referencing the global space means kernels' memory
+accesses cannot be preverified, and the possibility of software-assisted memory
+protection can be eliminated by analyzing details of memory transactions
+relative to the device clock\cite{microbenchmarks}. The use of two-level TLBs
+has been illustrated in previous work\cite{demmel}. We verified memory
+protection to be effective beyond the combined capacities of the TLBs, and
+note a L2 TLB miss to be only about half again as expensive as a L2 TLB hit.
+Thus we assert that memory protection is performed independently of, and in
+parallel with, address translation. This requires virtual- (and thus per-context)
+indexing; together with a memory protection granularity (1MB) distinct from
+either TLB size (4KB and 8MB), we consider this to imply a backing store in
+video RAM, and that memory protection is a single bit per entry.
 
+Members of the \texttt{cuMemset*()} family of functions, when given an invalid device address,
+neither return an error nor segfault. Instead, later context functions return
+a 700 (previous kernel failed) error. This strongly suggests that memory
+protection is \textit{not} modeled in software. Further research, especially
+involving shared, pinned maps, ought investigate this further.
+\subsection{Does memory protection incorporate contexts?}
+\textit{CUDA hardware considers contexts.} To ensure that memory isolation
+was not being implemented purely through translation, we allocated a large
+region of memory in one context, and operated on it. We then ensured that a
+distinct, simultaneous context failed accessing any possible address. This
+suggests that some manner of unforgeable \textit{capability}\cite{capability}
+lies at the heart of a CUDA context.
 
-\subsection{Can a CUDA kernel modify the active display?}
-\textit{We hypothesize not, but were unable to conclusively prove one way or another.}  One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
+Here, we make a controversial conjecture: these capabilities \textit{can}
+be forged. We draw this conclusion from the interaction of CUDA and the \texttt{fork}
+system call. A CUDA application's system resources are wholly accessible by a
+child process up until being unmapped via \texttt{exec} or some other system call.
+Furthermore, we verified allocations or kernels executed in either process following the
+\texttt{fork} to be visible in the other. We were unable to forge a context,
+but think it likely that disassembly of the CUDA stack would make a method plain.
+It is likely that some memory-mapped I/O is involved independent of the context
+object itself; \texttt{fork}, which preserves maps, thus naturally facilitates
+context-forging (the \texttt{/dev/nvidiaX} maps, as can be seen in \texttt{/proc/X/maps},
+are mapped \texttt{MAP\_SHARED} and thus not subject to Copy-on-Write behavior).
+\subsection{Is memory scrubbed between kernels?}
+\textit{CUDA does not scrub memory.} This was demonstrated conclusively by
+verifying that a large (8MB) random string could be recovered, contiguously and
+in its entirety, by a subsequent kernel. It was not possible to determine
+whether code regions were scrubbed, since CUDA does not support indirect
+branches. The \texttt{cudawrapper}\cite{cudawrapper} tool has been
+developed to provide scrubbing, but the authors consider it highly dubious
+that this userspace wrapper could successfully deal with an uncatchable signal.
+\subsection{Can kernels disassociate from processes?}
+\textit{The CUDA kernelspace tracks processes.} This was conclusively
+demonstrated by sending SIGKILL signals to CUDA processes after they had
+performed large allocations and launched intense, long-running kernels. There
+was no opportunity for userspace code to run, yet these resources were properly
+freed upon process termination.
+\subsection{Can a kernel fork?}
+\textit{CUDA kernels do not appear capable of forking}. A \textit{primum movens} in the
+form of a host-system CPU is required to launch a CUDA kernel. The kernel-launching
+interface must, therefore, be visible to the host. There is no compelling reason to
+then duplicate this interface within the GPU.
+
+Until the mechanism used to launch a kernel is known, however, we cannot be sure
+that the following loophole does not exist: devices of Compute Capability 1.2 or higher
+can map host memory into a context's address space. If kernels are launched
+entirely via memory-mapped I/O transactions, and the map through which this is
+done is mapped again, this time into shared memory, device code might be able
+to manipulate the device. At this point, all bets are off.
+\subsection{Does CUDA produce forensics?}
+\textit{CUDA provides insufficient forensic data.} CUDA kernels are not tied
+into the process accounting mechanism. Exceptions are delivered to klogd, but
+rate-limited within the kernel itself; it would be trivial to hide a meaningful
+exception behind a flurry of meaningless ones, as this policy cannot be
+overridden. No system exists to log who ran what kernel, or for how long.
+
+The \texttt{nvidia-smi} tool claims to decode and report exceptions as stored
+in a hardware buffer, similar to the Machine Check Exception registers of x86.
+We were not, however, able to generate any informative output using \texttt{nvidia-smi}.
+\subsection{Does CUDA enforce resource limits?}
+\textit{CUDA provides no resource limits.} UNIX provides a rich set of resource
+limits via the \texttt{rlimit} mechanism. These are just as important for
+protecting against programming errors as assuring fair resource distribution.
+CUDA neither honors the existing infrastructure, nor provides any of its own.
+Device memory allocations do not count against \texttt{RLIMIT\_AS}, kernel
+execution time does not count against \texttt{RLIMIT\_CPU}, and executing
+kernels are not bounded by \texttt{RLIMIT\_NPROC}.
+\subsection{Can CUDA deny access to system resources?}
+\textit{CUDA allows system RAM to be monopolized.} Devices of Compute Capability
+1.2 or higher support mapping host memory into a device's address space. For this
+to be done, the memory must be \textit{pinned} (also known as \textit{locked}), and
+thus protected against swapping. Since this makes physical memory unusable by the
+rest of the system, memory pinning is strictly limited using the \texttt{RLIMIT\_MEMLOCK}
+limit (the default value on Debian Linux is 64KB). CUDA, allocating system memory
+from within kernelspace, does not honor this limit. This more than once resulted in
+Linux's ``OOM (Out-of-Memory) killer'' delivering SIGKILL to Firefox or even sshd
+processes during testing.
+\subsection{Any miscellaneous security issues?}
+\textit{CUDA introduces sundry security issues.} The CUDA installer (which
+must be run as root throughout) contacts an anonymous FTP server to check for
+updated versions of the driver. This is open to any number of classic man-in-the-middle
+attacks, leaving the user open to trojans. Even if the download was signed,
+running the downloader as root leaves the system vulnerable to user agent
+exploits.
+
+The \texttt{nvcc} compiler does not support a \texttt{-pipe} option ala GCC,
+instead forcing use of temporary files for multiphase operations. The temporary
+names used are wholly predictable, suggesting vulnerability to a class of
+symlink attack. Successfully attacking this scheme via named FIFOs, and thus
+providing a \texttt{-pipe} capability for \texttt{nvcc}, is left as an exercise
+for the reader.
+
+The ability of any CUDA application to monopolize device memory facilitates
+``use-of-NULL'' attacks throughout the graphics stack, much like those which have plagued
+the Linux kernel in 2009 and 2010. Below, see two corrupted displays. It is doubtful that
+our CUDA application actively molested the display, since it simply allocated
+device memory; more likely, the programs ignored some allocation failure.
+
+Behold the grim visage of undefined behavior:
+
+\begin{figurehere}
+\centering
+\subfigure[Corrupted AA]
+{
+    \label{fig:sub:a}
+    \includegraphics[width=4cm,height=2.25cm]{texobjs/fuckedterminal.png}
+}
+\subfigure[Pixellated VDPAU]
+{
+    \label{fig:sub:b}
+    \includegraphics[width=4cm]{texobjs/shitfuckedup.png}
+}
+\end{figurehere}
+%%%%%
+\begin{comment}
+One of the possibilities we investigated was whether an arbitrary CUDA kernel would be able 
 to modify the system's video channel.  The threat model we considered was arbitrary code
 being able to manipulate the video channel.  
 
@@ -335,150 +459,10 @@ Similarly, writing to the framebuffer is not explicitely possible in CUDA, and s
 However, CUDA provides both read and write access to video memory, and the framebuffer is contained within memory.  Unfortunately, our tests were unsuccessful at locating the location of the framebuffer in memory.  This indicates either that the CUDA API disallows access to the region of memory containing the framebuffer or that there is a system in place that provides a hardware barrier between the framebuffer and the rest of VRAM for this purpose.
 
 %WTF happened on my system - artifacting.  Could this be exploited somehow?%
-
-While we were unable to specifically locate the framebuffer in memory, during our tests we did encounter several cases of video artifacting on our displays (Figure 2).  As of the writing of this paper we have been unable to isolate the circumstances that led to the artifacting and to reproduce them in a controlled manner.  We hypothesize either that the artifacting is due to the fact that the framebuffer is actually modifiable by a CUDA kernel, or that the artifacting is simply a side-effect of unhandled allocation failures.  However, we feel it is unlikely that our CUDA application actively modified the display, as simple memory reads and allocations were being performed, and with future work it should be possible to determine whether the framebuffer is readily modifiable by CUDA kernels or whether the artifacting was simply due to the programs ignoring some allocation failure.
-
-\begin{figurehere}
-\centering
-\subfigure[Corrupted AA]
-{
-    \label{fig:sub:a}
-    \includegraphics[width=4cm,height=2.25cm]{texobjs/fuckedterminal.png}
-}
-\subfigure[Pixellated VDPAU]
-{
-    \label{fig:sub:b}
-    \includegraphics[width=4cm]{texobjs/shitfuckedup.png}
-}
-\caption{Examples of display artifacting experienced during testing that may indicate a CUDA kernel can arbitrarily modify the framebuffer.}
-\end{figurehere}
+While we were unable to specifically locate the framebuffer in memory, during our tests we did encounter several cases of video artifacting on our displays.  This led us to believe that there must be some method of accessing the framebuffer by using CUDA in a way that it was not intended for.  As of the writing of this paper we have been unable to isolate the circumstances that led to the artifacting and to reproduce them in a controlled manner, but we believe there is promise in future work being done in this area.
 
 %Hopefully the above section can be updated, but as of now I have no clue what happened on my system to produce the artifacting.  I'll take another look at it but it'll probably have to wait until after my take-home final is done%
-
-
-\subsection{Does memory protection exist?}
-\textit{CUDA enforces memory protection in hardware.} Use of a general-purpose,
-word-sized register when referencing the global space means kernels' memory
-accesses cannot be preverified, and the possibility of software-assisted memory
-protection can be eliminated by analyzing details of memory transactions
-relative to the device clock\cite{microbenchmarks}. The use of two-level TLBs
-has been illustrated in previous work\cite{demmel}. We verified memory
-protection to be effective beyond the combined capacities of the TLBs, and
-note a L2 TLB miss to be only about half again as expensive as a L2 TLB hit.
-
-Thus we assert that memory protection is performed independently of, and in
-parallel with, address translation. This requires virtual- (and thus per-context)
-indexing.  Together with a memory protection granularity (1MB) distinct from
-either TLB size (4KB and 8MB), we consider this to imply a backing store in
-video RAM, and that memory protection is a single bit per entry.
-
-Members of the \texttt{cuMemset*()} family of functions, when given an invalid device address,
-neither return an error nor segfault. Instead, later context functions return
-a 700 (previous kernel failed) error. This strongly suggests that memory
-protection is \textit{not} modeled in software. Further research, especially
-involving shared, pinned maps, ought investigate this further.
-
-\subsection{Does memory protection incorporate contexts?}
-\textit{CUDA hardware considers contexts.} To ensure that memory isolation
-was not implemented purely through translation, we allocated a large
-region of memory in one context and operated on it. We then ensured that a
-distinct, simultaneous context failed accessing any possible address. This
-suggests that some manner of unforgeable \textit{capability}\cite{capability}
-lies at the heart of a CUDA context.
-
-Here, we make a bold conjecture: these capabilities \textit{can}
-be forged. We draw this conclusion from the interaction of CUDA and the \texttt{fork}
-system call. A CUDA application's system resources are wholly accessible by a
-child process up until they are unmapped via \texttt{exec} or some other system call.
-Furthermore, we verified allocations or kernels executed in either process following the
-\texttt{fork} to be visible in the other. We were unable to forge a context,
-but think it likely that disassembly of the CUDA stack would make a method plain.
-It is likely that some memory-mapped I/O is involved independent of the context
-object itself; \texttt{fork}, which preserves maps, thus naturally facilitates
-context-forging (the \texttt{/dev/nvidiaX} maps, as can be seen in \texttt{/proc/X/maps},
-are mapped \texttt{MAP\_SHARED} and thus not subject to Copy-on-Write behavior).
-
-\subsection{Is memory scrubbed between kernels?}
-\textit{CUDA does not scrub memory.} In order to test this, we loaded a large (8 MB) 
-random string into memory with one kernel.  We then attempted to recover this string, 
-contiguously and in its entirety, via a subsequent kernel.  Our experiments were a success, 
-conclusively demonstrating that CUDA in fact does not scrub memory.
-
-It was not possible to determine
-whether code regions were scrubbed, since CUDA does not support indirect
-branches. The \texttt{cudawrapper}\cite{cudawrapper} tool has been
-developed to provide scrubbing, but the authors consider it highly dubious
-that this userspace wrapper could successfully deal with an uncatchable signal.
-
-\subsection{Can kernels disassociate from processes?}
-\textit{The CUDA kernelspace tracks processes.} This was conclusively
-demonstrated by sending SIGKILL signals to CUDA processes after they had
-performed large allocations and launched intense, long-running kernels. There
-was no opportunity for userspace code to run, yet these resources were properly
-freed upon process termination.
-
-\subsection{Can a kernel fork?}
-\textit{CUDA kernels do not appear capable of forking}. A \textit{primum movens} in the
-form of a host-system CPU is required to launch a CUDA kernel. The kernel-launching
-interface must, therefore, be visible to the host. There is no compelling reason to
-then duplicate this interface within the GPU.
-
-Until the mechanism used to launch a kernel is known, however, we cannot be sure
-that the following loophole does not exist: devices of Compute Capability 1.2 or higher
-can map host memory into a context's address space. If kernels are launched
-entirely via memory-mapped I/O transactions, and the map through which this is
-done is mapped again, this time into shared memory, device code might be able
-to manipulate the device. At this point, all bets are off.
-
-\subsection{Does CUDA produce forensics?}
-\textit{CUDA provides insufficient forensic data.} CUDA kernels are not tied
-into the process accounting mechanism. Exceptions are delivered to klogd, but
-rate-limited within the kernel itself.  Therefore, it would be trivial to hide a meaningful
-exception behind a flurry of meaningless ones, as this policy cannot be
-overridden. No system exists to log who ran what kernel, or for how long.
-
-The \texttt{nvidia-smi} tool claims to decode and report exceptions as stored
-in a hardware buffer, similar to the Machine Check Exception registers of x86.
-We were not, however, able to generate any informative output using \texttt{nvidia-smi}.
-
-\subsection{Does CUDA enforce resource limits?}
-\textit{CUDA provides no resource limits.} UNIX provides a rich set of resource
-limits via the \texttt{rlimit} mechanism. These limis are just as important for
-protecting against programming errors as they are for assuring fair resource distribution.
-CUDA neither honors the existing infrastructure nor does it provide any of its own.
-Device memory allocations do not count against \texttt{RLIMIT\_AS}, kernel
-execution time does not count against \texttt{RLIMIT\_CPU}, and executing
-kernels are not bounded by \texttt{RLIMIT\_NPROC}.
-
-\subsection{Can CUDA deny access to system resources?}
-\textit{CUDA allows system RAM to be monopolized.} Devices of Compute Capability
-1.2 or higher support mapping host memory into a device's address space. For this
-to be done, the memory must be \textit{pinned} (also known as \textit{locked}), and
-thus protected against swapping. Since this makes physical memory unusable by the
-rest of the system, memory pinning is strictly limited using the \texttt{RLIMIT\_MEMLOCK}
-limit (the default value on Debian Linux is 64KB). CUDA, allocating system memory
-from within kernelspace, does not honor this limit. This more than once resulted in
-Linux's ``OOM (Out-of-Memory) killer'' delivering SIGKILL to Firefox or even sshd
-processes during testing.
-
-\subsection{Do miscellaneous security issues exist?}
-\textit{CUDA introduces sundry security issues.} The CUDA installer (which
-must be run as root throughout) contacts an anonymous FTP server to check for
-updated versions of the driver. This is open to any number of classic man-in-the-middle
-attacks, leaving the user open to trojans. Even if the download was signed,
-running the downloader as root leaves the system vulnerable to user agent
-exploits.
-
-The \texttt{nvcc} compiler does not support a \texttt{-pipe} option ala GCC,
-instead forcing use of temporary files for multiphase operations. The temporary
-names used are wholly predictable, suggesting vulnerability to a class of
-symlink attack. Successfully attacking this scheme via named FIFOs, and thus
-providing a \texttt{-pipe} capability for \texttt{nvcc}, is left as an exercise
-for the reader.
-
-Additionally, the ability of any CUDA application to monopolize device memory facilitates
-``use-of-NULL'' attacks throughout the graphics stack, much like those which have plagued
-the Linux kernel in 2009 and 2010. 
+\end{comment}
 
 \section{Defending CUDA}
 Implementors of competing CUDA stacks must ensure that their systems implement
@@ -505,7 +489,7 @@ It is absolutely critical that this be done for mapped host memory.
 \squishend
 
 % do we really want this?
-
+\begin{comment}
 \section{Related work}
 Our research in this area is focused on the possibility of security
 vulnerabilities against the GPU itself, an area which we were unable to find
@@ -527,9 +511,14 @@ application that runs on both ATI and NVIDIA brand GPUs\cite{foldingathome}.
   In 2007, NVIDIA released an SDK for CUDA, their ``Compute Unified Device
 Architecture'', allowing for the GPU to be much more accessible to developers
 wishing to use the GPU for non-graphical applications. In the three years since
-then, a wide variety of applications for CUDA have been developed\cite{cudainaction}\footnote{\url{http://www.nvidia.com/object/what\_is\_cuda\_new.html}}.
+then, a wide variety of applications for CUDA have been developed\footnote{\url{http://www.nvidia.com/object/what\_is\_cuda\_new.html}}.
   
-  Companies are offering CUDA solutions for problems in the realms of
+  General Mills developed an application that used CUDA to model the optimal
+way to cook a frozen pizza in a microwave. SeismicCity used CUDA to improve the
+amount of time it takes to interpret seismic data to determine the optimal
+drilling locations for finding oil\cite{cudainaction}.
+  
+  Other companies are offering CUDA solutions for problems in the realms of
 electromagnetics, bioinformatics, finance, accelerator physics, aerodynamics,
 engine optimizations, image and video stream compression, healthcare and life
 sciences, medical imaging, defense, and more\footnote{For a full list, see \url{http://www.nvidia.com/object/cuda\_in\_action.html}}.
@@ -550,11 +539,8 @@ sciences, medical imaging, defense, and more\footnote{For a full list, see \url{
   quickly enough to be useful, and GPUs have been proposed as a solution that
   allow for significant decreases in computation time
   \cite{gpuids}.
-  
-\subsection{GPU security}
- There were a few instances of prior art that actually consider the idea of security on the GPU. An implementation of a wrapper library for the CUDA SDK features the use of memory-scrubbing for the specific purpoes of wiping the GPU memory after use to provide security from subsequent users\cite{cudawrapper}. This indicates that while it has not been a subject of much discussion in literature, there are some developers that are starting to consider the security implications of developing applications for GPUs.
- 
- During the course of our research we also found a debian bug report for a severe security problem in nvidia-kernel-common\cite{bugreport}. The security implications of the bug were severe: each user registered with consolekit automatically receives read/write access for every device on the system. As this applies to devices such as /dev/sda, it constituted a serious security problem. While programming errors resulting in security vulnerabilities are nothing new, we believe this provides yet another example of how security must be on the forefront of designers' and developers' minds whenever new avenues are explored.
+
+\end{comment}
 
  \section{Conclusions} 
 The recommendations of the Orange Book\cite{orangebook}, requirements of the Common Criteria\cite{ccrit},
