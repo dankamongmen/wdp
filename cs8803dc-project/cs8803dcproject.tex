@@ -51,7 +51,7 @@
 Intel processors since the 65nm Conroe Core\texttrademark2
 have included hardware to queue decoded loops directly into the out-of-order
 execution engines\footnote{For an excellent comparison of the Loop Stream
-Detector to the Pentium 4's trace cache, see\cite{kanter}.}. These ``Loop
+Detector to the Pentium 4's trace cache, see \cite{kanter}.}. These ``Loop
 Stream Detectors'' (LSD) allow for substantial power savings and, in some
 cases, performance improvements. Unfortunately, the LSD can only store
 instruction streams meeting a number of architecture-specific restrictions.
@@ -80,13 +80,13 @@ Loop Stream Detector, Binary translation, Length-Changing Prefix, MSROM
 
 Existing open source hardware profiling tools have yet to fully support Core\texttrademark
 i7 line of processors. The line represents several combinations of Family,
-Model and Stepping numbers\cite{intelcpuid}. The following information is valid
+Model and Stepping numbers \cite{intelcpuid}. The following information is valid
 as of 2010--05--06.
 \subsection{Linux's \texttt{perf}}
 The \texttt{perf} tool, included in Linux source distributions since 2.6.31,
 can support LSD\_UOPS via use of a ``raw counter''. Provide \texttt{-e -r 1a8}
 when an event needs be specified; this selects unit mask 0x1 from event 0xa8,
-the LSD\_UOPS event\cite{intelsys}.
+the LSD\_UOPS event \cite{intelsys}.
 \subsection{Oprofile}
 Oprofile requires a patch to properly identify some Core\texttrademark i7
 processors. The author has submitted it to the Oprofile team; it can be found
