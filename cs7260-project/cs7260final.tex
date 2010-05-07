@@ -28,16 +28,19 @@
 
 \conferenceinfo{CS7260 2010}{May 5, Atlanta.}
 \copyrightyear{2010}
-\toappear{Copyright is held by the authors.\\
+\toappear{Copyright is held by the author.\\
 \textit{CS7260} May 5, Atlanta.}
 
 \title{LRUMAP}
-\subtitle{$O(1)$ LRU for Classifying Network Probes}
-\authorinfo{Nick Black \and Jolene Tarosky}{Georgia Institute of Technology}{nickblack@linux.com \and jtarosky@gmail.com}
+\subtitle{$O(1)$ Massively-Scalable LRU}
+\authorinfo{Nick Black}{Georgia Institute of Technology}{nickblack@linux.com}
 
 \maketitle
 \begin{abstract}
-Working on this now.
+Traditional $O(n)$ or even $O(\lg{n})$ LRU implementations are too slow for
+backbone routers and IPS devices. We introduce LRUSET, a novel $O(1)$ true LRU
+scheme which becomes more space-efficient as the number of monitored sets
+increases.
 \end{abstract}
 
 \category{I.5.3}{Clustering}{Algorithms}
@@ -45,27 +48,6 @@ Working on this now.
 \terms{LRUMAP, networking algorithmics}
 
 \keywords{LRUMAP, LRU, Pseudo-LRU, MROM, Precomputed Permutation Table (PPT)}
-
-\section{Introduction}
-Network administrators, particularly in proactively secure environments such
-as military installations, banks and SCADA sites, seek to discriminate standard
-network accesses from reconnaissance. In both host-based intrusion prevention
-systems (such as Solar Designer's \texttt{scanlogd}\footnote{\url{http://www.openwall.com/scanlogd/}})
-and network-level applications (such as the open source Snort\footnote{\url{http://www.snort.org/}} IDS),
-this is accomplished via comparing against some threshold the ratio of a remote
-host's successful accesses of the network to unsuccessful accesses. While a
-successful access will almost inevitably elicit some response packet, a
-reconnaissance may well receive no reply. Classification ought thus not be performed
-at reply time, but only upon a potential probe's ingress.
-First-packet classification requires predicting the success of a network access.
-Especially among environments heterogeneous in ownership or architecture (data centers, research facilities,
-development firms, etc), the likelihood of a given service (identified by host
-and transport addresses, and network protocol) existing can vary widely from
-host to host. Tracking these services dynamically is a natural fit for LRU, but
-traditional $O(n)$ or even $O(\lg{n})$ LRU implementations are too slow for
-backbone routers and IPS devices. We introduce LRUSET, a $O(1)$ true LRU scheme
-which becomes more space-efficient as the number of monitored hosts increases.
-The rest of the paper is organized as follows. In the next section, we present the conventions used in throughout the discussion of LRUMAP. Sections 3 and 4 introduce the LRUMAP data structure and algorithms. A comparison to the classical LRU is shown in Section 5. Section 6 details beyond LRUMAP, including possible improvements. Section 7 discusses other similar LRU type implementations that have been researched. Appendix A shows code used in the paper.
 
 \section{Conventions}
 We will speak of $n$ independent \textit{sets}. It is assumed that all possible
@@ -79,13 +61,13 @@ the number of sets $n$ is equivalent to the system capacity. When $r$ equals
 the capacity of the system, there can likewise be at most one set; such a system
 is said to be \textit{fully associative}. Since $\lg{r}$ is a frequent term in
 LRU's complexity analysis, a system's order is almost always a power of 2\footnote{Though
-wasteful of space, other orders have been infrequently used to improve latency\citep{intelcpuid}.}.
+wasteful of space, other orders have been infrequently used to improve latency \citep{intelcpuid}.}.
 \section{LRUMAP Data Structures}
 At LRUMAP's core lies a transition table shared among all sets, its size
 dependent upon $r$. This transition table is initialized at startup, and can be
 placed into constant memory once assembled (alternatively, it can be cast into
 cheap hardware using extremely reliable Masked-Or ROM (MROM)
-technology\citep{ice}). By \textit{transition table}, we mean a family $\Sigma$ of $|P|$
+technology \citep{ice}). By \textit{transition table}, we mean a family $\Sigma$ of $|P|$
 well-defined functions \begin{equation*}
 \sigma_{1}(l),\dotsc,\sigma_{p}(l)\longrightarrow{P}
 \end{equation*} where $p\in{P}$ and $1\le{l}\le{r}$. $P$ is the set of all
@@ -200,9 +182,9 @@ used by LRUMAP for $r=4$ and $r=8$, respectively.
 \subsection{Approximation}
 It may not be necessary to perform true, precise LRU. An entire family of
 schemes have been presented, approximating LRU in less time and/or space.
-VIA C3\textsuperscript{\textregistered} and Intel processors of the Pentium\textsuperscript{\textregistered} era\citep{shanley} made use of
+VIA C3\textsuperscript{\textregistered} and Intel processors of the Pentium\textsuperscript{\textregistered} era \citep{shanley} made use of
 \textit{pseudo-LRU}, a direction vector-based scheme which requires only
-$O(\lg{r})$ bits per set\citep{handy}. The PA-RISC 8600\citep{hurd} likewise used
+$O(\lg{r})$ bits per set \citep{handy}. The PA-RISC 8600 \citep{hurd} likewise used
 a proprietary \textit{quasi-LRU} algorithm, with a similar reduction in bits
 per set. These schemes can be straightforwardly combined with LRUMAP to yield a
 new variant, wherein the LRUMAP entries represent and map among these
@@ -239,10 +221,8 @@ could thus perform the updates in parallel. Pseudo-LRUMAP cannot be expected to
 provide any improvement over Pseudo-LRU.
 \subsection{Extensions}
 It is trivial to adapt LRUMAP to the Most-Recently-Used methodology, employed
-by page caches when a ``looping sequential''\citep{dewitt} access pattern is
+by page caches when a ``looping sequential'' \citep{dewitt} access pattern is
 detected.
-\section{Related Work}
-\textbf{WRITE ME! -- JOLENE}
 \bibliographystyle{abbrvnat}
 \bibliography{cs7260final}
 \end{document}
