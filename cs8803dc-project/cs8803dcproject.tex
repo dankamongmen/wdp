@@ -192,6 +192,16 @@ sorted based on whether they can effectively be transformed (subject, of course,
 to the same vagaries which complicate static PGO). Daytripper translation can
 thus be foregone when it will have no effect.
 
+Verifying other properties is a fairly simple (if distinctly unpleasant) task.
+This merely requires knowledge of branch instructions (at the ISA level) and
+their LSD limits, location of the code at runtime, disallowed instructions,
+and properties of the instruction fetch unit. These last are microarchitectural
+properties, but thankfully not a maintenance burden: the CPUID instruction
+allows all relevant properties (page size, instruction cache size, and
+associativity)\footnote{Whether the instruction and data caches are unified is irrelevant;
+we're verifying not residency, but boundary crossings.} to be discovered
+at runtime.
+
 \section{Related work}
 Virtually every reference to the Loop Stream Detector, from GCC bug reports
 \cite{gcclsd} to various optimization guides, speaks of supposed performance benefits.
