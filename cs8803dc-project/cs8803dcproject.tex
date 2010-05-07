@@ -276,7 +276,7 @@ and popping is unlikely to occur in a hot, reasonably-optimized loop.
 If the 4-fetch limit is not close to being breached (in an extreme case, 18
 single-byte instructions), a counter-intuitive method would be to eliminate
 internal NOPs present only for alignment purposes. Since the LSD eliminates
-misaligned instruction properties, these NOPs have no purpose in a loop
+misaligned instruction penalties, these NOPs have no purpose in a loop
 streamed from the LSD.
 \section{Related work}
 Virtually every reference to the Loop Stream Detector, from GCC bug reports
