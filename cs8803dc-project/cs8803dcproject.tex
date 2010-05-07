@@ -154,6 +154,7 @@ for disassembly and encoding of instruction streams, and its \textit{trace}
 objects (as opposed to \textit{blocks}) provides suitable recognition of hot
 loops.
 
+\subsection{Determining LSD suitability}
 Determining whether or not a loop qualifies for the LSD can be a difficult task
 in and of itself. The requirements of the Core\texttrademark 2's LSD are simple
 enough for a static compiler to consider, but the Core\texttrademark i7's LSD
@@ -201,6 +202,20 @@ allows all relevant properties (page size, instruction cache size, and
 associativity)\footnote{Whether the instruction and data caches are unified is irrelevant;
 we're verifying not residency, but boundary crossings.} to be discovered
 at runtime.
+
+\subsection{Extracting LSD suitability}
+Transformation, as could be expected, is the most complicated aspect of
+Daytripper's operation. More correctly, transformation \textit{will be} the
+most complicated aspect; Daytripper, originally a static binary translator,
+was reinvented as a dynamic tool very recently. Such transformations are, for
+all intents and purposes, beyond the capability of a static x86 translator.
+The ubiquity of indirect branches (even discounting clear linker patch-up points,
+as can be determined via cross-referencing ELF's \texttt{.plt} section) would
+be sufficient to exclude most transformations\cite{landi}; the x86's variable
+instruction length, relaxed alignment requirements for execution and access,
+and support for self-modifying code quickly render the problem intractable,
+if it is indeed even decidable.
+
 
 \section{Related work}
 Virtually every reference to the Loop Stream Detector, from GCC bug reports
