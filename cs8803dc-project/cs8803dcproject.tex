@@ -131,6 +131,19 @@ are eliminated.
 \item Stalls due to contention for the single complex instruction decoder are
 avoided, as are the extreme delays due to MSROM-based decoding.
 \squishend
+
+The Loop Stream Decoder is a microarchitectural property: it operates wholly
+without programmer intervention, and is not visible in the x86 ISA. The LSD
+will cache any instruction/$\mu$op stream that has looped (branched backwards)
+64 times, and meets the following conditions:
+\squishlist
+\item It requires no more than 4 instruction fetches of 16 aligned
+bytes each.
+\item It contains no more than 4 branches, none of them a CALL or RET.
+\item It contains no more than 18 instructions (on Core\texttrademark 2).
+\item It contains no more than 28 $\mu$ops (on Core\texttrademark i7).
+\squishend
+
 \section{Related work}
 Virtually every reference to the Loop Stream Detector, from GCC bug reports
 \cite{gcclsd} to various optimization guides, speaks of supposed performance benefits.
