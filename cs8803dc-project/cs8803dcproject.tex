@@ -29,6 +29,18 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 
+
+\newcommand{\squishlist}{\begin{list}{$\bullet$}
+  {\setlength{\itemsep}{0pt}
+    \setlength{\parsep}{3pt}
+    \setlength{\topsep}{3pt}
+    \setlength{\partopsep}{0pt}
+    \setlength{\leftmargin}{1.5em}
+    \setlength{\labelwidth}{1em}
+    \setlength{\labelsep}{0.5em}}}
+
+\newcommand{\squishend}{\end{list}}
+
 \begin{document}
 
 \conferenceinfo{CS8803DC 2010}{May 6, Atlanta.} 
@@ -59,7 +71,7 @@ The Loop Stream Decoder represents an unmistakable power optimization, can be
 definitively verified via the Core\texttrademark i7's LSD\_UOPS performance
 counter, and has clearly-defined requirements for successful use. All these
 properties make optimizing for the LSD an attractive prospect, especially for
-a runtime translator.  
+a runtime translator.
 \end{abstract}
 
 \category{D.3.4}{Processors}{Compilers}
@@ -72,9 +84,63 @@ Loop Stream Detector, Binary translation, Length-Changing Prefix, MSROM
 
 \section{Introduction}
 \cite{inteloptimize}
+\begin{figure}[h]
+\includegraphics[width=\columnwidth]{texobjs/LSDConroe.jpg}
+\caption{The Core\texttrademark  2 Loop Stream Detector}
+\label{fig:lsdcorei7}
+\end{figure}
+Benefits of the original LSD included:
+\squishlist
+\item The documented ability to shut down instruction fetch and branch prediction hardware.
+\item The possibility of shutting down instruction fetch, as explored in other
+processor designs \cite{badulescu}.
+\squishend
 
+The Loop Stream Detector was improved for the release of the ``Nehalem''
+Core i7. Moved after the decoding stages, it now supplies $\mu$ops directly
+to execution units (as opposed to instructions to the decoder).
+\begin{figure}[h]
+\includegraphics[width=\columnwidth]{texobjs/LSDCorei7.jpg}
+\caption{The Core\texttrademark  i7 Loop Stream Detector}
+\label{fig:lsdcorei7}
+\end{figure}
+Benefits include:
+\squishlist
+\item The entire processor frontend can be powered down during LSD streaming,
+as opposed to merely the instruction fetching hardware.
+\item Length-Changing Prefix stalls, major sources of delays in the frontend,
+are eliminated.
+\item Stalls due to contention for the single complex instruction decoder are
+avoided, as are the extreme delays due to MSROM-based decoding.
+\squishend
 \section{Related work}
+Virtually every reference to the Loop Stream Detector, from GCC bug reports
+\cite{gcclsd} to various optimization guides, speaks of supposed performance benefits.
 
+This is wrongheaded.
+
+While it is true that streaming instructions (in the case of Conroe) or $\mu$ops
+(in the case of Nehalem) from the Loop Stream Detector bypasses several pipeline stages,
+this does not, by itself, represent a gain in throughput. At a saturated steady
+state, CPI is independent of pipeline length. The LSD applies only to tight
+loops---precisely the sections most easily benefited by branch prediction,
+large data caches, advanced prefetching and extensive speculation. In short,
+it targets code for which Intel has already spent a decade adding hardware
+support (as noted earlier, the LSD \textit{can} remedy certain decoding
+perversions specific to the x86 architecture).
+
+The LSD would be highly relevant to research on optimizing for power, were it
+not for the facts that:
+\squishlist
+\item It is present only on energy-hungry high-end x86 processors, poor fits for
+systems designed to conserve power.
+\item It is only so effective at reducing power consumption due to the large
+transistor budget required for high-speed x86 instruction decoding; a classic
+RISC processor could not reap nearly such significant benefits.
+\squishend
+Whether or not the Loop Stream Detector will emerge as the focus of academic
+research is thus debatable. This paper appears to be the first investigation
+of dynamic translation for the explicit purpose of engaging the LSD.
 \appendix
 \section{Using the LSD\_UOPS PMC}
 
@@ -99,7 +165,7 @@ at:
 \acks
 Brought to you by Purple Drank\texttrademark. Code like a Champion Today!
 \includegraphics[width=\columnwidth]{texobjs/drank.jpg}
-
+Also, I stole my images from Ars Technica.
 % We recommend abbrvnat bibliography style.
 
 \bibliographystyle{abbrvnat}
