@@ -150,7 +150,7 @@ loops into suitable forms. This last must be performed while honoring the
 original program's semantics, and (obviously) in a fashion guaranteed to
 terminate. Daytripper leverages the DynamoRIO binary translation framework
 for disassembly and encoding of instruction streams, and its \textit{trace}
-objects (as opposed to \textit{blocks}) provides suitable recognition of hot
+objects (as opposed to \textit{blocks}) provide suitable recognition of hot
 loops.
 
 \subsection{Determining LSD suitability}
@@ -264,7 +264,7 @@ could be performed, Daytripper could unleash potent performance gains indeed.
 ``Magic divisions'' trading size for speed \cite{knuth2} could be replaced
 with their equivalent constant divisions. \texttt{ADD}/\texttt{SUB} $\#-1$ instructions
 could be replaced with their equivalent \texttt{INC}/\texttt{DEC}s, especially
-if the condition register-carried dependence these instructions introduce
+if the condition register-carried dependencies these instructions introduce
 were demonstrated to be innocuous (perhaps by introducing a dependency-breaking
 instruction). Sets of \texttt{PUSH}es and \texttt{POP}s, used
 to minimize the number of stack writes, could be replaced with a single
@@ -287,7 +287,7 @@ This is wrongheaded.
 While it is true that streaming instructions (in the case of Conroe) or $\mu$ops
 (in the case of Nehalem) from the Loop Stream Detector bypasses several pipeline stages,
 this does not, by itself, represent a gain in throughput. At a saturated steady
-state, CPI is independent of pipeline length. The LSD applies only to tight
+state, IPC is independent of pipeline length. The LSD applies only to tight
 loops---precisely the sections most easily benefited by branch prediction,
 large data caches, advanced prefetching and extensive speculation. In short,
 it targets code for which Intel has already spent a decade adding hardware
