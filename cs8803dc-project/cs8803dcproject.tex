@@ -161,8 +161,8 @@ enough for a static compiler to consider, but the Core\texttrademark i7's LSD
 complicates matters by caching $\mu$ops rather than instructions. Intel does
 not (at this time) make public the correspondence of instructions to $\mu$ops\footnote{Agner Fog's venerable datasheets \cite{agnerfog} do publish an approximate correspondence, but these follow processor releases, at best, by several months.}. These 
 mappings change from processor to processor or even stepping to stepping, and
-are further mudded by microarchitectural techniques such as Micro- and Macro-fusion
-of $\mu$ops. Any compiler must already have some idea of $\mu$op mappings
+are further mudded by microarchitectural techniques such as Micro- and Macro-fusion. Any
+compiler must already have some idea of $\mu$op mappings
 if it is to fully optimize for decoder resources, but simply knowing which
 instructions decode to multiple $\mu$ops is sufficient to make full use of
 Pentium-M, NetBurst, Core and Nehalem microarchitectures' ``3-1-1'' or ``4-1-1-1''
