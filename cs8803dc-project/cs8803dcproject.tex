@@ -265,7 +265,8 @@ could be performed, Daytripper could unleash potent performance gains indeed.
 with their equivalent constant divisions. \texttt{ADD}/\texttt{SUB} $\#-1$ instructions
 could be replaced with their equivalent \texttt{INC}/\texttt{DEC}s, especially
 if the condition register-carried dependence these instructions introduce
-were demonstrated to be innocuous. Sets of \texttt{PUSH}es and \texttt{POP}s, used
+were demonstrated to be innocuous (perhaps by introducing a dependency-breaking
+instruction). Sets of \texttt{PUSH}es and \texttt{POP}s, used
 to minimize the number of stack writes, could be replaced with a single
 \texttt{PUSHA}/\texttt{POPA} pair. This is unlikely to affect performance negatively,
 due to a large ratio of cacheline to word lengths (it ought be noted, however,
