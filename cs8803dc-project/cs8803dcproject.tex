@@ -71,7 +71,10 @@ The Loop Stream Decoder represents an unmistakable power optimization, can be
 definitively verified via the Core\texttrademark i7's LSD\_UOPS performance
 counter, and has clearly-defined requirements for successful use. All these
 properties make optimizing for the LSD an attractive prospect, especially for
-a runtime translator.
+a runtime translator. Daytripper consists of a DynamoRIO \cite{dynamorio} client
+module capable of discovering loops which fail to engage the LSD, analyzing
+them for valid transformations, and attempting to reschedule their bodies to
+take full advantage of this hardware.
 \end{abstract}
 
 \category{D.3.4}{Processors}{Compilers}
@@ -91,7 +94,7 @@ $\mu$ops; for very long instructions (those decoding to six or more $\mu$ops),
 this complex decoder must engage the slow Masked-Or ROM unit and its
 microcode store. This hardware's power requirements, not to mention the havoc
 wrought on hot loops by front-end stalls, led to the introduction (on Crusoe
-Core 2 processors) of the original Loop Stream Detector.
+Core\texttrademark 2 processors) of the original Loop Stream Detector.
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{texobjs/LSDConroe.jpg}
@@ -110,7 +113,7 @@ such capability has been mentioned in Intel documentation).
 \squishend
 
 The Loop Stream Detector was improved for the release of the ``Nehalem''
-Core i7. Moved after the decoding stages, it now supplies $\mu$ops directly
+Core\texttrademark i7. Moved after the decoding stages, it now supplies $\mu$ops directly
 to execution units (as opposed to instructions to the decoder).
 
 \begin{figure}[h]
