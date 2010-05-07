@@ -215,7 +215,68 @@ instruction length, relaxed alignment requirements for execution and access,
 and support for self-modifying code quickly render the problem intractable,
 if it is indeed even decidable.
 
+\section{Loop size reduction}
 
+For each requirement of the LSD, there exists a corresponding class of
+transformations we might perform. Many of them would already have been
+executed by a reasonable static compiler, and thus we oughtn't expect them
+to be exploitable in optimized code. This will be of critical importance
+when selecting benchmarking tools; it'll likely be best to build up a unit
+testing infrastructure around small, hand-written assembly snippets.
+
+\subsection{Code requires more than 4 fetches.} First, ensure that the loop is
+properly aligned (this will generally be true for optimized code). Otherwise,
+attempt loop size reduction as outlined in section 3.3. Note that instructions
+must be minimized in 3.3, even if the LSD is $\mu$op-based; it might thus be
+necessary to minimize \textit{both} $\mu$ops and instructions on Core\texttrademark i7
+processors and later.
+
+\subsection{Code contains more than 4 branches.} Attempt to replace branches with
+predicated instructions. Daytripper is only active on processors with Loop
+Stream Detectors, all of which include the P6-era \texttt{CMOVxx}; it is thus
+safe to conditionalize where possible. It is unfortunate that x86 is not a more
+fully predicated instruction set, such as ARM or IA64. This transformation is
+unlikely to slow down the loop body, and thus again we can expect optimized
+code to already have used \texttt{CMOVxx} where applicable. Compilers
+optimizing for size or speed, however, are unlikely to use certain
+bit-parallelism tricks \cite{warren} we might exploit, especially in highly
+idiomatic arithmetic loops. This might be fertile ground for future research.
+
+\subsection{Code is too large} For Core\texttrademark 2, or to reduce the number
+of necessary fetches (see 3.1), we seek to minimize instructions. For Core\texttrademark i7
+and beyond, we seek to minimize $\mu$ops. These goals are not incompatible,
+but neither can they generally be achieved via the same transformations.
+Unoptimized code can of course be easily pruned, but we assume reasonable
+optimization for space---in which case we are likely to achieve much
+reductions---or speed, which has as its most basic heuristic ``minimize dynamic
+instructions''. Once again, however, we can perform some ``regressive transformations''
+which possibly sacrifice performance.
+
+Whether to do so must be decided considering the benefits of the Loop Stream
+Detector. Loops containing length-changing prefixes, for instance, incur weighty
+stalls in the decoding logic. By bypassing the decoders (on Core\texttrademark
+i7), the LSD may well effect a net speedup even as it undoes other optimizations.
+These stalls have long been known to the compiler-writing community, so it is
+unlikely that they're generated in any real abundance. If code were found that
+had been forced to incur LCP stalls so that some other powerful optimization
+could be performed, Daytripper could unleash potent performance gains indeed.
+
+``Magic divisions'' trading size for speed \cite{knuth2} could be replaced
+with their equivalent constant divisions. \texttt{add}/\texttt{sub} $-1$ instructions
+could be replaced with their equivalent \texttt{inc}/\texttt{dec}s, especially
+if the condition register-carried dependence these instructions introduce
+were demonstrated to be innocuous. Sets of \texttt{pusha}/\texttt{popa}, used
+to minimize the number of stack writes, could be replaced with a single
+\texttt{pusha}/texttt{popa} pair. This is unlikely to affect performance negatively,
+due to a large ratio of cacheline to word lengths. It ought be noted, however,
+that these are $\mu$op-intensive instructions. In any case, extensive pushing
+and popping is unlikely to occur in a hot, reasonably-optimized loop.
+
+If the 4-fetch limit is not close to being breached (in an extreme case, 18
+single-byte instructions), a counter-intuitive method would be to eliminate
+internal NOPs present only for alignment purposes. Since the LSD eliminates
+misaligned instruction properties, these NOPs have no purpose in a loop
+streamed from the LSD.
 \section{Related work}
 Virtually every reference to the Loop Stream Detector, from GCC bug reports
 \cite{gcclsd} to various optimization guides, speaks of supposed performance benefits.
