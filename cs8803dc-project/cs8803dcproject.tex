@@ -234,8 +234,8 @@ processors and later.
 \subsection{Code contains more than 4 branches.} Attempt to replace branches with
 predicated instructions. Daytripper is only active on processors with Loop
 Stream Detectors, all of which include the P6-era \texttt{CMOVxx}; it is thus
-safe to conditionalize where possible. It is unfortunate that x86 is not a more
-fully predicated instruction set, such as ARM or IA64. This transformation is
+safe to conditionalize where possible (it is unfortunate that x86 is not a more
+fully predicated instruction set, such as ARM \cite{seal} or IA64). This transformation is
 unlikely to slow down the loop body, and thus again we can expect optimized
 code to already have used \texttt{CMOVxx} where applicable. Compilers
 optimizing for size or speed, however, are unlikely to use certain
@@ -246,9 +246,9 @@ idiomatic arithmetic loops. This might be fertile ground for future research.
 of necessary fetches (see 3.1), we seek to minimize instructions. For Core\texttrademark i7
 and beyond, we seek to minimize $\mu$ops. These goals are not incompatible,
 but neither can they generally be achieved via the same transformations.
-Unoptimized code can of course be easily pruned, but we assume reasonable
+Unoptimized code can of course be easily shrunk, but we assume reasonable
 optimization for space---in which case we are likely to achieve much
-reductions---or speed, which has as its most basic heuristic ``minimize dynamic
+reduction---or speed, which has as its most basic heuristic ``minimize dynamic
 instructions''. Once again, however, we can perform some ``regressive transformations''
 which possibly sacrifice performance.
 
@@ -262,14 +262,14 @@ had been forced to incur LCP stalls so that some other powerful optimization
 could be performed, Daytripper could unleash potent performance gains indeed.
 
 ``Magic divisions'' trading size for speed \cite{knuth2} could be replaced
-with their equivalent constant divisions. \texttt{add}/\texttt{sub} $-1$ instructions
-could be replaced with their equivalent \texttt{inc}/\texttt{dec}s, especially
+with their equivalent constant divisions. \texttt{ADD}/\texttt{SUB} $\#-1$ instructions
+could be replaced with their equivalent \texttt{INC}/\texttt{DEC}s, especially
 if the condition register-carried dependence these instructions introduce
-were demonstrated to be innocuous. Sets of \texttt{pusha}/\texttt{popa}, used
+were demonstrated to be innocuous. Sets of \texttt{PUSH}es and \texttt{POP}s, used
 to minimize the number of stack writes, could be replaced with a single
-\texttt{pusha}/texttt{popa} pair. This is unlikely to affect performance negatively,
-due to a large ratio of cacheline to word lengths. It ought be noted, however,
-that these are $\mu$op-intensive instructions. In any case, extensive pushing
+\texttt{PUSHA}/\texttt{POPA} pair. This is unlikely to affect performance negatively,
+due to a large ratio of cacheline to word lengths (it ought be noted, however,
+that these are $\mu$op-intensive instructions). In any case, extensive pushing
 and popping is unlikely to occur in a hot, reasonably-optimized loop.
 
 If the 4-fetch limit is not close to being breached (in an extreme case, 18
