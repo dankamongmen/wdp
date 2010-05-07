@@ -1,6 +1,6 @@
 .DELETE_ON_ERROR:
 .PHONY: all preview test clean docclean
-.DEFAULT_GOAL:=test
+.DEFAULT_GOAL:=preview
 
 VPDF:=evince
 

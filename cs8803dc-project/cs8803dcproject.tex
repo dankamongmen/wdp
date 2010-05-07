@@ -47,7 +47,18 @@
 \maketitle
 
 \begin{abstract}
-This is the text of the abstract.
+Intel processors since the 65nm Conroe Core\texttrademark2
+have included hardware to queue decoded loops directly into the out-of-order
+execution engines\footnote{For an excellent comparison of the Loop Stream
+Detector to the Pentium 4's trace cache, see\cite{kanter}.}. These ``Loop
+Stream Detectors'' (LSD) allow for substantial power savings and, in some
+cases, performance improvements. Unfortunately, the LSD can only store
+instruction streams meeting a number of architecture-specific restrictions.
+The Loop Stream Decoder represents an unmistakable power optimization, can be
+definitively verified via the Core\texttrademark i7's LSD\_UOPS performance
+counter, and has clearly-defined requirements for successful use. All these
+properties make optimizing for the LSD an attractive prospect, especially for
+a runtime translator.  
 \end{abstract}
 
 \category{D.3.4}{Processors}{Compilers}
@@ -64,9 +75,16 @@ Loop Stream Detector, Binary translation, Length-Changing Prefix, MSROM
 \section{Related work}
 
 \appendix
-\section{Appendix Title}
+\section{Using the LSD\_UOPS PMC}
 
-This is the text of the appendix, if you need one.
+Existing open source hardware profiling tools have yet to fully support the
+Core\texttrademark i7 line of processors. The line represents several
+combinations of Family, Model and Stepping numbers\cite{intelcpuid}.
+\subsection{Linux's \texttt{perf}}
+The \texttt{perf} tool, included in Linux source distributions since 2.6.31,
+can support LSD\_UOPS via use of a ``raw counter''. Provide \texttt{-e -r 1a8}
+when an event needs be specified; this selects unit mask 0x1 from event 0xa8,
+the LSD\_UOPS event\cite{intelsys}.
 
 \acks
 Brought to you by Purple Drank\texttrademark. Code like a Champion Today!
