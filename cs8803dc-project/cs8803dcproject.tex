@@ -144,6 +144,54 @@ bytes each.
 \item It contains no more than 28 $\mu$ops (on Core\texttrademark i7).
 \squishend
 
+\section{Optimizing for the LSD}
+Optimizing for the LSD requires the abilities to recognize hot loops, determine
+whether or not a given loop is suitable for the LSD, and transform unsuitable
+loops into suitable forms. This last must be performed while honoring the
+original program's semantics, and (obviously) in a fashion guaranteed to
+terminate. Daytripper leverages the DynamoRIO binary translation framework
+for disassembly and encoding of instruction streams, and its \textit{trace}
+objects (as opposed to \textit{blocks}) provides suitable recognition of hot
+loops.
+
+Determining whether or not a loop qualifies for the LSD can be a difficult task
+in and of itself. The requirements of the Core\texttrademark 2's LSD are simple
+enough for a static compiler to consider, but the Core\texttrademark i7's LSD
+complicates matters by caching $\mu$ops rather than instructions. Intel does
+not (at this time) make public the correspondence of instructions to $\mu$ops\footnote{Agner Fog's venerable datasheets \cite{agnerfog} do publish an approximate correspondence, but these follow processor releases, at best, by several months.}. These 
+mappings change from processor to processor or even stepping to stepping, and
+are further mudded by microarchitectural techniques such as Micro- and Macro-fusion
+of $\mu$ops. Any compiler must already have some idea of $\mu$op mappings
+if it is to fully optimize for decoder resources, but simply knowing which
+instructions decode to multiple $\mu$ops is sufficient to make full use of
+Pentium-M, NetBurst, Core and Nehalem microarchitectures' ``3-1-1'' or ``4-1-1-1''
+decoder arrangements.
+
+Thankfully, a performance monitoring counter (LSD\_UOPS, event 0xA8) was
+introduced alongside the improved LSD. While a static compiler (especially in
+the absence of profile-guided optimization) would be hard-pressed to
+effectively make use of this PMC as a litmus (especially as runtime code
+placement decisions can affect suitability), a dynamic compiler is well-suited
+to begin its search with the counter. Daytripper simply resets the counter on
+entrance to a DynamoRIO trace entry callback, and checks it during the trace
+exit. If the counter has changed, the LSD has been employed, and daytripper
+needn't perform further work. Likewise, a zero count suggests analysis of the
+associated trace.
+
+The performance counter also serves to gauge our effectiveness. Daytripper
+marks any trace it modifies. Since it never transforms a trace which triggered
+the LSD, any marked trace with a non-zero LSD count represents a successful
+transformation. Other marked traces represent wasted work, and are indicative
+of bugs in Daytripper's suitability testing. Given this instant and highly
+accurate feedback, any errors in $\mu$op mapping ought be flushed out quickly.
+Daytripper is thus fairly resilient against microarchitectural changes\footnote{The
+author spent significant time planning integrating such a scheme into GCC's PGO, thinking
+it the coolest part of this project.}, or at least automatically discovers any
+which affect its effectiveness. Furthermore, this allows binaries to be
+sorted based on whether they can effectively be transformed (subject, of course,
+to the same vagaries which complicate static PGO). Daytripper translation can
+thus be foregone when it will have no effect.
+
 \section{Related work}
 Virtually every reference to the Loop Stream Detector, from GCC bug reports
 \cite{gcclsd} to various optimization guides, speaks of supposed performance benefits.
@@ -195,6 +243,12 @@ processors. The author has submitted it to the Oprofile team; it can be found
 at:
 
 \url{http://marc.info/?l=linux-kernel&m=127294830417492}.
+\section{Using DynamoRIO with Daytripper}
+DynamoRIO requires a patch to properly identify some Core\texttrademark i7
+processors. The author has submitted it to the DynamoRIO team; it can be found
+at:
+
+\url{http://groups.google.com/group/dynamorio-users/browse_thread/thread/72dd27ca8f5ead66}
 \acks
 I stole my images from Ars Technica.
 % We recommend abbrvnat bibliography style.
