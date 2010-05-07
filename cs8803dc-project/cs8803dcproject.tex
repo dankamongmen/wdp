@@ -83,27 +83,42 @@ Binary translation, instruction decoding
 Loop Stream Detector, Binary translation, Length-Changing Prefix, MSROM
 
 \section{Introduction}
-\cite{inteloptimize}
-\begin{figure}[h]
+The x86's CISC legacy, unique among modern processors, requires substantial
+instruction decoding hardware and several pipeline stages. Recent Intel processors
+provide no less than four instruction decoders, along with an MSROM. Of these,
+only one (``complex'') decoder can handle instructions decoding to multiple
+$\mu$ops; for very long instructions (those decoding to six or more $\mu$ops),
+this complex decoder must engage the slow Masked-Or ROM unit and its
+microcode store. This hardware's power requirements, not to mention the havoc
+wrought on hot loops by front-end stalls, led to the introduction (on Crusoe
+Core 2 processors) of the original Loop Stream Detector.
+
+\begin{figure}
 \includegraphics[width=\columnwidth]{texobjs/LSDConroe.jpg}
 \caption{The Core\texttrademark  2 Loop Stream Detector}
 \label{fig:lsdcorei7}
 \end{figure}
-Benefits of the original LSD included:
+
+Benefits of the original LSD included \cite{inteloptimize}:
 \squishlist
 \item The documented ability to shut down instruction fetch and branch prediction hardware.
-\item The possibility of shutting down instruction fetch, as explored in other
-processor designs \cite{badulescu}.
+\item The possibility of shutting down instruction cache \texttt{in partes} or
+\textit{in toto}, as explored in other processor designs \cite{badulescu} (no
+such capability has been mentioned in Intel documentation).
+\item Elimination of delays due to misaligned branch targets.
+\item Recovery of execution bandwidth used by branch instructions.
 \squishend
 
 The Loop Stream Detector was improved for the release of the ``Nehalem''
 Core i7. Moved after the decoding stages, it now supplies $\mu$ops directly
 to execution units (as opposed to instructions to the decoder).
+
 \begin{figure}[h]
 \includegraphics[width=\columnwidth]{texobjs/LSDCorei7.jpg}
 \caption{The Core\texttrademark  i7 Loop Stream Detector}
 \label{fig:lsdcorei7}
 \end{figure}
+
 Benefits include:
 \squishlist
 \item The entire processor frontend can be powered down during LSD streaming,
@@ -154,8 +169,8 @@ can support LSD\_UOPS via use of a ``raw counter''. Provide
 
 \texttt{-e -r 1a8}
 
-when an event needs be specified; this selects unit mask 0x1 from event 0xa8,
-the LSD\_UOPS event \cite{intelsys}.
+when an event needs be specified; this selects unit mask 0x1 from PMC identifier
+0xa8, designating the LSD\_UOPS event \cite{intelsys}.
 \subsection{Oprofile}
 Oprofile requires a patch to properly identify some Core\texttrademark i7
 processors. The author has submitted it to the Oprofile team; it can be found
