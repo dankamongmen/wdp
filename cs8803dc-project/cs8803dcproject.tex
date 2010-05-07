@@ -62,8 +62,7 @@
 \begin{abstract}
 Intel processors since the 65nm Conroe Core\texttrademark2
 have included hardware to queue decoded loops directly into the out-of-order
-execution engines\footnote{For an excellent comparison of the Loop Stream
-Detector to the Pentium 4's trace cache, see \cite{kanter}.}. These ``Loop
+execution engine. These ``Loop
 Stream Detectors'' (LSD) allow for substantial power savings and, in some
 cases, performance improvements. Unfortunately, the LSD can only store
 instruction streams meeting a number of architecture-specific restrictions.
@@ -83,7 +82,7 @@ take full advantage of this hardware.
 Binary translation, instruction decoding
 
 \keywords
-Loop Stream Detector, Binary translation, Length-Changing Prefix, MSROM
+Loop Stream Detector, Length-Changing Prefix, MSROM
 
 \section{Introduction}
 The x86's CISC legacy, unique among modern processors, requires substantial
@@ -96,7 +95,7 @@ microcode store. This hardware's power requirements, not to mention the havoc
 wrought on hot loops by front-end stalls, led to the introduction (on Crusoe
 Core\texttrademark 2 processors) of the original Loop Stream Detector.
 
-\begin{figure}
+\begin{figure}[h]
 \includegraphics[width=\columnwidth]{texobjs/LSDConroe.jpg}
 \caption{The Core\texttrademark  2 Loop Stream Detector}
 \label{fig:lsdcorei7}
@@ -243,7 +242,7 @@ transistor budget required for high-speed x86 instruction decoding; a classic
 RISC processor could not reap nearly such significant benefits.
 \squishend
 Whether or not the Loop Stream Detector will emerge as the focus of academic
-research is thus debatable. This paper appears to be the first investigation
+research is debatable. This paper appears to be the first investigation
 of dynamic translation for the explicit purpose of engaging the LSD.
 \appendix
 \section{Using the LSD\_UOPS PMC}
@@ -275,6 +274,9 @@ at:
 
 \url{http://groups.google.com/group/dynamorio-users/browse_thread/thread/72dd27ca8f5ead66}
 \acks
+I am indebted to David Kanter for his excellent comparison of the Loop Stream
+Detector to the Pentium 4's trace cache \cite{kanter}.
+
 I stole my images from Ars Technica.
 % We recommend abbrvnat bibliography style.
 
