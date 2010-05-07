@@ -27,6 +27,7 @@
 
 \usepackage{graphicx}
 \usepackage{amsmath}
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -77,15 +78,21 @@ Loop Stream Detector, Binary translation, Length-Changing Prefix, MSROM
 \appendix
 \section{Using the LSD\_UOPS PMC}
 
-Existing open source hardware profiling tools have yet to fully support the
-Core\texttrademark i7 line of processors. The line represents several
-combinations of Family, Model and Stepping numbers\cite{intelcpuid}.
+Existing open source hardware profiling tools have yet to fully support Core\texttrademark
+i7 line of processors. The line represents several combinations of Family,
+Model and Stepping numbers\cite{intelcpuid}. The following information is valid
+as of 2010--05--06:
 \subsection{Linux's \texttt{perf}}
 The \texttt{perf} tool, included in Linux source distributions since 2.6.31,
 can support LSD\_UOPS via use of a ``raw counter''. Provide \texttt{-e -r 1a8}
 when an event needs be specified; this selects unit mask 0x1 from event 0xa8,
 the LSD\_UOPS event\cite{intelsys}.
+\subsection{Oprofile}
+Oprofile requires a patch to properly identify some Core\texttrademark i7
+processors. The author has submitted it to the Oprofile team; it can be found
+at:
 
+\url{http://marc.info/?l=linux-kernel&m=127294830417492}.
 \acks
 Brought to you by Purple Drank\texttrademark. Code like a Champion Today!
 \includegraphics[width=\columnwidth]{texobjs/drank.jpg}
