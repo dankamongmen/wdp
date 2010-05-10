@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 #include <sys/ioctl.h>
 
 #define DEVROOT "/dev/nvidia"
@@ -68,10 +69,14 @@ static fourthtype t4;
 static type5 t5,ta,t7;
 static secondtype result0xca;
 
+#define DEVMAP_SIZE ((size_t)0x1000)
+#define DEVMAP_OFF ((off_t)0xf2009000)
+
 static CUresult
 init_dev(unsigned dno){
 	char devn[strlen(DEVROOT) + 4];
 	typed0 td0;
+	void *map;
 	int dfd;
 
 	if(snprintf(devn,sizeof(devn),"%s%u",DEVROOT,dno) >= (int)sizeof(devn)){
@@ -81,6 +86,11 @@ init_dev(unsigned dno){
 		fprintf(stderr,"Couldn't open %s (%s)\n",devn,strerror(errno));
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
+	if((map = mmap(NULL,DEVMAP_SIZE,PROT_READ,MAP_SHARED,dfd,DEVMAP_OFF)) == MAP_FAILED){
+		fprintf(stderr,"Couldn't mmap() %zx (%s)\n",DEVMAP_SIZE,strerror(errno));
+		close(dfd);
+		return CUDA_ERROR_INVALID_DEVICE;
+	}
 	td0.ob[0] = 3251636241;
 	td0.ob[1] = 3251636241;
 	td0.ob[2] = 1;
@@ -88,14 +98,17 @@ init_dev(unsigned dno){
 	td0.ob[4] = 0;
 	if(ioctl(dfd,NV_D0,&td0)){
 		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_D0,dfd,strerror(errno));
+		munmap(map,DEVMAP_SIZE);
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if(ioctl(dfd,NV_D0,&td0)){
 		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_D0,dfd,strerror(errno));
+		munmap(map,DEVMAP_SIZE);
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
+	munmap(map,DEVMAP_SIZE);
 	close(dfd);
 	return CUDA_SUCCESS;
 }
