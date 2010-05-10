@@ -21,6 +21,7 @@ typedef enum {
 	NV_I6		= 0xc048464d,
 	NV_I7		= 0xc014462d,
 	NV_IA		= 0xc020462b,
+	NV_IB		= 0xc030464e,
 } nvioctls;
 
 typedef enum {
@@ -48,6 +49,10 @@ typedef struct fourthtype {
 typedef struct type5 {
 	uint32_t ob[8];		// 0x20 (32) bytes
 } type5;
+
+typedef struct typeb {
+	uint32_t ob[12];	// 0x30 (48) bytes
+} typeb;
 
 typedef struct type6 {
 	uint32_t ob[18];	// 0x30 (72) bytes
