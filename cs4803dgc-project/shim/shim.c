@@ -2,13 +2,15 @@
 #include <errno.h>
 #include <dlfcn.h>
 #include <stdarg.h>
+#include <string.h>
 #include <stdint.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 
 void *mmap64(void *addr,size_t len,int prot,int flags,int fd,off_t off){
 	static void *(*shim_mmap)(void *,size_t,int,int,int,off_t);
-	void *r;
+	unsigned *r;
+	unsigned z;
 
 	if(shim_mmap == NULL){
 		const char *msg;
@@ -26,22 +28,37 @@ void *mmap64(void *addr,size_t len,int prot,int flags,int fd,off_t off){
 		}
 	}
 	if(addr){
-		printf("mmap 0x%zxb fd %d [%c%c%c] %s @ %p (%s)\n",len,fd,
+		printf("mmap 0x%zxb %d [%c%c%c%c] @ %p (%s)\t",len,fd,
 				prot & PROT_READ ? 'R' : 'r',
 				prot & PROT_WRITE ? 'W' : 'w',
 				prot & PROT_EXEC ? 'X' : 'x',
-				flags & MAP_PRIVATE ? "private" : "shared",
+				flags & MAP_PRIVATE ? 'p' : 's',
 				addr,
 				flags & MAP_FIXED ? "fixed" : "hint");
 	}else{
-		printf("mmap 0x%zxb fd %d [%c%c%c] %s (no hint)\n",len,fd,
+		printf("mmap 0x%zxb %d [%c%c%c%c] (no hint)\t",len,fd,
 				prot & PROT_READ ? 'R' : 'r',
 				prot & PROT_WRITE ? 'W' : 'w',
 				prot & PROT_EXEC ? 'X' : 'x',
-				flags & MAP_PRIVATE ? "private" : "shared");
+				flags & MAP_PRIVATE ? 'p' : 's');
 	}
+	fflush(stdout);
 	r = shim_mmap(addr,len,prot,flags,fd,off);
-	printf("mmap result: %p\n",r);
+	for(z = 0 ; z < len ; z += 4){
+		printf("\x1b[1m");
+		if(z % 16 == 0 && z){
+			printf("0x%04lx\t\t\t",(uintptr_t)r + z);
+		}
+		if(r[z / 4]){
+			printf("\x1b[32m");
+		}
+		printf("0x%08x ",r[z / 4]);
+		printf("\x1b[0m");
+		if(z % 16 == 12){
+			printf("\n");
+		}
+	}
+	printf("\n");
 	return r;
 }
 
