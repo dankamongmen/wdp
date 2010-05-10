@@ -3,6 +3,33 @@
 #include <dlfcn.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+
+void *mmap64(void *addr,size_t len,int prot,int flags,int fd,off_t off){
+	static void *(*shim_mmap)(void *,size_t,int,int,int,off_t);
+	void *r;
+
+	if(shim_mmap == NULL){
+		const char *msg;
+
+		fprintf(stderr,"shimming system's mmap(2)\n");
+		if((shim_mmap = dlsym(RTLD_NEXT,"mmap")) == NULL){
+			fprintf(stderr,"got a NULL mmap(2)\n");
+			errno = EPERM;
+			return MAP_FAILED;
+		}
+		if( (msg = dlerror()) ){
+			fprintf(stderr,"couldn't shim mmap(2): %s\n",msg);
+			errno = EPERM;
+			return MAP_FAILED;
+		}
+	}
+	printf("mmap fd %d\n",fd);
+	r = shim_mmap(addr,len,prot,flags,fd,off);
+	printf("mmap result: %p\n",r);
+	return r;
+}
 
 int ioctl(int fd,int req,uintptr_t op){//,unsigned o1,unsigned o2){
 	static int (*shim_ioctl)(int,int,uintptr_t,int,int);
@@ -96,9 +123,11 @@ char *getenv(const char *name){
 			return NULL;
 		}
 	}
-	printf("GETENV: %s\n",name);
+	printf("getenv(\x1b[1m%s\x1b[0m) = ",name);
 	if( (r = shim_getenv(name)) ){
-		printf("RESULT: %s\n",r);
+		printf("\x1b\"[1m\"%s\x1b[0m\n",r);
+	}else{
+		printf("\x1b[1mNULL\x1b[0m\n");
 	}
 	return r;
 }
