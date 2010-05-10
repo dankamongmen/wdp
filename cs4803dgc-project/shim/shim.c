@@ -45,6 +45,10 @@ void *mmap64(void *addr,size_t len,int prot,int flags,int fd,off_t off){
 	return r;
 }
 
+void *mmap(void *addr,size_t len,int prot,int flags,int fd,off_t off){
+	return mmap64(addr,len,prot,flags,fd,off);
+}
+
 int ioctl(int fd,int req,uintptr_t op){//,unsigned o1,unsigned o2){
 	static int (*shim_ioctl)(int,int,uintptr_t,int,int);
 	static int (*shim_ioctl3)(int,int,uintptr_t);
