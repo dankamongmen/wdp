@@ -389,7 +389,7 @@ thus protected against swapping. Since this makes physical memory unusable by th
 rest of the system, memory pinning is strictly limited using the \texttt{RLIMIT\_MEMLOCK}
 limit (the default value on Debian Linux is 64KB). CUDA, allocating system memory
 from within kernelspace, does not honor this limit. This more than once resulted in
-Linux's ``OOM (Out-of-Memory) killer'' delivering SIGKILL to Firefox or even sshd
+Linux's ``OOM (Out-of-Memory) killer'' delivering SIGKILL to \texttt{firefox} or even \texttt{sshd}
 processes during testing.
 \subsection{Any miscellaneous security issues?}
 \textit{CUDA introduces sundry security issues.} The CUDA installer (which
