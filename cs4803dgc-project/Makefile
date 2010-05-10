@@ -1,6 +1,6 @@
 .DELETE_ON_ERROR:
 .PHONY: all preview test clean
-.DEFAULT_GOAL:=preview
+.DEFAULT_GOAL:=test
 
 VPDF:=evince
 

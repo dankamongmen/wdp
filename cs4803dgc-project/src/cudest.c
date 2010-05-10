@@ -1,4 +1,5 @@
 #include "cudest.h"
+#include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
@@ -72,6 +73,7 @@ init_dev(unsigned dno){
 		return CUDA_ERROR_INVALID_VALUE;
 	}
 	if((dfd = open(devn,O_RDWR)) < 0){
+		fprintf(stderr,"Couldn't open %s (%s)\n",devn,strerror(errno));
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	td0.ob[0] = 3251636241;
@@ -80,10 +82,12 @@ init_dev(unsigned dno){
 	td0.ob[3] = 0;
 	td0.ob[4] = 0;
 	if(ioctl(dfd,NV_D0,&td0)){
+		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_D0,dfd,strerror(errno));
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if(ioctl(dfd,NV_D0,&td0)){
+		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_D0,dfd,strerror(errno));
 		close(dfd);
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
@@ -97,19 +101,25 @@ init_ctlfd(int fd){
 	CUresult r;
 
 	memset(&hshake,0,sizeof(hshake));
-	hshake.ob[2] = 0x35ull;
-	hshake.ob[1] = 0x312e36332e353931ull;
+	//hshake.ob[2] = 0x35ull;		// 195.36.15
+	//hshake.ob[1] = 0x312e36332e353931ull;	// 195.36.15
+	hshake.ob[2] = 0x34ull;			// 195.36.24
+	hshake.ob[1] = 0x322e36332e353931ull;	// 195.36.24
 	if(ioctl(fd,NV_HANDSHAKE,&hshake)){
+		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_HANDSHAKE,fd,strerror(errno));
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if(ioctl(fd,NV_SECOND,&result0xca)){
+		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_SECOND,fd,strerror(errno));
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	t3.ob[0] = (uint32_t)-1;
 	if(ioctl(fd,NV_THIRD,&t3)){
+		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_THIRD,fd,strerror(errno));
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if(ioctl(fd,NV_FOURTH,&t4)){
+		fprintf(stderr,"Error sending ioctl 0x%x to fd %d (%s)\n",NV_FOURTH,fd,strerror(errno));
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	t5.ob[0] = t4.ob[0];
@@ -179,6 +189,7 @@ CUresult cuInit(unsigned flags){
 		return CUDA_ERROR_INVALID_VALUE;
 	}
 	if((fd = open(NVCTLDEV,O_RDWR)) < 0){
+		fprintf(stderr,"Couldn't open %s (%s)\n",NVCTLDEV,strerror(errno));
 		return CUDA_ERROR_INVALID_DEVICE;
 	}
 	if((r = init_ctlfd(fd)) != CUDA_SUCCESS){
