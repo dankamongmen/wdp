@@ -174,14 +174,14 @@ effectively make use of this PMC as a litmus (especially as runtime code
 placement decisions can affect suitability), a dynamic compiler is well-suited
 to begin its search with the counter. Daytripper simply resets the counter on
 entrance to a DynamoRIO trace entry callback, and checks it during the trace
-exit. If the counter has changed, the LSD has been employed, and daytripper
+exit. If the counter has changed, the LSD has been employed, and Daytripper
 needn't perform further work. Likewise, a zero count suggests analysis of the
 associated trace.
 
 The performance counter also serves to gauge our effectiveness. Daytripper
 marks any trace it modifies. Since it never transforms a trace which triggered
 the LSD, any marked trace with a non-zero LSD count represents a successful
-transformation. Other marked traces represent wasted work, and are indicative
+transformation\footnote{This doesn't hold if DynamoRIO itself triggers the LSD.}. Other marked traces represent wasted work, and are indicative
 of bugs in Daytripper's suitability testing. Given this instant and highly
 accurate feedback, any errors in $\mu$op mapping ought be flushed out quickly.
 Daytripper is thus fairly resilient against microarchitectural changes\footnote{The
