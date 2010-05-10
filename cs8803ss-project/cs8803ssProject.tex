@@ -315,7 +315,7 @@ video RAM, and that memory protection is a single bit per entry.
 
 Members of the \texttt{cuMemset*()} family of functions, when given an invalid device address,
 neither return an error nor segfault. Instead, later context functions return
-a 700 (previous kernel failed) error. This strongly suggests that memory
+a 700 (``previous kernel failed'') error. This strongly suggests that memory
 protection is \textit{not} modeled in software. Further research, especially
 involving shared, pinned maps, ought investigate this further.
 \subsection{Does memory protection incorporate contexts?}
