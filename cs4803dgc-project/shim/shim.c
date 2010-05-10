@@ -25,7 +25,21 @@ void *mmap64(void *addr,size_t len,int prot,int flags,int fd,off_t off){
 			return MAP_FAILED;
 		}
 	}
-	printf("mmap fd %d\n",fd);
+	if(addr){
+		printf("mmap 0x%zxb fd %d [%c%c%c] %s @ %p (%s)\n",len,fd,
+				prot & PROT_READ ? 'R' : 'r',
+				prot & PROT_WRITE ? 'W' : 'w',
+				prot & PROT_EXEC ? 'X' : 'x',
+				flags & MAP_PRIVATE ? "private" : "shared",
+				addr,
+				flags & MAP_FIXED ? "fixed" : "hint");
+	}else{
+		printf("mmap 0x%zxb fd %d [%c%c%c] %s (no hint)\n",len,fd,
+				prot & PROT_READ ? 'R' : 'r',
+				prot & PROT_WRITE ? 'W' : 'w',
+				prot & PROT_EXEC ? 'X' : 'x',
+				flags & MAP_PRIVATE ? "private" : "shared");
+	}
 	r = shim_mmap(addr,len,prot,flags,fd,off);
 	printf("mmap result: %p\n",r);
 	return r;
