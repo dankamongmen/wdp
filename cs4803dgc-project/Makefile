@@ -24,7 +24,7 @@ CC?=gcc
 IFLAGS:=-Isrc
 CFLAGS:=-pipe -g -ggdb -D_GNU_SOURCE -std=gnu99 $(IFLAGS) -fpic -Wall -W -Werror -march=native -mtune=native
 
-BIN:=$(OUT)/cudaminimal $(OUT)/cudaspawner
+BIN:=$(OUT)/cudaminimal $(OUT)/cudaminimal-base $(OUT)/cudaspawner
 
 all: $(LIB) $(PDF)
 
@@ -34,6 +34,9 @@ $(TAGS): $(addprefix src/,$(SRC)) $(addprefix shim/,$(SHIMSRC)) $(INC)
 
 $(OUT)/cudaminimal: $(MINSRC) $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
+
+$(OUT)/cudaminimal-base: $(MINSRC)
+	$(CC) $(CFLAGS) -o $@ $< -lcuda
 
 $(OUT)/cudaspawner: $(SPAWNSRC) $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< -L$(OUT) -Wl,-R$(OUT) -lcudest -lcuda
@@ -65,6 +68,7 @@ preview: all
 	$(VPDF) $(PDF)
 
 test: all $(BIN)
+	./$(OUT)/cudaminimal-base
 	./$(OUT)/cudaminimal
 	#./$(OUT)/cudaspawner 0 0
 
