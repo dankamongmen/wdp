@@ -43,46 +43,48 @@
 
 \begin{document}
 
-\conferenceinfo{CS8803DC 2010}{May 6, Atlanta.} 
-\copyrightyear{2010} 
+\conferenceinfo{Sprezzatech}{Aug 6, Atlanta.} 
+\copyrightyear{2013} 
 \toappear{Copyright is held by the author.\\
-\textit{CS8803DC} May 6, Atlanta.}
+\textit{Sprezzatech} Aug 6, Atlanta.}
 %\authorpermission
 %\titlebanner{CS8803DC, Spring 2010, Georgia Institute of Technology}        % These are ignored unless
 %\preprintfooter{Dynamic Translation for Intel's Loop Stream Decoder}   % 'preprint' option specified.
 
-\title{Daytripper}
-\subtitle{Dynamic Translation for Intel's Loop Stream Decoder}
+\title{Streaming Audio in the Gulf of Guinea}
+\subtitle{The Psychoacoustics and Telecommunications of Nigeria}
 
 \authorinfo{Nick Black}
-           {nickblack@linux.com}
+           {nick.black@sprezzatech.com}
 
 \maketitle
 
 \begin{abstract}
-Intel processors since the 65nm Conroe Core\texttrademark2
-have included hardware to queue decoded loops directly into the out-of-order
-execution engine. These ``Loop
-Stream Detectors'' (LSD) allow for substantial power savings and, in some
-cases, performance improvements. Unfortunately, the LSD can only store
-instruction streams meeting a number of architecture-specific restrictions.
-The Loop Stream Decoder represents an unmistakable power optimization, can be
-definitively verified via the Core\texttrademark i7's LSD\_UOPS performance
-counter, and has clearly-defined requirements for successful use. All these
-properties make optimizing for the LSD an attractive prospect, especially for
-a runtime translator. Daytripper consists of a DynamoRIO \cite{dynamorio} client
-module capable of discovering loops which fail to engage the LSD, analyzing
-them for valid transformations, and attempting to reschedule their bodies to
-take full advantage of this hardware.
+Nigeria presents unique challenges and opportunities to mobile internet streaming
+services. Major services such as Pandora\cite{pandoracountries} and
+Spotify\cite{spotifycountries} have no presence in West Africa. Its multiethnic
+and vivid culture produced worldwide sensations: Chinua Achebe, Wole Soyinka,
+Chris Ofili, and ``Nollywood'', the hub of African cinema. Nigeria
+was recognized as a ``Next Eleven'' country by Goldman-Sachs\cite{n11},
+and is predicted by \textit{The Economist} to be the world's third most-populous
+nation by 2050\cite{economist}. Cellular penetration approaches 70\% of the population\cite{nigeriamobile},
+provides 70\% of the nation's internet access, and is expected to increase
+dramatically following the dissolution and sale of the moribund, monopolistic
+NITEL (Nigeria Telecommunications, Limited)\cite{reutersnitel}. This cellular access,
+however, suffers reliability, quality-of-service, and capability issues, with
+many users adopting multiple carriers\cite{reuterssims}. Furthermore, nascent
+Nigerian streamers such as iROKING and Gbedu.FM have not introduced 
+automated psychoacoustic categorization of African music. We investigate the
+feasibility of cost-effective streaming and categorization of Nigerian music.
 \end{abstract}
 
-\category{D.3.4}{Processors}{Compilers}
+\category{ITU}{Region 1}{Nigeria}
 
 \terms
-Binary translation, instruction decoding
+Nigerian cellular, streaming music
 
 \keywords
-Loop Stream Detector, Length-Changing Prefix, MSROM
+Nigeria, streaming, psychoacoustics
 
 \section{Introduction}
 The x86's CISC legacy, unique among modern processors, requires substantial
@@ -308,39 +310,6 @@ research is debatable. This paper appears to be the first investigation
 of dynamic translation for the explicit purpose of engaging the LSD.
 \appendix
 \section{Using the LSD\_UOPS PMC}
-
-Existing open source hardware profiling tools have yet to fully support the Core\texttrademark
-i7 line of processors. The line represents several combinations of Family and
-Model numbers \cite{intelcpuid}. The following information is valid
-as of 2010--05--06.
-\subsection{Linux's \texttt{perf}}
-The \texttt{perf} tool, included in Linux source distributions since 2.6.31,
-can support LSD\_UOPS via use of a ``raw counter''. Provide
-
-\vspace{5mm}
-\texttt{-e -r 1a8}
-\vspace{5mm}
-
-when an event needs be specified; this selects unit mask 0x1 from PMC identifier
-0xa8, designating the LSD\_UOPS event \cite{intelsys}.
-\subsection{Oprofile}
-Oprofile requires a patch to properly identify some Core\texttrademark i7
-processors. The author has submitted it to the Oprofile team; it can be found
-at:
-
-\url{http://marc.info/?l=linux-kernel&m=127294830417492}.
-\section{Using DynamoRIO with Daytripper}
-DynamoRIO requires a patch to properly identify some Core\texttrademark i7
-processors. The author has submitted it to the DynamoRIO team; it can be found
-at:
-
-\url{http://groups.google.com/group/dynamorio-users/browse_thread/thread/72dd27ca8f5ead66}
-\acks
-I am indebted to David Kanter for his excellent comparison of the Loop Stream
-Detector to the Pentium 4's trace cache \cite{kanter}.
-
-I stole my images from Ars Technica.
-% We recommend abbrvnat bibliography style.
 
 \bibliographystyle{abbrvnat}
 % The bibliography should be embedded for final submission.
